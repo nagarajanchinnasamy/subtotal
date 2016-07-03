@@ -1,1 +1,1 @@
-# Subtotal Renderer for PivotTable.js
+# Subtotal.js -- Subtotal Renderer for PivotTable.js
