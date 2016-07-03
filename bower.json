@@ -1,0 +1,34 @@
+{
+  "name": "subtotal",
+  "description": "Subtotal Renderer with collapse and expand features for PivotTable.js by Nicolas Kruchten",
+  "version": "1.0.0",
+  "main": [
+    "dist/subtotal.js"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "examples"
+  ],
+  "keywords": [
+    "pivot",
+    "crosstab",
+    "grid",
+    "table",
+    "pivottable",
+    "pivotgrid",
+    "pivotchart",
+    "jquery",
+    "subtotal",
+    "expand",
+    "collapse",
+    "summary"
+  ],
+  "homepage": "https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer.git"
+  },
+  "dependencies": {
+		"pivottable": ">=2.1.0"
+  }
+}
