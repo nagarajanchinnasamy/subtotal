@@ -1,55 +1,24 @@
-[![npm](http://nicolas.kruchten.com/pivottable/images/npm.svg)](https://www.npmjs.com/package/pivottable) [![cdnjs](http://nicolas.kruchten.com/pivottable/images/cdnjs.svg)](https://cdnjs.com/libraries/pivottable) [![tests](http://nicolas.kruchten.com/pivottable/images/tests.svg)](http://nicolas.kruchten.com/pivottable/tests/) [![license](http://nicolas.kruchten.com/pivottable/images/license.svg)](https://github.com/nicolaskruchten/pivottable/blob/master/LICENSE.md)
+[![npm](http://nagarajanchinnasamy.com/subtotal/images/npm.svg)](https://www.npmjs.com/package/pivottable) [![cdnjs](http://nagarajanchinnasamy.com/subtotal/images/cdnjs.svg)](https://cdnjs.com/libraries/pivottable) [![tests](http://nagarajanchinnasamy.com/subtotal/images/tests.svg)](http://nagarajanchinnasamy.com/subtotal/tests/) [![license](http://nagarajanchinnasamy.com/subtotal/images/license.svg)](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/blob/master/LICENSE)
 
 
-# PivotTable.js
+# Subtotal.js
 
-PivotTable.js is a Javascript Pivot Table library with drag'n'drop functionality built on top of jQuery/jQueryUI and originally written in CoffeeScript by [Nicolas Kruchten](http://nicolas.kruchten.com) at [Datacratic](http://datacratic.com). 
+Subtotal.js is an open-source JavaScript plugin for [PivotTable.js](https://github.com/nicolaskruchten/pivottable). Its originally written by [Nagarajan Chinnasamy](https://nagarajanchinnasamy.com/) at [Mindtree](http://mindtree.com/).
 
-It is available under an MIT license from [CDNJS](https://cdnjs.com/libraries/pivottable) and [NPM](https://www.npmjs.com/package/pivottable) and [Bower](http://bower.io/) under the name `pivottable`.
+[PivotTable.js](https://github.com/nicolaskruchten/pivottable) is a Javascript Pivot Table library with drag'n'drop functionality built on top of jQuery/jQueryUI and originally written in CoffeeScript by [Nicolas Kruchten](http://nicolas.kruchten.com) at [Datacratic](http://datacratic.com). 
 
-PivotTable.js can be used with [Python/Jupyter](https://pypi.python.org/pypi/pivottablejs) and [R/RStudio](https://github.com/smartinsightsfromdata/rpivotTable) and you can [try it right now](http://nicolas.kruchten.com/pivottable/examples/local.html) in your browser on a CSV file.
 
 ## What does it do?
 
-PivotTable.js' basic function is to enable data exploration and analysis by turning a data set into a summary table and then optionally adding a true 2-d drag'n'drop UI to allow a user to manipulate this summary table, turning it into a pivot table, very similar to the one found in older versions of Microsoft Excel with a bunch of extra developer-oriented features and some visualization effects. With [optional add-ons](https://github.com/nicolaskruchten/pivottable/wiki/Optional-Extra-Renderers), the summary table can be rendered as various kinds of charts, turning the pivot table into a pivot chart.
+Subtotal.js renders subtotal of rows and columns of a pivot table and lets the users to expand and collpase the rows.
 
-![image](http://nicolas.kruchten.com/pivottable/images/animation.gif)
-
-The animation above is based on the [Canadian Parliament 2012 dataset example](http://nicolas.kruchten.com/pivottable/examples/fully_loaded.html).
-
-## Where are the demos/examples?
-
-There are lots on the [examples page](http://nicolas.kruchten.com/pivottable/examples/index.html) but here are some good entry points:
-
-* [a JSFiddle where you can play with the code](https://jsfiddle.net/nicolaskruchten/kn381h7s/)
-* [a simple demo running on the "Canadian Parliament 2012" dataset](http://nicolaskruchten.github.io/pivottable/examples/mps_prepop.html)
-* [fully-loaded demo running on the 700+ datasets that ship with R](http://nicolas.kruchten.com/pivottable/examples/rcsvs.html)
-* [fully-loaded demo where you provide your own CSV file for input](http://nicolas.kruchten.com/pivottable/examples/local.html)
-
-## Why is it good?
-
-* it's lightweight: the core (without chart support) is a single file with less than 1000 LOC of CoffeeScript, compiles down to 6.3kb of Javascript minified and gzipped, and depends only on jQuery and jQueryUI's 'sortable'
-* it works wherever jQuery and jQueryUI work (tested with jQuery 1.8.3 and jQueryUI 1.9.2)
-* it works acceptably fast in Chrome on commodity hardware up to around a hundred thousand records, depending on the cardinality of the attributes.
-* its UI is [localizable](https://github.com/nicolaskruchten/pivottable/wiki/Localization)
-* its layered architecture allows for summary table generation with or without the pivot table UI around it (if you don't use the UI, then there is no dependency on jQueryUI)
-* it works with common [input formats](https://github.com/nicolaskruchten/pivottable/wiki/Input-Formats)
-* its [derived attributes](https://github.com/nicolaskruchten/pivottable/wiki/Derived-Attributes) can be created on the fly based on the whole input record by passing in a function
-* its complex [aggregation functions](https://github.com/nicolaskruchten/pivottable/wiki/Aggregators) can compute values based on the whole input record (e.g. weighted averages)
-* it has built-in support for basic heatmap and bar chart [renderers](https://github.com/nicolaskruchten/pivottable/wiki/Renderers), and [optional extra renderers that add charting or TSV export support](https://github.com/nicolaskruchten/pivottable/wiki/Optional-Extra-Renderers)
-* its extension points allow aggregation functions, table output, UI and visualizations to be tailored to specific applications
-* it works on mobile devices with [jQuery UI Touch Punch](http://touchpunch.furf.com/)
-* it has a [test suite](http://nicolas.kruchten.com/pivottable/tests)
-
-## How do I use the UI?
-
-PivotTable.js implements a pivot table drag'n'drop UI similar to that found in popular spreadsheet programs. You can drag attributes into/out of the row/column areas, and specify rendering, aggregation and filtering options. There is a [step-by-step tutorial](https://github.com/nicolaskruchten/pivottable/wiki/UI-Tutorial) in the wiki.
+You can see the demo at [examples page](http://nagarajanchinnasamy.com/subtotal/examples/index.html).
 
 ## How do I load the code?
 
-PivotTable.js implements the [Universal Module Definition (UMD)](https://github.com/umdjs/umd) pattern and so should be compatible with most approaches to script loading and dependency management: direct script loading i.e. from [CDNJS](https://cdnjs.com/libraries/pivottable) or with [RequireJS](http://requirejs.org/), [Browserify](http://browserify.org/) etc. For the latter options, you can grab it from [NPM](https://www.npmjs.com/package/pivottable) with `npm install pivottable` or via [Bower](http://bower.io/) with `bower install pivottable`. 
+Subtotal.js implements the [Universal Module Definition (UMD)](https://github.com/umdjs/umd) pattern and so should be compatible with most approaches to script loading and dependency management: direct script loading i.e. from [CDNJS](https://cdnjs.com/libraries/pivottable) or with [RequireJS](http://requirejs.org/), [Browserify](http://browserify.org/) etc. For the latter options, you can grab it from [NPM](https://www.npmjs.com/package/pivottable) with `npm install pivottable` or via [Bower](http://bower.io/) with `bower install pivottable`. 
 
-If you are loading the scripts directly (as in the [examples](http://nicolas.kruchten.com/pivottable)), you need to:
+If you are loading the scripts directly (as in the [examples](http://nagarajanchinnasamy.com/subtotal)), you need to:
 
 1. load the dependencies:
   1. jQuery in all cases
@@ -57,14 +26,10 @@ If you are loading the scripts directly (as in the [examples](http://nicolas.kru
   3. D3.js, C3.js and/or Google Charts if you use [charting plugins](https://github.com/nicolaskruchten/pivottable/wiki/Optional-Extra-Renderers)
 2. load the PivotTable.js files:
   1. `pivot.min.js`
-  2. any [plugins](https://github.com/nicolaskruchten/pivottable/wiki/Optional-Extra-Renderers) you wish to use
+3. load the Subtotal.js files:
+  1. `subtotal.min.js`
 
-The dependencies and PivotTable.js files can be loaded:
-
-  1. By copying the files from their official distributions to your project and loading them locally (the [`dist`](https://github.com/nicolaskruchten/pivottable/tree/master/dist) directory is where you will find the PivotTable.js files)
-  2. From a Content Distribution Network (CDN) like [CDNJS](https://cdnjs.com/libraries/pivottable)
-
-(The [examples](http://nicolas.kruchten.com/pivottable) load dependencies from CDNJS and PivotTable.js locally)
+(Please look at the source code of the [exmaples](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/) 
 
 ## How do I use the code?
 
