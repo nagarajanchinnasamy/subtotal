@@ -12,6 +12,8 @@ Subtotal.js is an open-source JavaScript plugin for [PivotTable.js](https://gith
 
 Subtotal.js renders subtotal of rows and columns of a pivot table and lets the users to expand and collpase the rows.
 
+![image](http://nagarajanchinnasamy.com/subtotal/images/subtotal-renderer-pivotui.png)
+
 You can see the demo at [examples page](http://nagarajanchinnasamy.com/subtotal/examples/index.html).
 
 ## How do I load the code?
