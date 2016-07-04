@@ -14,7 +14,7 @@ Subtotal.js renders subtotal of rows and columns of a pivot table and lets the u
 
 ![image](http://nagarajanchinnasamy.com/subtotal/images/subtotal-renderer-pivotui.png)
 
-You can see the demo at [examples page](http://nagarajanchinnasamy.com/subtotal/examples/index.html).
+You can see the live demo at [examples page](http://nagarajanchinnasamy.com/subtotal/examples/index.html).
 
 ## How do I load the code?
 
@@ -31,70 +31,20 @@ If you are loading the scripts directly (as in the [examples](http://nagarajanch
 3. load the Subtotal.js files:
   1. `subtotal.min.js`
 
-(Please look at the source code of the [exmaples](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/) 
+(Please look at the source code of the [exmaples](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/blob/master/examples/subtotal_pivot.html/) 
 
 ## How do I use the code?
 
-There are two main functions provided by PivotTable.js: `pivot()` and `pivotUI()`, both implemented as jQuery plugins, as well as a bunch of helpers and templates.
 
 ### `pivot()`
 
-Once you've loaded jQuery and pivot.js, this code ([demo](http://nicolaskruchten.github.io/pivottable/examples/simple.html)):
-
-```javascript
-$("#output").pivot(
-    [
-        {color: "blue", shape: "circle"},
-        {color: "red", shape: "triangle"}
-    ],
-    {
-        rows: ["color"],
-        cols: ["shape"]
-    }
-);
-```
-
-appends this table to `$("#output")` (the default, *overridable* behaviour is to populate the table cells with counts):
-
-![image](http://nicolaskruchten.github.io/pivottable/images/simple.png)
 
 ### `pivotUI()`
 
-A slight change to the code (calling `pivotUI()` instead of `pivot()` ) yields the same table with a drag'n'drop UI around it, so long as you've imported jQueryUI ([demo](http://nicolaskruchten.github.io/pivottable/examples/simple_ui.html)):
-
-```javascript
-$("#output").pivotUI(
-    [
-        {color: "blue", shape: "circle"},
-        {color: "red", shape: "triangle"}
-    ],
-    {
-        rows: ["color"],
-        cols: ["shape"]
-    }
-);
-```
-
-![image](http://nicolaskruchten.github.io/pivottable/images/simple_ui.png)
-
-Note that **`pivot()` and `pivotUI()` take different parameters in general**, even though in the example above we passed the same parameters to both. See the [FAQ](https://github.com/nicolaskruchten/pivottable/wiki/Frequently-Asked-Questions#params).
-
-See the wiki for [full parameter documentation](https://github.com/nicolaskruchten/pivottable/wiki/Parameters).
-
 ## Where is the documentation?
 
-More extensive documentation can be found in the [wiki](https://github.com/nicolaskruchten/pivottable/wiki):
+More extensive documentation can be found in the [wiki](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/wiki):
 
-* [Frequently Asked Questions](https://github.com/nicolaskruchten/pivottable/wiki/Frequently-Asked-Questions)
-* [Step by step UI Tutorial](https://github.com/nicolaskruchten/pivottable/wiki/UI-Tutorial)
-* [Full Parameter Documentation](https://github.com/nicolaskruchten/pivottable/wiki/Parameters)
-* [Input Formats](https://github.com/nicolaskruchten/pivottable/wiki/Input-Formats)
-* [Aggregators](https://github.com/nicolaskruchten/pivottable/wiki/Aggregators)
-* [Renderers](https://github.com/nicolaskruchten/pivottable/wiki/Renderers)
-* [Derived Attributes](https://github.com/nicolaskruchten/pivottable/wiki/Derived-Attributes)
-* [Localization](https://github.com/nicolaskruchten/pivottable/wiki/Localization)
-* [Optional Extra Renderers: Google Charts and D3/C3 Support](https://github.com/nicolaskruchten/pivottable/wiki/Optional-Extra-Renderers)
-* [Used By](https://github.com/nicolaskruchten/pivottable/wiki/Used-By)
 
 ## How can I build the code and run the tests?
 
@@ -108,15 +58,15 @@ The easiest way to modify the code and work with the examples is to leave a `nod
 
 ## How can I contribute?
 
-Pull requests are welcome! Here are some [Contribution Guidelines](https://github.com/nicolaskruchten/pivottable/blob/master/CONTRIBUTING.md).
+Pull requests are welcome! Here are some [Contribution Guidelines](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/blob/master/CONTRIBUTING.md).
 
 ## I have a question, how can I get in touch?
 
-Please first check the [Frequently Asked Questions](https://github.com/nicolaskruchten/pivottable/wiki/Frequently-Asked-Questions) and if you can't find what you're looking for there, or in the [wiki](https://github.com/nicolaskruchten/pivottable/wiki), then please [create a GitHub Issue](https://github.com/nicolaskruchten/pivottable/issues/new). When creating an issue, please try to provide a replicable test case so that others can more easily help you.
+Please first check the [Frequently Asked Questions](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/wiki/Frequently-Asked-Questions) and if you can't find what you're looking for there, or in the [wiki](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/wiki), then please [create a GitHub Issue](https://github.com/nagarajanchinnasamy/subtotal/issues/new). When creating an issue, please try to provide a replicable test case so that others can more easily help you.
 
 ## Copyright & Licence (MIT License)
 
-PivotTable.js is © 2012-2013 Nicolas Kruchten, Datacratic, other contributors
+Subtotal.js is © 2016 Nagarajan Chinnasamy, Mindtree, other contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
