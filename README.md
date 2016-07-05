@@ -33,13 +33,13 @@ If you are loading the scripts directly (as in the [examples](http://nagarajanch
 3. load the Subtotal.js files:
   1. `subtotal.min.js`
 
-(Please look at the source code of the [exmaples](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/blob/master/examples/subtotal_pivot.html/) 
+Here is the source code of an [exmaple](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/blob/master/examples/subtotal_pivot.html/) 
 
 ## How do I use the code?
 
 You can use Subtotal.js with either `pivot()` or `pivotUI()` method of PivotTable.js.
 
-### `pivot()`
+### To use `pivot()` method
 
 1. Set the value of `dataClass` parameter to `$.pivotUtilities.SubtotalPivotData` 
 2. Set the value of `renderer` parameter to `$.pivotUtilities.subtotal_renderers[<*rendererName*>]`
@@ -70,7 +70,7 @@ $(function(){
 });
 ```
 
-### `pivotUI()`
+### To use `pivotUI()` method
 
 1. Set the value of `dataClass` parameter to `$.pivotUtilities.SubtotalPivotData` 
 2. Set the value of `renderers` parameter to `$.pivotUtilities.subtotal_renderers`
@@ -103,7 +103,7 @@ $(function(){
 });
 ```
 
-### rendererName
+### Parameter: rendererName
 
 `rendererName` can take one of the following values:
 
@@ -113,7 +113,7 @@ $(function(){
     "Table With Subtotal Row Heatmap"
     "Table With Subtotal Col Heatmap"
 
-### rendererOptions
+### Parameter: rendererOptions
 
 `collapseRowsAt` option can be set to one of the row attributes as its values. If this option is set, rows are collapsed at the given row attribute when the pivot table is initially rendered. The default behavior is to render all rows expanded initially (ie., no collapse)
 
@@ -133,7 +133,7 @@ Pull requests are welcome! Here are some [Contribution Guidelines](https://githu
 
 ## I have a question, how can I get in touch?
 
-Please first check the [issues](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/issues) that are already raised and if you can't find what you're looking for there, then please [create a GitHub Issue](https://github.com/nagarajanchinnasamy/subtotal/issues/new). When creating an issue, please try to provide a replicable test case so that others can more easily help you.
+Please first check the [issues](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/issues) that are already raised and if you can't find what you're looking for there, then please [create a GitHub Issue](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/issues/new). When creating an issue, please try to provide a replicable test case so that others can more easily help you.
 
 ## Copyright & Licence (MIT License)
 
