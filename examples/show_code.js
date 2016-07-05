@@ -5,7 +5,7 @@ $(function(){
         $("<link href='https://fonts.googleapis.com/css?family=Source+Code+Pro' rel='stylesheet' type='text/css'>")
         );
         $("body script").each(function(){
-            $("#output").before($("<pre>").append(
+            $("#output").after($("<pre>").append(
                 $("<code class='javascript'>").text($(this).text())
                 .css({"font-family": "Source Code Pro"})
             ));

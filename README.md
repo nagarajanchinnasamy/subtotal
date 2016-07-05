@@ -3,22 +3,24 @@
 
 # Subtotal.js
 
-Subtotal.js is an open-source JavaScript plugin for [PivotTable.js](https://github.com/nicolaskruchten/pivottable). Its originally written by [Nagarajan Chinnasamy](https://nagarajanchinnasamy.com/) at [Mindtree](http://mindtree.com/).
+[Subtotal.js](http://nagarajanchinnasamy.com/subtotal) is an open-source JavaScript plugin for **PivotTable.js** . Subtotal.js renders rows and columns of a pivot table with subtotals and lets the user to expand and collapse rows. Its originally written by [Nagarajan Chinnasamy](https://github.com/nagarajanchinnasamy/) at [Mindtree](http://mindtree.com/).
 
-[PivotTable.js](https://github.com/nicolaskruchten/pivottable) is a Javascript Pivot Table library with drag'n'drop functionality built on top of jQuery/jQueryUI and originally written in CoffeeScript by [Nicolas Kruchten](http://nicolas.kruchten.com) at [Datacratic](http://datacratic.com). 
+[PivotTable.js](http://nicolas.kruchten.com/pivottable) is a Javascript Pivot Table library with drag'n'drop functionality built on top of jQuery/jQueryUI and originally written in CoffeeScript by [Nicolas Kruchten](http://nicolas.kruchten.com) at [Datacratic](http://datacratic.com). 
 
 
 ## What does it do?
 
-Subtotal.js renders subtotal of rows and columns of a pivot table and lets the users to expand and collpase the rows.
+Subtotal.js renders rows and columns of a pivot table with subtotals and lets the user to expand and collapse rows.
 
 ![image](http://nagarajanchinnasamy.com/subtotal/images/subtotal-renderer-pivotui.png)
+
+## Where can I see the demo?
 
 You can see the live demo at [examples page](http://nagarajanchinnasamy.com/subtotal/examples/index.html).
 
 ## How do I load the code?
 
-Subtotal.js implements the [Universal Module Definition (UMD)](https://github.com/umdjs/umd) pattern and so should be compatible with most approaches to script loading and dependency management: direct script loading i.e. from [CDNJS](https://cdnjs.com/libraries/pivottable) or with [RequireJS](http://requirejs.org/), [Browserify](http://browserify.org/) etc. For the latter options, you can grab it from [NPM](https://www.npmjs.com/package/pivottable) with `npm install pivottable` or via [Bower](http://bower.io/) with `bower install pivottable`. 
+Subtotal.js implements the [Universal Module Definition (UMD)](https://github.com/umdjs/umd) pattern and so should be compatible with most approaches to script loading and dependency management: direct script loading i.e. from [CDNJS](https://cdnjs.com/libraries/subtotal) or with [RequireJS](http://requirejs.org/), [Browserify](http://browserify.org/) etc. For the latter options, you can grab it from [NPM](https://www.npmjs.com/package/subtotal) with `npm install subtotal` or via [Bower](http://bower.io/) with `bower install subtotal`. 
 
 If you are loading the scripts directly (as in the [examples](http://nagarajanchinnasamy.com/subtotal)), you need to:
 
@@ -35,16 +37,85 @@ If you are loading the scripts directly (as in the [examples](http://nagarajanch
 
 ## How do I use the code?
 
+You can use Subtotal.js with either `pivot()` or `pivotUI()` method of PivotTable.js.
 
 ### `pivot()`
 
+1. Set the value of `dataClass` parameter to `$.pivotUtilities.SubtotalPivotData` 
+2. Set the value of `renderer` parameter to `$.pivotUtilities.subtotal_renderers[<*rendererName*>]`
+
+```javascript
+$(function(){
+    var dataClass = $.pivotUtilities.SubtotalPivotData
+    var renderer = $.pivotUtilities.subtotal_renderers["Table With Subtotal"];
+    var derivers = $.pivotUtilities.derivers;
+    
+    $.getJSON("mps.json", function(mps) {
+        $("#output").pivot(mps, {
+            dataClass: dataClass,
+            rows: ["Gender", "Province", "Party"],
+            cols: ["Age Bin"],
+            renderer: renderer,
+            derivedAttributes: {
+                "Age Bin": derivers.bin("Age", 10),
+                "Gender Imbalance": function(mp) {
+                    return mp["Gender"] == "Male" ? 1 : -1;
+                }
+            },
+            rendererOptions: {
+                collapseRowsAt: "Province"
+            }
+        });
+    });
+});
+```
 
 ### `pivotUI()`
 
-## Where is the documentation?
+1. Set the value of `dataClass` parameter to `$.pivotUtilities.SubtotalPivotData` 
+2. Set the value of `renderers` parameter to `$.pivotUtilities.subtotal_renderers`
+3. Set the value of `rendererName` parameter to one of the subtotal renderers name
 
-More extensive documentation can be found in the [wiki](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/wiki):
+```javascript
+$(function(){
+    var dataClass = $.pivotUtilities.SubtotalPivotData;
+    var renderers = $.pivotUtilities.subtotal_renderers;
+    var derivers = $.pivotUtilities.derivers;
+    
+    $.getJSON("mps.json", function(mps) {
+        $("#output").pivotUI(mps, {
+            dataClass: dataClass,
+            rows: ["Gender", "Province", "Party"],
+            cols: ["Age Bin"],
+            renderers: renderers,
+            derivedAttributes: {
+                "Age Bin": derivers.bin("Age", 10),
+                "Gender Imbalance": function(mp) {
+                    return mp["Gender"] == "Male" ? 1 : -1;
+                }
+            },
+            rendererName: "Table With Subtotal",
+            rendererOptions: {
+                collapseRowsAt: "Province"
+            }
+        });
+    });
+});
+```
 
+### rendererName
+
+`rendererName` can take one of the following values:
+
+    "Table With Subtotal"
+    "Table With Subtotal Bar Chart"
+    "Table With Subtotal Heatmap"
+    "Table With Subtotal Row Heatmap"
+    "Table With Subtotal Col Heatmap"
+
+### rendererOptions
+
+`collapseRowsAt` option can be set to one of the row attributes as its values. If this option is set, rows are collapsed at the given row attribute when the pivot table is initially rendered. The default behavior is to render all rows expanded initially (ie., no collapse)
 
 ## How can I build the code and run the tests?
 
@@ -62,7 +133,7 @@ Pull requests are welcome! Here are some [Contribution Guidelines](https://githu
 
 ## I have a question, how can I get in touch?
 
-Please first check the [Frequently Asked Questions](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/wiki/Frequently-Asked-Questions) and if you can't find what you're looking for there, or in the [wiki](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/wiki), then please [create a GitHub Issue](https://github.com/nagarajanchinnasamy/subtotal/issues/new). When creating an issue, please try to provide a replicable test case so that others can more easily help you.
+Please first check the [issues](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/issues) that are already raised and if you can't find what you're looking for there, then please [create a GitHub Issue](https://github.com/nagarajanchinnasamy/subtotal/issues/new). When creating an issue, please try to provide a replicable test case so that others can more easily help you.
 
 ## Copyright & Licence (MIT License)
 
