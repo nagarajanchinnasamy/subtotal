@@ -1,4 +1,4 @@
-[![npm](http://nagarajanchinnasamy.com/subtotal/images/npm.svg)](https://www.npmjs.com/package/pivottable) [![cdnjs](http://nagarajanchinnasamy.com/subtotal/images/cdnjs.svg)](https://cdnjs.com/libraries/pivottable) [![tests](http://nagarajanchinnasamy.com/subtotal/images/tests.svg)](http://nagarajanchinnasamy.com/subtotal/tests/) [![license](http://nagarajanchinnasamy.com/subtotal/images/license.svg)](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/blob/master/LICENSE)
+[![npm](http://nagarajanchinnasamy.com/subtotal/images/npm.svg)](https://www.npmjs.com/package/subtotal) [![cdnjs](http://nagarajanchinnasamy.com/subtotal/images/cdnjs.svg)](https://cdnjs.com/libraries/subtotal) [![tests](http://nagarajanchinnasamy.com/subtotal/images/tests.svg)](http://nagarajanchinnasamy.com/subtotal/tests/) [![license](http://nagarajanchinnasamy.com/subtotal/images/license.svg)](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/blob/master/LICENSE)
 
 
 # Subtotal.js

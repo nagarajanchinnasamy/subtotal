@@ -1,7 +1,7 @@
 {
 	"name": "subtotal",
 	"version": "1.0.0",
-	"description": "Subtotal Renderer with collapse and expand features for PivotTable.js by Nicolas Kruchten",
+	"description": "Subtotal.js is a JavaScript plugin for PivotTable.js. It renders subtotals of rows and columns with the ability to expand and collapse rows.",
 	"main": "dist/subtotal.js",
 	"keywords": [
 		"pivot",
