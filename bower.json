@@ -7,7 +7,9 @@
   ],
   "license": "MIT",
   "ignore": [
-    "examples"
+    "gulpFile.js",
+    "package.json",
+    "subtotal.coffee"
   ],
   "keywords": [
     "pivot",
