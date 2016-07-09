@@ -93,15 +93,15 @@
     })($.pivotUtilities.PivotData);
     $.pivotUtilities.SubtotalPivotData = SubtotalPivotData;
     SubtotalRenderer = function(pivotData, opts) {
-      var allTotal, buildColHeaderHeaders, buildColHeaders, buildColTotals, buildColTotalsHeader, buildGrandTotal, buildRowHeaderHeaders, buildRowHeaders, buildRowTotalsHeader, buildValues, colAttrs, colKeys, colTotals, collapseRow, collapseRowsAt, createCell, defaults, expandRow, main, minus, plus, processKeys, rowAttrs, rowKeys, rowTotals, toggleRow, tree;
+      var allTotal, arrowCollapsed, arrowExpanded, buildColHeaderHeaders, buildColHeaders, buildColTotals, buildColTotalsHeader, buildGrandTotal, buildRowHeaderHeaders, buildRowHeaderHeadersClickEvents, buildRowHeaders, buildRowTotalsHeader, buildValues, colAttrs, colKeys, colTotals, collapseRow, collapseRowsAt, createCell, defaults, expandRow, expandRowsAt, main, processKeys, rowAttrs, rowKeys, rowTotals, toggleRow, toggleRowHeaderHeader, tree;
       defaults = {
         localeStrings: {
           totals: "Totals"
         }
       };
       opts = $.extend(defaults, opts);
-      plus = "\u25B6";
-      minus = "\u25E2";
+      arrowCollapsed = "\u25B6";
+      arrowExpanded = "\u25E2";
       colAttrs = pivotData.colAttrs;
       rowAttrs = pivotData.rowAttrs;
       rowKeys = pivotData.getRowKeys();
@@ -274,12 +274,22 @@
         return colHeaderColsArr.push(colHeader);
       };
       buildRowHeaderHeaders = function(thead, rowHeaderHeaders, rowAttrs, colAttrs) {
-        var k, len, rowAttr, th, tr;
+        var i, rowAttr, textContent, th, tr;
         tr = document.createElement("tr");
-        for (k = 0, len = rowAttrs.length; k < len; k++) {
-          rowAttr = rowAttrs[k];
-          th = createCell("th", "pvtAxisLabel", rowAttr);
+        rowHeaderHeaders.th = [];
+        for (i in rowAttrs) {
+          rowAttr = rowAttrs[i];
+          textContent = rowAttr;
+          if (i < rowAttrs.length - 1) {
+            textContent = " " + arrowExpanded + " " + rowAttr;
+          }
+          th = createCell("th", "pvtAxisLabel", textContent);
+          th.setAttribute("data-rowAttr", rowAttr);
           tr.appendChild(th);
+          rowHeaderHeaders.th.push({
+            "th": th,
+            "clickStatus": "expanded"
+          });
         }
         if (colAttrs.length !== 0) {
           th = createCell("th");
@@ -287,6 +297,22 @@
         }
         thead.appendChild(tr);
         return rowHeaderHeaders.tr = tr;
+      };
+      buildRowHeaderHeadersClickEvents = function(rowHeaderHeaders, rowHeaderRows, rowAttrs) {
+        var i, k, ref, results, rowAttr, th;
+        results = [];
+        for (i = k = 0, ref = rowAttrs.length - 1; 0 <= ref ? k <= ref : k >= ref; i = 0 <= ref ? ++k : --k) {
+          if (!(i < rowAttrs.length - 1)) {
+            continue;
+          }
+          th = rowHeaderHeaders.th[i];
+          rowAttr = rowAttrs[i];
+          results.push(th.th.onclick = function(event) {
+            event = event || window.event;
+            return toggleRowHeaderHeader(rowHeaderHeaders, rowHeaderRows, rowAttrs, event.target.getAttribute("data-rowAttr"));
+          });
+        }
+        return results;
       };
       buildRowTotalsHeader = function(tr, colAttrs, rowAttrs) {
         var rowspan, th;
@@ -304,12 +330,14 @@
         tr = document.createElement("tr");
         th = rowHeader.th;
         th.setAttribute("rowspan", rowHeader.descendants + 1);
+        th.setAttribute("data-rowHeader", th.textContent);
         if (rowHeader.col === rowAttrs.length - 1 && colAttrs.length !== 0) {
           th.setAttribute("colspan", 2);
         }
         th.setAttribute("data-node", rowHeaderRowsArr.length);
         tr.appendChild(th);
         if (rowHeader.children.length !== 0) {
+          th.textContent = " " + arrowExpanded + " " + th.textContent;
           th.onclick = function(event) {
             event = event || window.event;
             return toggleRow(rowHeaderRowsArr, parseInt(event.target.getAttribute("data-node")));
@@ -321,7 +349,6 @@
           tr.appendChild(th);
         }
         rowHeader.clickStatus = "expanded";
-        rowHeader.th.textContent = " " + minus + " " + rowHeader.th.textContent;
         rowHeader.tr = tr;
         rowHeaderRowsArr.push(rowHeader);
         tbody.appendChild(tr);
@@ -420,7 +447,7 @@
           d = rowHeaderRows[r + i];
           if (d.descendants !== 0) {
             str = d.th.textContent;
-            d.th.textContent = str.substr(0, 1) + plus + str.substr(1 + minus.length);
+            d.th.textContent = " " + arrowCollapsed + " " + d.th.getAttribute("data-rowHeader");
           }
           d.clickStatus = "collapsed";
           d.th.setAttribute("rowspan", 1);
@@ -436,14 +463,14 @@
         }
         if (h.descendants !== 0) {
           str = h.th.textContent;
-          h.th.textContent = str.substr(0, 1) + plus + str.substr(1 + plus.length);
+          h.th.textContent = " " + arrowCollapsed + " " + h.th.getAttribute("data-rowHeader");
         }
         h.clickStatus = "collapsed";
         h.th.setAttribute("rowspan", 1);
         return h.tr.style.display = "";
       };
       expandRow = function(rowHeaderRows, r) {
-        var c, d, h, i, k, l, len, p, ref, ref1, results, rowspan, str;
+        var c, d, h, i, k, l, len, p, ref, ref1, results, rowspan;
         if (!rowHeaderRows[r]) {
           return;
         }
@@ -455,8 +482,7 @@
           }
           d = rowHeaderRows[r + i];
           if (d.descendants !== 0) {
-            str = d.th.textContent;
-            d.th.textContent = str.substr(0, 1) + plus + str.substr(1 + minus.length);
+            d.th.textContent = " " + arrowCollapsed + " " + d.th.getAttribute("data-rowHeader");
           }
           d.clickStatus = "collapsed";
           d.th.setAttribute("rowspan", 1);
@@ -475,8 +501,7 @@
         }
         h.th.setAttribute("rowspan", h.children.length + 1);
         if (h.descendants !== 0) {
-          str = h.th.textContent;
-          h.th.textContent = str.substr(0, 1) + minus + str.substr(1 + minus.length);
+          h.th.textContent = " " + arrowExpanded + " " + h.th.getAttribute("data-rowHeader");
         }
         h.clickStatus = "expanded";
         h.tr.style.display = "";
@@ -498,14 +523,26 @@
           return collapseRow(rowHeaderRows, r);
         }
       };
-      collapseRowsAt = function(rowHeaderRows, col) {
-        var h, i, nRows, results;
+      collapseRowsAt = function(rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr) {
+        var h, i, idx, nAttrs, nRows, results, th;
+        idx = rowAttrs.indexOf(rowAttr);
+        if (idx < 0 || idx === rowAttrs.length - 1) {
+          return;
+        }
+        i = idx;
+        nAttrs = rowAttrs.length - 1;
+        while (i < nAttrs) {
+          th = rowHeaderHeaders.th[i];
+          th.th.textContent = " " + arrowCollapsed + " " + rowAttrs[i];
+          th.clickStatus = "collapsed";
+          ++i;
+        }
         i = 0;
         nRows = rowHeaderRows.length;
         results = [];
         while (i < nRows) {
           h = rowHeaderRows[i];
-          if (h.col === col) {
+          if (h.col === idx) {
             collapseRow(rowHeaderRows, h.node);
             results.push(i = i + h.descendants + 1);
           } else {
@@ -514,8 +551,48 @@
         }
         return results;
       };
+      expandRowsAt = function(rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr) {
+        var h, i, idx, j, k, nRows, ref, results, th;
+        idx = rowAttrs.indexOf(rowAttr);
+        if (idx < 0 || idx === rowAttrs.length - 1) {
+          return;
+        }
+        results = [];
+        for (i = k = 0, ref = idx; 0 <= ref ? k <= ref : k >= ref; i = 0 <= ref ? ++k : --k) {
+          th = rowHeaderHeaders.th[i];
+          th.th.textContent = " " + arrowExpanded + " " + rowAttrs[i];
+          th.clickStatus = "expanded";
+          j = 0;
+          nRows = rowHeaderRows.length;
+          results.push((function() {
+            var results1;
+            results1 = [];
+            while (j < nRows) {
+              h = rowHeaderRows[j];
+              if (h.col === i) {
+                expandRow(rowHeaderRows, h.node);
+                results1.push(j = j + h.descendants + 1);
+              } else {
+                results1.push(++j);
+              }
+            }
+            return results1;
+          })());
+        }
+        return results;
+      };
+      toggleRowHeaderHeader = function(rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr) {
+        var idx, th;
+        idx = rowAttrs.indexOf(rowAttr);
+        th = rowHeaderHeaders.th[idx];
+        if (th.clickStatus === "collapsed") {
+          return expandRowsAt(rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr);
+        } else {
+          return collapseRowsAt(rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr);
+        }
+      };
       main = function(rowAttrs, rowKeys, colAttrs, colKeys) {
-        var colHeaderCols, colHeaderRows, colHeaders, h, idx, k, l, len, len1, result, rowHeaderHeaders, rowHeaderRows, rowHeaders, sTime, tbody, thead, tr;
+        var colHeaderCols, colHeaderRows, colHeaders, h, k, l, len, len1, result, rowHeaderHeaders, rowHeaderRows, rowHeaders, sTime, tbody, thead, tr;
         rowHeaders = [];
         colHeaders = [];
         rowHeaderHeaders = {};
@@ -557,6 +634,7 @@
             h = rowHeaders[l];
             buildRowHeaders(tbody, rowHeaderRows, h, rowAttrs, colAttrs);
           }
+          buildRowHeaderHeadersClickEvents(rowHeaderHeaders, rowHeaderRows, rowAttrs);
         }
         buildValues(rowHeaderRows, colHeaderCols);
         tr = buildColTotalsHeader(rowAttrs, colAttrs);
@@ -566,9 +644,8 @@
         buildGrandTotal(tbody, tr);
         result.setAttribute("data-numrows", rowKeys.length);
         result.setAttribute("data-numcols", colKeys.length);
-        idx = rowAttrs.indexOf(opts.collapseRowsAt);
-        if (idx !== -1 && idx !== rowAttrs.length - 1) {
-          collapseRowsAt(rowHeaderRows, idx);
+        if (opts.collapseRowsAt) {
+          collapseRowsAt(rowHeaderHeaders, rowHeaderRows, rowAttrs, opts.collapseRowsAt);
         }
         return result;
       };

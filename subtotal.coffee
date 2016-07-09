@@ -61,8 +61,8 @@ callWithJQuery ($) ->
 
         opts = $.extend defaults, opts
 
-        plus = "\u25B6"
-        minus = "\u25E2"
+        arrowCollapsed = "\u25B6"
+        arrowExpanded = "\u25E2"
         colAttrs = pivotData.colAttrs
         rowAttrs = pivotData.rowAttrs
         rowKeys = pivotData.getRowKeys()
@@ -170,14 +170,28 @@ callWithJQuery ($) ->
 
         buildRowHeaderHeaders = (thead, rowHeaderHeaders, rowAttrs, colAttrs) ->
             tr = document.createElement("tr")
-            for rowAttr in rowAttrs
-                th = createCell("th", "pvtAxisLabel", rowAttr)
-                tr.appendChild th
+            rowHeaderHeaders.th = []
+            for i, rowAttr of rowAttrs
+                textContent = rowAttr
+                if i < rowAttrs.length-1
+                    textContent = " " + arrowExpanded + " " + rowAttr
+                th = createCell("th", "pvtAxisLabel", textContent)
+                th.setAttribute("data-rowAttr", rowAttr)
+                tr.appendChild th                
+                rowHeaderHeaders.th.push({"th": th, "clickStatus": "expanded"})
             if colAttrs.length != 0
                 th = createCell("th")
                 tr.appendChild th
             thead.appendChild tr
             rowHeaderHeaders.tr = tr
+
+        buildRowHeaderHeadersClickEvents = (rowHeaderHeaders, rowHeaderRows, rowAttrs) ->
+            for i in [0..rowAttrs.length-1] when i < rowAttrs.length-1
+                th = rowHeaderHeaders.th[i]
+                rowAttr = rowAttrs[i]
+                th.th.onclick = (event) ->
+                    event = event || window.event
+                    toggleRowHeaderHeader rowHeaderHeaders, rowHeaderRows, rowAttrs, event.target.getAttribute("data-rowAttr")
 
         buildRowTotalsHeader = (tr, colAttrs, rowAttrs) ->
             rowspan = 1
@@ -190,11 +204,13 @@ callWithJQuery ($) ->
             tr = document.createElement("tr")
             th = rowHeader.th
             th.setAttribute("rowspan", rowHeader.descendants+1)
+            th.setAttribute("data-rowHeader", th.textContent) 
             if rowHeader.col == rowAttrs.length-1 and colAttrs.length != 0
                 th.setAttribute("colspan", 2)
             th.setAttribute("data-node", rowHeaderRowsArr.length)
             tr.appendChild(th)
             if rowHeader.children.length != 0
+                th.textContent = " " + arrowExpanded + " " + th.textContent
                 th.onclick = (event) ->
                     event = event || window.event
                     toggleRow(rowHeaderRowsArr, parseInt(event.target.getAttribute("data-node")))
@@ -202,7 +218,6 @@ callWithJQuery ($) ->
                 th = createCell("th", "pvtRowLabel", '', {"colspan": colspan})
                 tr.appendChild(th)
             rowHeader.clickStatus = "expanded"
-            rowHeader.th.textContent = " " + minus + " " + rowHeader.th.textContent
             rowHeader.tr = tr
             rowHeaderRowsArr.push(rowHeader)
             tbody.appendChild(tr)
@@ -257,8 +272,7 @@ callWithJQuery ($) ->
             for i in [1..h.descendants] when h.descendants != 0
                 d = rowHeaderRows[r+i]
                 if d.descendants != 0
-                    str = d.th.textContent
-                    d.th.textContent = str.substr(0, 1) + plus + str.substr(1+minus.length);
+                    d.th.textContent = " " + arrowCollapsed + " " + d.th.getAttribute("data-rowHeader")
                 d.clickStatus = "collapsed"
                 d.th.setAttribute("rowspan", 1)
                 if d.tr.style.display isnt "none"
@@ -269,8 +283,7 @@ callWithJQuery ($) ->
                 p.th.setAttribute("rowspan", parseInt(p.th.getAttribute("rowspan"))-rowspan)
                 p = p.parent
             if h.descendants != 0
-                str = h.th.textContent
-                h.th.textContent = str.substr(0, 1) + plus + str.substr(1+plus.length);
+                h.th.textContent = " " + arrowCollapsed + " " + h.th.getAttribute("data-rowHeader")
             h.clickStatus = "collapsed"
             h.th.setAttribute("rowspan", 1)
             h.tr.style.display = ""
@@ -283,8 +296,7 @@ callWithJQuery ($) ->
             for i in [1..h.descendants] when h.descendants != 0
                 d = rowHeaderRows[r+i]
                 if d.descendants != 0
-                    str = d.th.textContent
-                    d.th.textContent = str.substr(0, 1) + plus + str.substr(1+minus.length);
+                    d.th.textContent = " " + arrowCollapsed + " " + d.th.getAttribute("data-rowHeader")
                 d.clickStatus = "collapsed"
                 d.th.setAttribute("rowspan", 1)
                 if d.tr.style.display isnt "none"
@@ -296,8 +308,7 @@ callWithJQuery ($) ->
                     c.tr.style.display = ""
             h.th.setAttribute("rowspan", h.children.length+1)
             if h.descendants != 0
-                str = h.th.textContent
-                h.th.textContent = str.substr(0, 1) + minus + str.substr(1+minus.length);
+                h.th.textContent = " " + arrowExpanded + " " + h.th.getAttribute("data-rowHeader")
             h.clickStatus = "expanded"
             h.tr.style.display = ""
             p = h.parent
@@ -313,16 +324,53 @@ callWithJQuery ($) ->
             else
                 collapseRow(rowHeaderRows, r)
 
-        collapseRowsAt = (rowHeaderRows, col) ->
+        collapseRowsAt = (rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr) ->
+            idx = rowAttrs.indexOf(rowAttr)
+            if idx < 0 or idx == rowAttrs.length-1
+                return
+            i = idx
+            nAttrs = rowAttrs.length-1
+            while i < nAttrs
+                th = rowHeaderHeaders.th[i]
+                th.th.textContent = " " + arrowCollapsed + " " + rowAttrs[i]
+                th.clickStatus = "collapsed"
+                ++i          
             i = 0
             nRows = rowHeaderRows.length
             while i < nRows
                 h = rowHeaderRows[i]
-                if h.col is col
+                if h.col is idx
                     collapseRow(rowHeaderRows, h.node)
                     i = i + h.descendants + 1
                 else
                     ++i
+
+        expandRowsAt = (rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr) ->
+            idx = rowAttrs.indexOf(rowAttr)
+            if idx < 0 or idx == rowAttrs.length-1
+                return
+
+            for i in [0..idx]
+                th = rowHeaderHeaders.th[i]
+                th.th.textContent = " " + arrowExpanded + " " + rowAttrs[i]
+                th.clickStatus = "expanded"
+                j = 0
+                nRows = rowHeaderRows.length
+                while j < nRows
+                    h = rowHeaderRows[j]
+                    if h.col == i
+                        expandRow(rowHeaderRows, h.node)
+                        j = j + h.descendants + 1
+                    else
+                        ++j
+
+        toggleRowHeaderHeader = (rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr) ->
+            idx = rowAttrs.indexOf(rowAttr)
+            th = rowHeaderHeaders.th[idx]
+            if th.clickStatus is "collapsed"
+                expandRowsAt rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr
+            else
+                collapseRowsAt rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr
 
         main = (rowAttrs, rowKeys, colAttrs, colKeys) ->
             rowHeaders = []
@@ -357,6 +405,7 @@ callWithJQuery ($) ->
             if rowAttrs.length != 0
                 for h in rowHeaders
                     buildRowHeaders tbody, rowHeaderRows, h, rowAttrs, colAttrs
+                buildRowHeaderHeadersClickEvents rowHeaderHeaders, rowHeaderRows, rowAttrs
             buildValues(rowHeaderRows, colHeaderCols)
             tr = buildColTotalsHeader(rowAttrs, colAttrs)
             if colAttrs.length != 0
@@ -364,9 +413,8 @@ callWithJQuery ($) ->
             buildGrandTotal(tbody, tr)
             result.setAttribute("data-numrows", rowKeys.length)
             result.setAttribute("data-numcols", colKeys.length)
-            idx = rowAttrs.indexOf(opts.collapseRowsAt)
-            if idx != -1 and idx != rowAttrs.length-1
-                collapseRowsAt(rowHeaderRows, idx)
+            if opts.collapseRowsAt
+                collapseRowsAt(rowHeaderHeaders, rowHeaderRows, rowAttrs, opts.collapseRowsAt)
             return result
 
         return main(rowAttrs, rowKeys, colAttrs, colKeys)
