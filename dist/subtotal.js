@@ -434,7 +434,7 @@
         return result.appendChild(tr);
       };
       collapseRow = function(rowHeaderRows, r) {
-        var d, h, i, k, p, ref, rowspan, str;
+        var d, h, i, k, p, ref, rowspan;
         if (!rowHeaderRows[r]) {
           return;
         }
@@ -446,7 +446,6 @@
           }
           d = rowHeaderRows[r + i];
           if (d.descendants !== 0) {
-            str = d.th.textContent;
             d.th.textContent = " " + arrowCollapsed + " " + d.th.getAttribute("data-rowHeader");
           }
           d.clickStatus = "collapsed";
@@ -462,7 +461,6 @@
           p = p.parent;
         }
         if (h.descendants !== 0) {
-          str = h.th.textContent;
           h.th.textContent = " " + arrowCollapsed + " " + h.th.getAttribute("data-rowHeader");
         }
         h.clickStatus = "collapsed";

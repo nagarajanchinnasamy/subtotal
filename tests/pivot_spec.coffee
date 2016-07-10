@@ -230,7 +230,7 @@ describe "$.pivot()", ->
 
 describe "$.pivotUtilities", ->
 
-    describe ".PivotData()", ->
+    describe ".SubtotalPivotData()", ->
         sumOverSumOpts = 
             rows: [], cols: []
             aggregator: $.pivotUtilities.aggregators["Sum over Sum"](["a","b"])
@@ -239,7 +239,7 @@ describe "$.pivotUtilities", ->
 
         describe "with array-of-array input", ->
             aoaInput =  [ ["a","b"], [1,2], [3,4] ]
-            pd = new $.pivotUtilities.PivotData aoaInput, sumOverSumOpts
+            pd = new $.pivotUtilities.SubtotalPivotData aoaInput, sumOverSumOpts
 
             it "has the correct grand total value", ->
                 expect pd.getAggregator([],[]).value()
@@ -247,7 +247,7 @@ describe "$.pivotUtilities", ->
 
         describe "with array-of-object input", ->
             aosInput =  [ {a:1, b:2}, {a:3, b:4} ]
-            pd = new $.pivotUtilities.PivotData aosInput, sumOverSumOpts
+            pd = new $.pivotUtilities.SubtotalPivotData aosInput, sumOverSumOpts
 
             it "has the correct grand total value", ->
                 expect pd.getAggregator([],[]).value()
@@ -257,7 +257,7 @@ describe "$.pivotUtilities", ->
             functionInput = (record) ->
                 record a:1, b:2
                 record a:3, b:4
-            pd = new $.pivotUtilities.PivotData functionInput, sumOverSumOpts
+            pd = new $.pivotUtilities.SubtotalPivotData functionInput, sumOverSumOpts
 
             it "has the correct grand total value", ->
                 expect pd.getAggregator([],[]).value()
@@ -276,7 +276,7 @@ describe "$.pivotUtilities", ->
                 </table>
                 """
 
-            pd = new $.pivotUtilities.PivotData tableInput, sumOverSumOpts
+            pd = new $.pivotUtilities.SubtotalPivotData tableInput, sumOverSumOpts
 
             it "has the correct grand total value", ->
                 expect pd.getAggregator([],[]).value()
@@ -284,7 +284,7 @@ describe "$.pivotUtilities", ->
 
 
         describe "with rows/cols, no filters/sorters, count aggregator", ->
-            pd = new $.pivotUtilities.PivotData fixtureData, 
+            pd = new $.pivotUtilities.SubtotalPivotData fixtureData, 
                 rows: ["name", "colour"], 
                 cols: ["trials", "successes"],
                 aggregator: $.pivotUtilities.aggregators["Count"](),
@@ -314,10 +314,34 @@ describe "$.pivotUtilities", ->
                 .toBe 12
 
             it "has a correct spot-checked aggregator", ->
-                agg = pd.getAggregator([ 'Carol', 'yellow' ],[ 102, 14 ])
-                val = agg.value()
-                expect(val).toBe 1 
-                expect(agg.format(val)).toBe "1"
+                spots = [ {spot: [['Carol', 'yellow'], [102, 14]], val: 1}, {spot:  [['Jane', 'red'], [95, 25]], val: 1}, {spot: [['John', 'blue'], [112, 30]], val: 1}, {spot: [['Nick', 'blue'], [103, 12]], val: 1} ]
+                for s in spots
+                    agg = pd.getAggregator(s.spot[0],s.spot[1])
+                    val = agg.value()
+                    expect(val).toBe 1 
+                    expect(agg.format(val)).toBe "" + s.val
+
+            it "has correct spot-checked aggregators for subtotal-rows and subtotal-columns", ->
+                spots = [ {spot: [['Carol'], [102]], val: 1}, {spot:  [['Jane'], [95]], val: 1}, {spot: [['John'], [112]], val: 1}, {spot: [['Nick'], [103]], val: 1} ]
+                for s in spots
+                    agg = pd.getAggregator(s.spot[0], s.spot[1])
+                    val = agg.value()
+                    expect(val).toBe s.val 
+                    expect(agg.format(val)).toBe "" + s.val
+
+            it "has correct row-total for subtotal-rows", ->
+                for hdr in ['Carol', 'Jane', 'John', 'Nick']
+                    agg = pd.getAggregator([hdr],[])
+                    val = agg.value()
+                    expect(val).toBe 1
+                    expect(agg.format(val)).toBe "1"
+
+            it "has correct column-total for subtotal-columns", ->
+                for hdr in [95, 102, 103, 112]
+                    agg = pd.getAggregator([],[hdr])
+                    val = agg.value()
+                    expect(val).toBe 1
+                    expect(agg.format(val)).toBe "1"
 
             it "has a correct grand total aggregator", ->
                 agg = pd.getAggregator([],[])
