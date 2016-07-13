@@ -361,7 +361,7 @@ callWithJQuery ($) ->
                 d.clickStatus = "collapsed"
                 d.th.setAttribute("colspan", 1)
                 if d.th.style.display isnt "none"
-                    --colspan
+                    ++colspan
                     d.th.style.display = "none"
                     $('table.pvtTable tbody tr td:nth-child(' + d.pos + ')').hide();
                     if d.sTh
@@ -370,6 +370,8 @@ callWithJQuery ($) ->
                 if ch.th.style.display is "none"
                     ++colspan
                     ch.th.style.display = ""
+                    if ch.sTh
+                        ch.sTh.style.display = ""
                     $('table.pvtTable tbody tr td:nth-child(' + ch.pos + ')').show();
             h.th.setAttribute("colspan", h.children.length+1)
             if h.descendants != 0

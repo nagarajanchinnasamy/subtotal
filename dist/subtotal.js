@@ -561,7 +561,7 @@
           d.clickStatus = "collapsed";
           d.th.setAttribute("colspan", 1);
           if (d.th.style.display !== "none") {
-            --colspan;
+            ++colspan;
             d.th.style.display = "none";
             $('table.pvtTable tbody tr td:nth-child(' + d.pos + ')').hide();
             if (d.sTh) {
@@ -575,6 +575,9 @@
           if (ch.th.style.display === "none") {
             ++colspan;
             ch.th.style.display = "";
+            if (ch.sTh) {
+              ch.sTh.style.display = "";
+            }
             $('table.pvtTable tbody tr td:nth-child(' + ch.pos + ')').show();
           }
         }
