@@ -161,8 +161,7 @@ callWithJQuery ($) ->
                 colAttr = colAttrs[i]
                 th.onclick = (event) ->
                     event = event || window.event
-                    alert event.target.getAttribute("data-colAttr")
-                    #toggleColHeaderHeader colHeaderHeaders, colHeaderCols, colAttrs, event.target.getAttribute("data-colAttr")
+                    toggleColHeaderHeader colHeaderHeaders, colHeaderCols, colAttrs, event.target.getAttribute("data-colAttr")
 
         buildColHeaders = (colHeaderHeaders, colHeaderCols, colHeader, rowAttrs, colAttrs) ->
             # DF Recurse
@@ -323,9 +322,7 @@ callWithJQuery ($) ->
             colspan = 0
             h = colHeaderCols[c]
             for i in [1..h.descendants] when h.descendants != 0
-                console.log "c: " + c + ", c-i: " + (c-i)
                 d = colHeaderCols[c-i]
-                console.log d.th.textContent + ", " + (c-i)
                 if d.descendants != 0
                     d.th.textContent = " " + arrowCollapsed + " " + d.th.getAttribute("data-colHeader")
                 d.clickStatus = "collapsed"
@@ -353,9 +350,7 @@ callWithJQuery ($) ->
             colspan = 0
             h = colHeaderCols[c]
             for i in [1..h.descendants] when h.descendants != 0
-                console.log "c: " + c + ", c-i: " + (c-i)
                 d = colHeaderCols[c-i]
-                console.log d.th.textContent + ", " + (c-i)
                 if d.descendants != 0
                     d.th.textContent = " " + arrowCollapsed + " " + d.th.getAttribute("data-colHeader")
                 d.clickStatus = "collapsed"
@@ -478,7 +473,6 @@ callWithJQuery ($) ->
             idx = rowAttrs.indexOf(rowAttr)
             if idx < 0 or idx == rowAttrs.length-1
                 return
-
             for i in [0..idx]
                 th = rowHeaderHeaders.th[i]
                 th.th.textContent = " " + arrowExpanded + " " + rowAttrs[i]
@@ -492,6 +486,53 @@ callWithJQuery ($) ->
                         j = j + h.descendants + 1
                     else
                         ++j
+
+        collapseColsAt = (colHeaderHeaders, colHeaderCols, colAttrs, colAttr) ->
+            idx = colAttrs.indexOf(colAttr)
+            if idx < 0 or idx == colAttrs.length-1
+                return
+            i = idx
+            nAttrs = colAttrs.length-1
+            while i < nAttrs
+                th = colHeaderHeaders[i].th
+                th.textContent = " " + arrowCollapsed + " " + colAttrs[i]
+                th.clickStatus = "collapsed"
+                ++i          
+            i = 0
+            nCols = colHeaderCols.length
+            while i < nCols
+                h = colHeaderCols[i]
+                if h.col is idx
+                    console.log "idx: " + idx + ", i: " + i + ", h.col: " + h.col + " textContent: " + colHeaderCols[h.idx].th.textContent
+                    #collapseCol(colHeaderCols, h.idx)
+                    collapseCol(colHeaderCols, i)
+                ++i
+
+        expandColsAt = (colHeaderHeaders, colHeaderCols, colAttrs, colAttr) ->
+            idx = colAttrs.indexOf(colAttr)
+            if idx < 0 or idx == colAttrs.length-1
+                return
+            for i in [0..idx]
+                th = colHeaderHeaders[i].th
+                th.textContent = " " + arrowExpanded + " " + colAttrs[i]
+                th.clickStatus = "expanded"
+                j = 0
+                nCols = colHeaderCols.length
+                while j < nCols
+                    h = colHeaderCols[j]
+                    if h.col == i
+                        #expandCol(colHeaderCols, h.idx)
+                        expandCol(colHeaderCols, j)
+                    ++j
+
+        toggleColHeaderHeader = (colHeaderHeaders, colHeaderCols, colAttrs, colAttr) ->
+            idx = colAttrs.indexOf(colAttr)
+            th = colHeaderHeaders[idx].th
+            if th.clickStatus is "collapsed"
+                expandColsAt colHeaderHeaders, colHeaderCols, colAttrs, colAttr
+            else
+                collapseColsAt colHeaderHeaders, colHeaderCols, colAttrs, colAttr
+
 
         toggleRowHeaderHeader = (rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr) ->
             idx = rowAttrs.indexOf(rowAttr)

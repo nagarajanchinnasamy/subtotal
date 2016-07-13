@@ -93,7 +93,7 @@
     })($.pivotUtilities.PivotData);
     $.pivotUtilities.SubtotalPivotData = SubtotalPivotData;
     SubtotalRenderer = function(pivotData, opts) {
-      var allTotal, arrowCollapsed, arrowExpanded, buildColHeaderHeader, buildColHeaderHeaders, buildColHeaderHeadersClickEvents, buildColHeaders, buildColTotals, buildColTotalsHeader, buildGrandTotal, buildRowHeaderHeaders, buildRowHeaderHeadersClickEvents, buildRowHeaders, buildRowTotalsHeader, buildValues, colAttrs, colKeys, colTotals, collapseCol, collapseRow, collapseRowsAt, createCell, defaults, expandCol, expandRow, expandRowsAt, main, processKeys, rowAttrs, rowKeys, rowTotals, toggleCol, toggleRow, toggleRowHeaderHeader, tree;
+      var allTotal, arrowCollapsed, arrowExpanded, buildColHeaderHeader, buildColHeaderHeaders, buildColHeaderHeadersClickEvents, buildColHeaders, buildColTotals, buildColTotalsHeader, buildGrandTotal, buildRowHeaderHeaders, buildRowHeaderHeadersClickEvents, buildRowHeaders, buildRowTotalsHeader, buildValues, colAttrs, colKeys, colTotals, collapseCol, collapseColsAt, collapseRow, collapseRowsAt, createCell, defaults, expandCol, expandColsAt, expandRow, expandRowsAt, main, processKeys, rowAttrs, rowKeys, rowTotals, toggleCol, toggleColHeaderHeader, toggleRow, toggleRowHeaderHeader, tree;
       defaults = {
         localeStrings: {
           totals: "Totals"
@@ -270,7 +270,7 @@
           colAttr = colAttrs[i];
           results.push(th.onclick = function(event) {
             event = event || window.event;
-            return alert(event.target.getAttribute("data-colAttr"));
+            return toggleColHeaderHeader(colHeaderHeaders, colHeaderCols, colAttrs, event.target.getAttribute("data-colAttr"));
           });
         }
         return results;
@@ -511,9 +511,7 @@
           if (!(h.descendants !== 0)) {
             continue;
           }
-          console.log("c: " + c + ", c-i: " + (c - i));
           d = colHeaderCols[c - i];
-          console.log(d.th.textContent + ", " + (c - i));
           if (d.descendants !== 0) {
             d.th.textContent = " " + arrowCollapsed + " " + d.th.getAttribute("data-colHeader");
           }
@@ -552,9 +550,7 @@
           if (!(h.descendants !== 0)) {
             continue;
           }
-          console.log("c: " + c + ", c-i: " + (c - i));
           d = colHeaderCols[c - i];
-          console.log(d.th.textContent + ", " + (c - i));
           if (d.descendants !== 0) {
             d.th.textContent = " " + arrowCollapsed + " " + d.th.getAttribute("data-colHeader");
           }
@@ -753,6 +749,71 @@
           })());
         }
         return results;
+      };
+      collapseColsAt = function(colHeaderHeaders, colHeaderCols, colAttrs, colAttr) {
+        var h, i, idx, nAttrs, nCols, results, th;
+        idx = colAttrs.indexOf(colAttr);
+        if (idx < 0 || idx === colAttrs.length - 1) {
+          return;
+        }
+        i = idx;
+        nAttrs = colAttrs.length - 1;
+        while (i < nAttrs) {
+          th = colHeaderHeaders[i].th;
+          th.textContent = " " + arrowCollapsed + " " + colAttrs[i];
+          th.clickStatus = "collapsed";
+          ++i;
+        }
+        i = 0;
+        nCols = colHeaderCols.length;
+        results = [];
+        while (i < nCols) {
+          h = colHeaderCols[i];
+          if (h.col === idx) {
+            console.log("idx: " + idx + ", i: " + i + ", h.col: " + h.col + " textContent: " + colHeaderCols[h.idx].th.textContent);
+            collapseCol(colHeaderCols, i);
+          }
+          results.push(++i);
+        }
+        return results;
+      };
+      expandColsAt = function(colHeaderHeaders, colHeaderCols, colAttrs, colAttr) {
+        var h, i, idx, j, k, nCols, ref, results, th;
+        idx = colAttrs.indexOf(colAttr);
+        if (idx < 0 || idx === colAttrs.length - 1) {
+          return;
+        }
+        results = [];
+        for (i = k = 0, ref = idx; 0 <= ref ? k <= ref : k >= ref; i = 0 <= ref ? ++k : --k) {
+          th = colHeaderHeaders[i].th;
+          th.textContent = " " + arrowExpanded + " " + colAttrs[i];
+          th.clickStatus = "expanded";
+          j = 0;
+          nCols = colHeaderCols.length;
+          results.push((function() {
+            var results1;
+            results1 = [];
+            while (j < nCols) {
+              h = colHeaderCols[j];
+              if (h.col === i) {
+                expandCol(colHeaderCols, j);
+              }
+              results1.push(++j);
+            }
+            return results1;
+          })());
+        }
+        return results;
+      };
+      toggleColHeaderHeader = function(colHeaderHeaders, colHeaderCols, colAttrs, colAttr) {
+        var idx, th;
+        idx = colAttrs.indexOf(colAttr);
+        th = colHeaderHeaders[idx].th;
+        if (th.clickStatus === "collapsed") {
+          return expandColsAt(colHeaderHeaders, colHeaderCols, colAttrs, colAttr);
+        } else {
+          return collapseColsAt(colHeaderHeaders, colHeaderCols, colAttrs, colAttr);
+        }
       };
       toggleRowHeaderHeader = function(rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr) {
         var idx, th;
