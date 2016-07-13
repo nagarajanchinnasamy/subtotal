@@ -134,40 +134,93 @@ callWithJQuery ($) ->
                 ++r
             return headers
 
-        buildColHeaderHeaders = (thead, colHeaderRowsArr, rowAttrs) ->
+        buildColHeaderHeader = (thead, colHeaderHeaders, rowAttrs, colAttrs, tr, col) ->
+            colAttr = colAttrs[col]
+            th = createCell("th", "pvtAxisLabel", colAttr)
+            textContent = colAttr
+            if col < colAttrs.length-1
+                textContent = " " + arrowExpanded + " " + colAttr
+            th = createCell("th", "pvtAxisLabel", textContent)
+            th.setAttribute("data-colAttr", colAttr)
+            tr.appendChild th
+            colHeaderHeaders.push({"tr": tr, "th": th, "clickStatus": "expanded"})
+            thead.appendChild tr
+
+        buildColHeaderHeaders = (thead, colHeaderHeaders, rowAttrs, colAttrs) ->
             tr = document.createElement("tr")
             if rowAttrs.length != 0
                 tr.appendChild createCell("th", null, null, {"colspan": rowAttrs.length, "rowspan": colAttrs.length});
-            tr.appendChild createCell("th", "pvtAxisLabel", colAttrs[0])
-            colHeaderRowsArr[0] = tr
-            thead.appendChild(tr)
+            buildColHeaderHeader thead, colHeaderHeaders, rowAttrs, colAttrs, tr, 0
             for c in [1..colAttrs.length] when c < colAttrs.length
                 tr = document.createElement("tr")
-                th = createCell("th", "pvtAxisLabel", colAttrs[c])
-                tr.appendChild th
-                colHeaderRowsArr[c] = tr
-                thead.appendChild(tr)
-                ++c
+                buildColHeaderHeader thead, colHeaderHeaders, rowAttrs, colAttrs, tr, c
 
-        buildColHeaders = (colHeaderRowsArr, colHeaderColsArr, colHeader, parent, colAttrs, rowAttrs) ->
+        buildColHeaderHeadersClickEvents = (colHeaderHeaders, colHeaderCols, colAttrs) ->
+            for i in [0..colAttrs.length-1] when i < colAttrs.length-1
+                th = colHeaderHeaders[i].th
+                colAttr = colAttrs[i]
+                th.onclick = (event) ->
+                    event = event || window.event
+                    alert event.target.getAttribute("data-colAttr")
+                    #toggleColHeaderHeader colHeaderHeaders, colHeaderCols, colAttrs, event.target.getAttribute("data-colAttr")
+
+        buildColHeaders = (colHeaderHeaders, colHeaderCols, colHeader, rowAttrs, colAttrs) ->
             # DF Recurse
             for h in colHeader.children
-                buildColHeaders(colHeaderRowsArr, colHeaderColsArr, h, colHeader, colAttrs, rowAttrs)
+                buildColHeaders(colHeaderHeaders, colHeaderCols, h, rowAttrs, colAttrs)
             # Process
-            tr = colHeaderRowsArr[colHeader.col]
+            tr = colHeaderHeaders[colHeader.col].tr
             th = colHeader.th
+            th.setAttribute("data-colHeader", th.textContent) 
             if colHeader.col == colAttrs.length-1 and rowAttrs.length != 0
                 th.setAttribute("rowspan", 2)
             if colHeader.children.length !=0
-                th.setAttribute("colspan", colHeader.descendants)
+                th.setAttribute("colspan", colHeader.descendants+1)
+            th.setAttribute("data-node", colHeaderCols.length)
             tr.appendChild(th)
             if colHeader.children.length !=0
-                rowspan = colAttrs.length-colHeader.col + if rowAttrs.length != 0 then 1 else 0
+                th.textContent = " " + arrowExpanded + " " + th.textContent
+                th.onclick = (event) ->
+                    event = event || window.event
+                    toggleCol(colHeaderCols, parseInt(event.target.getAttribute("data-node")))
+                rowspan = colAttrs.length-(colHeader.col+1) + if rowAttrs.length != 0 then 1 else 0
                 th = createCell("th", "pvtColLabel", '', {"rowspan": rowspan})
-                tr.appendChild(th)
+                colHeader.children[0].tr.appendChild(th)
+                colHeader.sTh = th
+            colHeader.clickStatus = "expanded"
             colHeader.tr = tr
-            colHeaderColsArr.push(colHeader)
+            colHeader.idx = colHeaderCols.length
+            colHeader.pos = colHeaderCols.length+rowAttrs.length+1
+            colHeaderCols.push(colHeader)
 
+        ###
+        buildColHeaders = (colHeaders, colHeaderCols, colHeader, rowAttrs, colAttrs) ->
+            tr = colHeader.tr
+            colHeader.tr = tr
+            th = colHeader.th
+            th.setAttribute("colspan", colHeader.descendants+1)
+            th.setAttribute("data-colHeader", th.textContent) 
+            if colHeader.col == colAttrs.length-1 and rowAttrs.length != 0
+                th.setAttribute("rowspan", 2)
+            th.setAttribute("data-node", colHeaderCols.length)
+            tr.appendChild(th)
+            if colHeader.children.length != 0
+                th.textContent = " " + arrowExpanded + " " + th.textContent
+                th.onclick = (event) ->
+                    event = event || window.event
+                    toggleCol(colHeaders, colHeaderCols, colHeader)
+            if colHeader.parent
+                lastChild = colHeader.parent.children[colHeader.parent.children.length-1]
+                if colHeader is lastChild
+                    rowspan = colAttrs.length-colHeader.col + if rowAttrs.length != 0 then 1 else 0
+                    th = createCell("th", "pvtColLabel", '', {"rowspan": rowspan})
+                    colHeader.tr.appendChild(th)
+            colHeader.clickStatus = "expanded"
+            colHeaderCols.push(colHeader)
+            for h in colHeader.children
+                buildColHeaders(colHeaderHeaders, colHeaderCols, h, colAttrs, colAttrs)
+        ###
+        
         buildRowHeaderHeaders = (thead, rowHeaderHeaders, rowAttrs, colAttrs) ->
             tr = document.createElement("tr")
             rowHeaderHeaders.th = []
@@ -193,42 +246,42 @@ callWithJQuery ($) ->
                     event = event || window.event
                     toggleRowHeaderHeader rowHeaderHeaders, rowHeaderRows, rowAttrs, event.target.getAttribute("data-rowAttr")
 
-        buildRowTotalsHeader = (tr, colAttrs, rowAttrs) ->
+        buildRowTotalsHeader = (tr, rowAttrs, colAttrs) ->
             rowspan = 1
             if colAttrs.length != 0
                 rowspan = colAttrs.length + (if rowAttrs.length ==0 then 0 else 1)
             th = createCell("th", "pvtTotalLabel", opts.localeStrings.totals, {"rowspan": rowspan})
             tr.appendChild th
 
-        buildRowHeaders = (tbody, rowHeaderRowsArr, rowHeader, rowAttrs, colAttrs) ->
+        buildRowHeaders = (tbody, rowHeaderRows, rowHeader, rowAttrs, colAttrs) ->
             tr = document.createElement("tr")
             th = rowHeader.th
             th.setAttribute("rowspan", rowHeader.descendants+1)
             th.setAttribute("data-rowHeader", th.textContent) 
             if rowHeader.col == rowAttrs.length-1 and colAttrs.length != 0
                 th.setAttribute("colspan", 2)
-            th.setAttribute("data-node", rowHeaderRowsArr.length)
+            th.setAttribute("data-node", rowHeaderRows.length)
             tr.appendChild(th)
             if rowHeader.children.length != 0
                 th.textContent = " " + arrowExpanded + " " + th.textContent
                 th.onclick = (event) ->
                     event = event || window.event
-                    toggleRow(rowHeaderRowsArr, parseInt(event.target.getAttribute("data-node")))
+                    toggleRow(rowHeaderRows, parseInt(event.target.getAttribute("data-node")))
                 colspan = rowAttrs.length-(rowHeader.col+1) + if colAttrs.length != 0 then 1 else 0
                 th = createCell("th", "pvtRowLabel", '', {"colspan": colspan})
                 tr.appendChild(th)
             rowHeader.clickStatus = "expanded"
             rowHeader.tr = tr
-            rowHeaderRowsArr.push(rowHeader)
+            rowHeaderRows.push(rowHeader)
             tbody.appendChild(tr)
             for h in rowHeader.children
-                buildRowHeaders(tbody, rowHeaderRowsArr, h, rowAttrs, colAttrs)
+                buildRowHeaders(tbody, rowHeaderRows, h, rowAttrs, colAttrs)
 
-        buildValues = (rowHeaderRowsArr, colHeaderColsArr) ->
-            for rowHeader in rowHeaderRowsArr
+        buildValues = (rowHeaderRows, colHeaderCols) ->
+            for rowHeader in rowHeaderRows
                 tr = rowHeader.tr
                 flatRowKey = rowHeader.flatKey
-                for colHeader in colHeaderColsArr
+                for colHeader in colHeaderCols
                     flatColKey = colHeader.flatKey
                     aggregator = tree[flatRowKey][flatColKey] ? {value: (-> null), format: -> ""}
                     val = aggregator.value()
@@ -250,8 +303,8 @@ callWithJQuery ($) ->
             tr.appendChild(th)
             return tr
 
-        buildColTotals = (tr, colHeaderColsArr) ->
-            for h in colHeaderColsArr
+        buildColTotals = (tr, colHeaderCols) ->
+            for h in colHeaderCols
                 totalAggregator = colTotals[h.flatKey]
                 val = totalAggregator.value()
                 td = createCell("td", "pvtTotal colTotal", totalAggregator.format(val), {"data-value": val, "data-for": "col"+h.col})
@@ -263,7 +316,73 @@ callWithJQuery ($) ->
             td = createCell("td", "pvtGrandTotal", totalAggregator.format(val), {"data-value": val})
             tr.appendChild td
             result.appendChild tr
-       
+
+        collapseCol = (colHeaderCols, c) ->
+            if not colHeaderCols[c]
+                return
+            colspan = 0
+            h = colHeaderCols[c]
+            for i in [1..h.descendants] when h.descendants != 0
+                console.log "c: " + c + ", c-i: " + (c-i)
+                d = colHeaderCols[c-i]
+                console.log d.th.textContent + ", " + (c-i)
+                if d.descendants != 0
+                    d.th.textContent = " " + arrowCollapsed + " " + d.th.getAttribute("data-colHeader")
+                d.clickStatus = "collapsed"
+                d.th.setAttribute("colspan", 1)
+                if d.th.style.display isnt "none"
+                    ++colspan
+                    d.th.style.display = "none"
+                    $('table.pvtTable tbody tr td:nth-child(' +  d.pos + ')').hide();
+                    if d.sTh
+                        d.sTh.style.display = "none"
+            p = h.parent
+            while p isnt null
+                p.th.setAttribute("colspan", parseInt(p.th.getAttribute("colspan"))-colspan)
+                p = p.parent
+            if h.descendants != 0
+                h.th.textContent = " " + arrowCollapsed + " " + h.th.getAttribute("data-colHeader")
+            h.clickStatus = "collapsed"
+            h.th.setAttribute("colspan", 1)
+            h.tr.style.display = ""
+
+        expandCol = (colHeaderCols, c) ->
+            if not colHeaderCols[c]
+                return
+            collapseCol
+            colspan = 0
+            h = colHeaderCols[c]
+            for i in [1..h.descendants] when h.descendants != 0
+                console.log "c: " + c + ", c-i: " + (c-i)
+                d = colHeaderCols[c-i]
+                console.log d.th.textContent + ", " + (c-i)
+                if d.descendants != 0
+                    d.th.textContent = " " + arrowCollapsed + " " + d.th.getAttribute("data-colHeader")
+                d.clickStatus = "collapsed"
+                d.th.setAttribute("colspan", 1)
+                if d.th.style.display isnt "none"
+                    --colspan
+                    d.th.style.display = "none"
+                    $('table.pvtTable tbody tr td:nth-child(' + d.pos + ')').hide();
+                    if d.sTh
+                        d.sTh.style.display = "none"
+            for ch in h.children
+                if ch.th.style.display is "none"
+                    ++colspan
+                    ch.th.style.display = ""
+                    $('table.pvtTable tbody tr td:nth-child(' + ch.pos + ')').show();
+            h.th.setAttribute("colspan", h.children.length+1)
+            if h.descendants != 0
+                h.th.textContent = " " + arrowExpanded + " " + h.th.getAttribute("data-colHeader")
+            h.clickStatus = "expanded"
+            h.th.style.display = ""
+            if h.sTh
+                h.sTh.style.display = ""
+            p = h.parent
+            while p isnt null
+                p.th.setAttribute("colspan", (colspan + parseInt(p.th.getAttribute("colspan"))))
+                p = p.parent
+
         collapseRow = (rowHeaderRows, r) ->
             if not rowHeaderRows[r]
                 return
@@ -287,7 +406,7 @@ callWithJQuery ($) ->
             h.clickStatus = "collapsed"
             h.th.setAttribute("rowspan", 1)
             h.tr.style.display = ""
-            
+
         expandRow = (rowHeaderRows, r) ->
             if not rowHeaderRows[r]
                 return
@@ -315,6 +434,14 @@ callWithJQuery ($) ->
             while p isnt null
                 p.th.setAttribute("rowspan", (rowspan + parseInt(p.th.getAttribute("rowspan"))))
                 p = p.parent
+
+        toggleCol = (colHeaderCols, c) ->
+            if not colHeaderCols[c]
+                return
+            if colHeaderCols[c].clickStatus is "collapsed"
+                expandCol(colHeaderCols, c)
+            else
+                collapseCol(colHeaderCols, c)
 
         toggleRow = (rowHeaderRows, r) ->
             if not rowHeaderRows[r]
@@ -377,7 +504,7 @@ callWithJQuery ($) ->
             colHeaders = []
             rowHeaderHeaders = {}
             rowHeaderRows = []
-            colHeaderRows = []
+            colHeaderHeaders = []
             colHeaderCols = []
 
             if rowAttrs.length != 0
@@ -390,16 +517,18 @@ callWithJQuery ($) ->
             thead = document.createElement("thead")
             result.appendChild thead
             if colAttrs.length != 0
-                buildColHeaderHeaders(thead, colHeaderRows, rowAttrs)
+                buildColHeaderHeaders(thead, colHeaderHeaders, rowAttrs, colAttrs)
                 for h in colHeaders
-                    buildColHeaders(colHeaderRows, colHeaderCols, h, null, colAttrs, rowAttrs)
+                    #buildColHeaders colHeaders, colHeaderCols, colHeader, rowAttrs, colAttrs
+                   buildColHeaders colHeaderHeaders, colHeaderCols, h, rowAttrs, colAttrs
+                buildColHeaderHeadersClickEvents colHeaderHeaders, colHeaderCols, colAttrs
             if rowAttrs.length != 0
                 buildRowHeaderHeaders(thead, rowHeaderHeaders, rowAttrs, colAttrs)
                 if colAttrs.length == 0
-                    buildRowTotalsHeader(rowHeaderHeaders.tr, colAttrs, rowAttrs)
+                    buildRowTotalsHeader(rowHeaderHeaders.tr, rowAttrs, colAttrs)
             if colAttrs.length != 0
                 sTime = Date.now()
-                buildRowTotalsHeader(colHeaderRows[0], colAttrs, rowAttrs)
+                buildRowTotalsHeader(colHeaderHeaders[0].tr, rowAttrs, colAttrs)
             tbody = document.createElement("tbody")
             result.appendChild tbody
             if rowAttrs.length != 0
