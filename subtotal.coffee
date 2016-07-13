@@ -189,7 +189,7 @@ callWithJQuery ($) ->
             colHeader.clickStatus = "expanded"
             colHeader.tr = tr
             colHeader.idx = colHeaderCols.length
-            colHeader.pos = colHeaderCols.length+rowAttrs.length+1
+            colHeader.pos = (colHeaderCols.length + 1) + if rowAttrs.length != 0 then rowAttrs.length else 1
             colHeaderCols.push(colHeader)
 
         ###
@@ -330,6 +330,7 @@ callWithJQuery ($) ->
                 if d.th.style.display isnt "none"
                     ++colspan
                     d.th.style.display = "none"
+                    console.log d.pos
                     $('table.pvtTable tbody tr td:nth-child(' +  d.pos + ')').hide();
                     if d.sTh
                         d.sTh.style.display = "none"
@@ -503,8 +504,6 @@ callWithJQuery ($) ->
             while i < nCols
                 h = colHeaderCols[i]
                 if h.col is idx
-                    console.log "idx: " + idx + ", i: " + i + ", h.col: " + h.col + " textContent: " + colHeaderCols[h.idx].th.textContent
-                    #collapseCol(colHeaderCols, h.idx)
                     collapseCol(colHeaderCols, i)
                 ++i
 
