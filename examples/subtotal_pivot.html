@@ -35,8 +35,8 @@
         $.getJSON("mps.json", function(mps) {
             $("#output").pivot(mps, {
                 dataClass: dataClass,
-                rows: ["Gender", "Province", "Party"],
-                cols: ["Age Bin"],
+                rows: ["Gender", "Province"],
+                cols: ["Party", "Age Bin", "Age"],
                 renderer: renderer,
                 derivedAttributes: {
                     "Age Bin": derivers.bin("Age", 10),
@@ -45,7 +45,8 @@
                     }
                 },
                 rendererOptions: {
-                    collapseRowsAt: "Province"
+                    collapseRowsAt: "Gender",
+                    collapseColsAt: "Party"
                 }
             });
         });

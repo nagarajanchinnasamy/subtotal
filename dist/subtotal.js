@@ -276,7 +276,7 @@
         return results;
       };
       buildColHeaders = function(colHeaderHeaders, colHeaderCols, colHeader, rowAttrs, colAttrs) {
-        var h, k, len, ref, rowspan, th, tr;
+        var h, k, len, ref, rowspan, style, th, tr;
         ref = colHeader.children;
         for (k = 0, len = ref.length; k < len; k++) {
           h = ref[k];
@@ -300,7 +300,8 @@
             return toggleCol(colHeaderCols, parseInt(event.target.getAttribute("data-node")));
           };
           rowspan = colAttrs.length - (colHeader.col + 1) + (rowAttrs.length !== 0 ? 1 : 0);
-          th = createCell("th", "pvtColLabel", '', {
+          style = "pvtColLabel col" + colHeader.row;
+          th = createCell("th", style, '', {
             "rowspan": rowspan
           });
           colHeader.children[0].tr.appendChild(th);
@@ -308,38 +309,8 @@
         }
         colHeader.clickStatus = "expanded";
         colHeader.tr = tr;
-        colHeader.idx = colHeaderCols.length;
-        colHeader.pos = (colHeaderCols.length + 1) + (rowAttrs.length !== 0 ? rowAttrs.length : 1);
         return colHeaderCols.push(colHeader);
       };
-
-      /*
-      buildColHeaders = (colHeaders, colHeaderCols, colHeader, rowAttrs, colAttrs) ->
-          tr = colHeader.tr
-          colHeader.tr = tr
-          th = colHeader.th
-          th.setAttribute("colspan", colHeader.descendants+1)
-          th.setAttribute("data-colHeader", th.textContent) 
-          if colHeader.col == colAttrs.length-1 and rowAttrs.length != 0
-              th.setAttribute("rowspan", 2)
-          th.setAttribute("data-node", colHeaderCols.length)
-          tr.appendChild(th)
-          if colHeader.children.length != 0
-              th.textContent = " " + arrowExpanded + " " + th.textContent
-              th.onclick = (event) ->
-                  event = event || window.event
-                  toggleCol(colHeaders, colHeaderCols, colHeader)
-          if colHeader.parent
-              lastChild = colHeader.parent.children[colHeader.parent.children.length-1]
-              if colHeader is lastChild
-                  rowspan = colAttrs.length-colHeader.col + if rowAttrs.length != 0 then 1 else 0
-                  th = createCell("th", "pvtColLabel", '', {"rowspan": rowspan})
-                  colHeader.tr.appendChild(th)
-          colHeader.clickStatus = "expanded"
-          colHeaderCols.push(colHeader)
-          for h in colHeader.children
-              buildColHeaders(colHeaderHeaders, colHeaderCols, h, colAttrs, colAttrs)
-       */
       buildRowHeaderHeaders = function(thead, rowHeaderHeaders, rowAttrs, colAttrs) {
         var i, rowAttr, textContent, th, tr;
         tr = document.createElement("tr");
@@ -447,8 +418,9 @@
             };
             val = aggregator.value();
             style = "pvtVal";
-            style = colHeader.children.length !== 0 ? style + " pvtSubtotal" : style;
-            style = style + " row" + rowHeader.row + " col" + colHeader.col;
+            style = colHeader.children.length !== 0 ? style + " pvtColSubtotal" : style;
+            style = rowHeader.children.length !== 0 ? style + " pvtRowSubtotal" : style;
+            style = style + " row" + rowHeader.row + " col" + colHeader.row + " rowcol" + rowHeader.col + " colcol" + colHeader.col;
             td = createCell("td", style, aggregator.format(val), {
               "data-value": val
             });
@@ -476,13 +448,16 @@
         return tr;
       };
       buildColTotals = function(tr, colHeaderCols) {
-        var h, k, len, results, td, totalAggregator, val;
+        var h, k, len, results, style, td, totalAggregator, val;
         results = [];
         for (k = 0, len = colHeaderCols.length; k < len; k++) {
           h = colHeaderCols[k];
           totalAggregator = colTotals[h.flatKey];
           val = totalAggregator.value();
-          td = createCell("td", "pvtTotal colTotal", totalAggregator.format(val), {
+          style = "pvtVal pvtTotal colTotal";
+          style = h.children.length ? style + " pvtColSubtotal" : style;
+          style = style + " col" + h.row + " colcol" + h.col;
+          td = createCell("td", style, totalAggregator.format(val), {
             "data-value": val,
             "data-for": "col" + h.col
           });
@@ -520,8 +495,11 @@
           if (d.th.style.display !== "none") {
             ++colspan;
             d.th.style.display = "none";
-            console.log(d.pos);
-            $('table.pvtTable tbody tr td:nth-child(' + d.pos + ')').hide();
+            if (d.children.length) {
+              $('table.pvtTable tbody tr td.pvtColSubtotal.col' + d.row + '.colcol' + d.col).hide();
+            } else {
+              $('table.pvtTable tbody tr td.pvtVal.col' + d.row).not('.pvtColSubtotal').hide();
+            }
             if (d.sTh) {
               d.sTh.style.display = "none";
             }
@@ -537,7 +515,7 @@
         }
         h.clickStatus = "collapsed";
         h.th.setAttribute("colspan", 1);
-        return h.tr.style.display = "";
+        return h.th.style.display = "";
       };
       expandCol = function(colHeaderCols, c) {
         var ch, colspan, d, h, i, k, l, len, p, ref, ref1, results;
@@ -560,7 +538,11 @@
           if (d.th.style.display !== "none") {
             ++colspan;
             d.th.style.display = "none";
-            $('table.pvtTable tbody tr td:nth-child(' + d.pos + ')').hide();
+            if (d.children.length) {
+              $('table.pvtTable tbody tr td.pvtColSubtotal.col' + d.row + '.colcol' + d.col).hide();
+            } else {
+              $('table.pvtTable tbody tr td.pvtVal.col' + d.row).not('.pvtColSubtotal').hide();
+            }
             if (d.sTh) {
               d.sTh.style.display = "none";
             }
@@ -572,10 +554,14 @@
           if (ch.th.style.display === "none") {
             ++colspan;
             ch.th.style.display = "";
+            if (ch.children.length) {
+              $('table.pvtTable tbody tr td.pvtColSubtotal.col' + ch.row + '.colcol' + ch.col).show();
+            } else {
+              $('table.pvtTable tbody tr td.pvtVal.col' + ch.row).not('.pvtColSubtotal').show();
+            }
             if (ch.sTh) {
               ch.sTh.style.display = "";
             }
-            $('table.pvtTable tbody tr td:nth-child(' + ch.pos + ')').show();
           }
         }
         h.th.setAttribute("colspan", h.children.length + 1);
@@ -881,6 +867,11 @@
         result.setAttribute("data-numcols", colKeys.length);
         if (opts.collapseRowsAt) {
           collapseRowsAt(rowHeaderHeaders, rowHeaderRows, rowAttrs, opts.collapseRowsAt);
+        }
+        if (opts.collapseColsAt) {
+          setTimeout((function() {
+            return collapseColsAt(colHeaderHeaders, colHeaderCols, colAttrs, opts.collapseColsAt);
+          }), 0);
         }
         return result;
       };

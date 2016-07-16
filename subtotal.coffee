@@ -183,42 +183,13 @@ callWithJQuery ($) ->
                     event = event || window.event
                     toggleCol(colHeaderCols, parseInt(event.target.getAttribute("data-node")))
                 rowspan = colAttrs.length-(colHeader.col+1) + if rowAttrs.length != 0 then 1 else 0
-                th = createCell("th", "pvtColLabel", '', {"rowspan": rowspan})
+                style = "pvtColLabel col" + colHeader.row
+                th = createCell("th", style, '', {"rowspan": rowspan})
                 colHeader.children[0].tr.appendChild(th)
                 colHeader.sTh = th
             colHeader.clickStatus = "expanded"
             colHeader.tr = tr
-            colHeader.idx = colHeaderCols.length
-            colHeader.pos = (colHeaderCols.length + 1) + if rowAttrs.length != 0 then rowAttrs.length else 1
             colHeaderCols.push(colHeader)
-
-        ###
-        buildColHeaders = (colHeaders, colHeaderCols, colHeader, rowAttrs, colAttrs) ->
-            tr = colHeader.tr
-            colHeader.tr = tr
-            th = colHeader.th
-            th.setAttribute("colspan", colHeader.descendants+1)
-            th.setAttribute("data-colHeader", th.textContent) 
-            if colHeader.col == colAttrs.length-1 and rowAttrs.length != 0
-                th.setAttribute("rowspan", 2)
-            th.setAttribute("data-node", colHeaderCols.length)
-            tr.appendChild(th)
-            if colHeader.children.length != 0
-                th.textContent = " " + arrowExpanded + " " + th.textContent
-                th.onclick = (event) ->
-                    event = event || window.event
-                    toggleCol(colHeaders, colHeaderCols, colHeader)
-            if colHeader.parent
-                lastChild = colHeader.parent.children[colHeader.parent.children.length-1]
-                if colHeader is lastChild
-                    rowspan = colAttrs.length-colHeader.col + if rowAttrs.length != 0 then 1 else 0
-                    th = createCell("th", "pvtColLabel", '', {"rowspan": rowspan})
-                    colHeader.tr.appendChild(th)
-            colHeader.clickStatus = "expanded"
-            colHeaderCols.push(colHeader)
-            for h in colHeader.children
-                buildColHeaders(colHeaderHeaders, colHeaderCols, h, colAttrs, colAttrs)
-        ###
         
         buildRowHeaderHeaders = (thead, rowHeaderHeaders, rowAttrs, colAttrs) ->
             tr = document.createElement("tr")
@@ -285,8 +256,9 @@ callWithJQuery ($) ->
                     aggregator = tree[flatRowKey][flatColKey] ? {value: (-> null), format: -> ""}
                     val = aggregator.value()
                     style = "pvtVal"
-                    style = if (colHeader.children.length != 0) then  style +  " pvtSubtotal" else style
-                    style = style + " row"+rowHeader.row+" col"+colHeader.col
+                    style = if (colHeader.children.length != 0) then  style +  " pvtColSubtotal" else style
+                    style = if (rowHeader.children.length != 0) then  style +  " pvtRowSubtotal" else style
+                    style = style + " row"+rowHeader.row+" col"+colHeader.row+" rowcol"+rowHeader.col+" colcol"+colHeader.col
                     td = createCell("td", style, aggregator.format(val), {"data-value": val})
                     tr.appendChild td
                 # buildRowTotal
@@ -306,7 +278,10 @@ callWithJQuery ($) ->
             for h in colHeaderCols
                 totalAggregator = colTotals[h.flatKey]
                 val = totalAggregator.value()
-                td = createCell("td", "pvtTotal colTotal", totalAggregator.format(val), {"data-value": val, "data-for": "col"+h.col})
+                style = "pvtVal pvtTotal colTotal"
+                style = if h.children.length then style + " pvtColSubtotal" else style
+                style = style + " col"+h.row+" colcol"+h.col
+                td = createCell("td", style, totalAggregator.format(val), {"data-value": val, "data-for": "col"+h.col})
                 tr.appendChild td
 
         buildGrandTotal = (result, tr) ->
@@ -330,8 +305,10 @@ callWithJQuery ($) ->
                 if d.th.style.display isnt "none"
                     ++colspan
                     d.th.style.display = "none"
-                    console.log d.pos
-                    $('table.pvtTable tbody tr td:nth-child(' +  d.pos + ')').hide();
+                    if d.children.length
+                        $('table.pvtTable tbody tr td.pvtColSubtotal.col' + d.row + '.colcol' + d.col).hide()
+                    else
+                        $('table.pvtTable tbody tr td.pvtVal.col' + d.row).not('.pvtColSubtotal').hide()
                     if d.sTh
                         d.sTh.style.display = "none"
             p = h.parent
@@ -342,7 +319,7 @@ callWithJQuery ($) ->
                 h.th.textContent = " " + arrowCollapsed + " " + h.th.getAttribute("data-colHeader")
             h.clickStatus = "collapsed"
             h.th.setAttribute("colspan", 1)
-            h.tr.style.display = ""
+            h.th.style.display = ""
 
         expandCol = (colHeaderCols, c) ->
             if not colHeaderCols[c]
@@ -359,16 +336,22 @@ callWithJQuery ($) ->
                 if d.th.style.display isnt "none"
                     ++colspan
                     d.th.style.display = "none"
-                    $('table.pvtTable tbody tr td:nth-child(' + d.pos + ')').hide();
+                    if d.children.length
+                        $('table.pvtTable tbody tr td.pvtColSubtotal.col' + d.row + '.colcol' + d.col).hide()
+                    else
+                        $('table.pvtTable tbody tr td.pvtVal.col' + d.row).not('.pvtColSubtotal').hide()
                     if d.sTh
                         d.sTh.style.display = "none"
             for ch in h.children
                 if ch.th.style.display is "none"
                     ++colspan
                     ch.th.style.display = ""
+                    if ch.children.length
+                        $('table.pvtTable tbody tr td.pvtColSubtotal.col' + ch.row + '.colcol' + ch.col).show()
+                    else
+                        $('table.pvtTable tbody tr td.pvtVal.col' + ch.row).not('.pvtColSubtotal').show()
                     if ch.sTh
                         ch.sTh.style.display = ""
-                    $('table.pvtTable tbody tr td:nth-child(' + ch.pos + ')').show();
             h.th.setAttribute("colspan", h.children.length+1)
             if h.descendants != 0
                 h.th.textContent = " " + arrowExpanded + " " + h.th.getAttribute("data-colHeader")
@@ -520,7 +503,6 @@ callWithJQuery ($) ->
                 while j < nCols
                     h = colHeaderCols[j]
                     if h.col == i
-                        #expandCol(colHeaderCols, h.idx)
                         expandCol(colHeaderCols, j)
                     ++j
 
@@ -561,7 +543,6 @@ callWithJQuery ($) ->
             if colAttrs.length != 0
                 buildColHeaderHeaders(thead, colHeaderHeaders, rowAttrs, colAttrs)
                 for h in colHeaders
-                    #buildColHeaders colHeaders, colHeaderCols, colHeader, rowAttrs, colAttrs
                    buildColHeaders colHeaderHeaders, colHeaderCols, h, rowAttrs, colAttrs
                 buildColHeaderHeadersClickEvents colHeaderHeaders, colHeaderCols, colAttrs
             if rowAttrs.length != 0
@@ -586,6 +567,8 @@ callWithJQuery ($) ->
             result.setAttribute("data-numcols", colKeys.length)
             if opts.collapseRowsAt
                 collapseRowsAt(rowHeaderHeaders, rowHeaderRows, rowAttrs, opts.collapseRowsAt)
+            if opts.collapseColsAt
+                setTimeout (-> collapseColsAt colHeaderHeaders, colHeaderCols, colAttrs, opts.collapseColsAt), 0
             return result
 
         return main(rowAttrs, rowKeys, colAttrs, colKeys)

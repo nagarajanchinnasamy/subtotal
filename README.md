@@ -3,7 +3,7 @@
 
 # Subtotal.js
 
-[Subtotal.js](http://nagarajanchinnasamy.com/subtotal) is an open-source JavaScript plugin for **PivotTable.js** . Subtotal.js renders rows and columns of a pivot table with subtotals and lets the user to expand and collapse rows. Its originally written by [Nagarajan Chinnasamy](https://github.com/nagarajanchinnasamy/) at [Mindtree](http://mindtree.com/).
+[Subtotal.js](http://nagarajanchinnasamy.com/subtotal) is an open-source JavaScript plugin for **PivotTable.js** . Subtotal.js renders rows and columns of a pivot table with subtotals and lets the user to expand or collapse rows and columns. Its originally written by [Nagarajan Chinnasamy](https://github.com/nagarajanchinnasamy/) at [Mindtree](http://mindtree.com/).
 
 
 It is available under an MIT license from [NPM](https://www.npmjs.com/package/subtotal) and [Bower](http://bower.io/) under the name `subtotal`.
@@ -14,7 +14,7 @@ It is available under an MIT license from [NPM](https://www.npmjs.com/package/su
 
 ## What does it do?
 
-Subtotal.js renders rows and columns of a pivot table with subtotals and lets the user to expand and collapse rows.
+Subtotal.js renders rows and columns of a pivot table with subtotals and lets the user to expand or collapse rows and columns.
 
 ![image](http://nagarajanchinnasamy.com/subtotal/images/subtotal-renderer-pivotui.png)
 
@@ -47,6 +47,7 @@ You can use Subtotal.js with either `pivot()` or `pivotUI()` method of PivotTabl
 
 1. Set the value of `dataClass` parameter to `$.pivotUtilities.SubtotalPivotData` 
 2. Set the value of `renderer` parameter to `$.pivotUtilities.subtotal_renderers[<*rendererName*>]`
+3. Optionally, set `rendererOptions`
 
 ```javascript
 $(function(){
@@ -57,8 +58,8 @@ $(function(){
     $.getJSON("mps.json", function(mps) {
         $("#output").pivot(mps, {
             dataClass: dataClass,
-            rows: ["Gender", "Province", "Party"],
-            cols: ["Age Bin"],
+            rows: ["Gender", "Province"],
+            cols: ["Party", "Age Bin", "Age"],
             renderer: renderer,
             derivedAttributes: {
                 "Age Bin": derivers.bin("Age", 10),
@@ -67,7 +68,8 @@ $(function(){
                 }
             },
             rendererOptions: {
-                collapseRowsAt: "Province"
+                collapseRowsAt: "Gender",
+                collapseColsAt: "Party"
             }
         });
     });
@@ -79,6 +81,7 @@ $(function(){
 1. Set the value of `dataClass` parameter to `$.pivotUtilities.SubtotalPivotData` 
 2. Set the value of `renderers` parameter to `$.pivotUtilities.subtotal_renderers`
 3. Set the value of `rendererName` parameter to one of the subtotal renderers name
+4. Optionally, set `rendererOptions`
 
 ```javascript
 $(function(){
@@ -89,8 +92,8 @@ $(function(){
     $.getJSON("mps.json", function(mps) {
         $("#output").pivotUI(mps, {
             dataClass: dataClass,
-            rows: ["Gender", "Province", "Party"],
-            cols: ["Age Bin"],
+            rows: ["Gender", "Province"],
+            cols: ["Party", "Age Bin", "Age"],
             renderers: renderers,
             derivedAttributes: {
                 "Age Bin": derivers.bin("Age", 10),
@@ -100,7 +103,8 @@ $(function(){
             },
             rendererName: "Table With Subtotal",
             rendererOptions: {
-                collapseRowsAt: "Province"
+                collapseRowsAt: "Gender",
+                collapseColsAt: "Party"
             }
         });
     });
@@ -119,7 +123,9 @@ $(function(){
 
 ### Parameter: rendererOptions
 
-`collapseRowsAt` option can be set to one of the row attributes as its values. If this option is set, rows are collapsed at the given row attribute when the pivot table is initially rendered. The default behavior is to render all rows expanded initially (ie., no collapse)
+`collapseRowsAt` option can be set to one of the values of `rows` array. If this option is set, rows are collapsed at the given row attribute when the pivot table is initially rendered. The default behavior is to render all rows expanded initially (ie., no collapse)
+
+`collapseColsAt` option can be set to one of the values of `cols` array. If this option is set, columns are collapsed at the given column attribute when the pivot table is initially rendered. The default behavior is to render all columns expanded initially (ie., no collapse)
 
 ## How can I build the code and run the tests?
 

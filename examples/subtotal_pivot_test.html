@@ -3,12 +3,11 @@
     <head>
         <title>Pivot Demo</title>
         <!-- external libs from cdnjs -->
-        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.1.0/pivot.min.css">
-
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.1.0/pivot.min.js"></script>
 
+        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.1.0/pivot.min.css">
 
         <!-- PivotTable.js libs from ../dist -->
         <script type="text/javascript" src="../dist/subtotal.js"></script>
@@ -28,31 +27,26 @@
     // This example loads the "Canadian Parliament 2012" dataset 
     // and adds derived attributes: "Age Bin" and "Gender Imbalance".
 
-    $(function() {
+    $(function(){
         var dataClass = $.pivotUtilities.SubtotalPivotData;
         var derivers = $.pivotUtilities.derivers;
-        var renderers = $.pivotUtilities.subtotal_renderers;
-        
-        $.getJSON("mps.json", function(mps) {
-            $("#output").pivotUI(mps, {
-                dataClass: dataClass,
-                rows: ["Gender", "Province"],
-                cols: ["Party", "Age Bin", "Age"],
-                renderers: renderers,
-                derivedAttributes: {
-                    "Age Bin": derivers.bin("Age", 10),
-                    "Gender Imbalance": function(mp) {
-                        return mp["Gender"] == "Male" ? 1 : -1;
-                    }
-                },
-                rendererName: "Table With Subtotal",
-                rendererOptions: {
-                    collapseRowsAt: "Gender",
-                    collapseColsAt: "Party"
-                }
-            });
+        var aggregator = $.pivotUtilities.aggregators["Count"]();
+        var renderer = $.pivotUtilities.subtotal_renderers["Table With Subtotal"];
+        var fixtureData = [
+            ["name",    "gender",   "colour",    "birthday",     "trials",   "successes"],
+            ["Nick",    "male",     "blue",      "1982-11-07",   103,        12],
+            ["Jane",    "female",   "red",       "1982-11-08",   95,         25],
+            ["John",    "male",     "blue",      "1982-12-08",   112,        30],
+            ["Carol",   "female",   "yellow",    "1983-12-08",   102,        14]
+        ];
+        $("#output").pivot(fixtureData, {
+            dataClass: dataClass,
+            rows: ["name", "colour"], 
+            cols: ["trials", "successes"],
+            aggregator: aggregator,
+            renderer: renderer,
         });
-    });
+     });
     </script>
     <p><a href="index.html">&laquo; back to examples</a></p>
     <p></p>
@@ -61,5 +55,5 @@
     <div id="output" style="margin: 30px;"></div>
     <p></p>
     <p><a href="index.html">&laquo; back to examples</a></p>
-     </body>
+    </body>
 </html>
