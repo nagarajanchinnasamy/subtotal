@@ -294,8 +294,10 @@ callWithJQuery ($) ->
         collapseCol = (colHeaderCols, c) ->
             if not colHeaderCols[c]
                 return
-            colspan = 0
             h = colHeaderCols[c]
+            if h.clickStatus is "collapsed"
+                return
+            colspan = 0
             for i in [1..h.descendants] when h.descendants != 0
                 d = colHeaderCols[c-i]
                 if d.descendants != 0
@@ -324,9 +326,10 @@ callWithJQuery ($) ->
         expandCol = (colHeaderCols, c) ->
             if not colHeaderCols[c]
                 return
-            collapseCol
-            colspan = 0
             h = colHeaderCols[c]
+            if h.clickStatus is "expanded"
+                return
+            colspan = 0
             for i in [1..h.descendants] when h.descendants != 0
                 d = colHeaderCols[c-i]
                 if d.descendants != 0
@@ -368,6 +371,8 @@ callWithJQuery ($) ->
             if not rowHeaderRows[r]
                 return
             h = rowHeaderRows[r]
+            if h.clickStatus is "collapsed"
+                return
             rowspan = 0
             for i in [1..h.descendants] when h.descendants != 0
                 d = rowHeaderRows[r+i]
@@ -391,8 +396,10 @@ callWithJQuery ($) ->
         expandRow = (rowHeaderRows, r) ->
             if not rowHeaderRows[r]
                 return
-            rowspan = 0
             h = rowHeaderRows[r]
+            if h.clickStatus is "expanded"
+                return
+            rowspan = 0
             for i in [1..h.descendants] when h.descendants != 0
                 d = rowHeaderRows[r+i]
                 if d.descendants != 0
@@ -538,6 +545,7 @@ callWithJQuery ($) ->
                 colHeaders = processKeys(colKeys, "pvtColLabel")
             result = document.createElement("table")
             result.className = "pvtTable"
+            result.style.display = "none"
             thead = document.createElement("thead")
             result.appendChild thead
             if colAttrs.length != 0
@@ -566,9 +574,19 @@ callWithJQuery ($) ->
             result.setAttribute("data-numrows", rowKeys.length)
             result.setAttribute("data-numcols", colKeys.length)
             if opts.collapseRowsAt
-                collapseRowsAt(rowHeaderHeaders, rowHeaderRows, rowAttrs, opts.collapseRowsAt)
+                setTimeout (->
+                    collapseRowsAt rowHeaderHeaders, rowHeaderRows, rowAttrs, opts.collapseRowsAt
+                    if not opts.collapseColsAt
+                        result.style.display = ""
+                ), 0
+                #collapseRowsAt rowHeaderHeaders, rowHeaderRows, rowAttrs, opts.collapseRowsAt
             if opts.collapseColsAt
-                setTimeout (-> collapseColsAt colHeaderHeaders, colHeaderCols, colAttrs, opts.collapseColsAt), 0
+                #collapseColsAt colHeaderHeaders, colHeaderCols, colAttrs, opts.collapseColsAt
+                setTimeout (->
+                    collapseColsAt colHeaderHeaders, colHeaderCols, colAttrs, opts.collapseColsAt
+                    result.style.display = ""
+                ), 0
+
             return result
 
         return main(rowAttrs, rowKeys, colAttrs, colKeys)

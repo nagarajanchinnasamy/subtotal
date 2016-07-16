@@ -480,8 +480,11 @@
         if (!colHeaderCols[c]) {
           return;
         }
-        colspan = 0;
         h = colHeaderCols[c];
+        if (h.clickStatus === "collapsed") {
+          return;
+        }
+        colspan = 0;
         for (i = k = 1, ref = h.descendants; 1 <= ref ? k <= ref : k >= ref; i = 1 <= ref ? ++k : --k) {
           if (!(h.descendants !== 0)) {
             continue;
@@ -522,9 +525,11 @@
         if (!colHeaderCols[c]) {
           return;
         }
-        collapseCol;
-        colspan = 0;
         h = colHeaderCols[c];
+        if (h.clickStatus === "expanded") {
+          return;
+        }
+        colspan = 0;
         for (i = k = 1, ref = h.descendants; 1 <= ref ? k <= ref : k >= ref; i = 1 <= ref ? ++k : --k) {
           if (!(h.descendants !== 0)) {
             continue;
@@ -587,6 +592,9 @@
           return;
         }
         h = rowHeaderRows[r];
+        if (h.clickStatus === "collapsed") {
+          return;
+        }
         rowspan = 0;
         for (i = k = 1, ref = h.descendants; 1 <= ref ? k <= ref : k >= ref; i = 1 <= ref ? ++k : --k) {
           if (!(h.descendants !== 0)) {
@@ -620,8 +628,11 @@
         if (!rowHeaderRows[r]) {
           return;
         }
-        rowspan = 0;
         h = rowHeaderRows[r];
+        if (h.clickStatus === "expanded") {
+          return;
+        }
+        rowspan = 0;
         for (i = k = 1, ref = h.descendants; 1 <= ref ? k <= ref : k >= ref; i = 1 <= ref ? ++k : --k) {
           if (!(h.descendants !== 0)) {
             continue;
@@ -828,6 +839,7 @@
         }
         result = document.createElement("table");
         result.className = "pvtTable";
+        result.style.display = "none";
         thead = document.createElement("thead");
         result.appendChild(thead);
         if (colAttrs.length !== 0) {
@@ -866,11 +878,17 @@
         result.setAttribute("data-numrows", rowKeys.length);
         result.setAttribute("data-numcols", colKeys.length);
         if (opts.collapseRowsAt) {
-          collapseRowsAt(rowHeaderHeaders, rowHeaderRows, rowAttrs, opts.collapseRowsAt);
+          setTimeout((function() {
+            collapseRowsAt(rowHeaderHeaders, rowHeaderRows, rowAttrs, opts.collapseRowsAt);
+            if (!opts.collapseColsAt) {
+              return result.style.display = "";
+            }
+          }), 0);
         }
         if (opts.collapseColsAt) {
           setTimeout((function() {
-            return collapseColsAt(colHeaderHeaders, colHeaderCols, colAttrs, opts.collapseColsAt);
+            collapseColsAt(colHeaderHeaders, colHeaderCols, colAttrs, opts.collapseColsAt);
+            return result.style.display = "";
           }), 0);
         }
         return result;
