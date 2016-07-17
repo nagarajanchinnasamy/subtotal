@@ -574,7 +574,7 @@ callWithJQuery ($) ->
             result.setAttribute("data-numrows", rowKeys.length)
             result.setAttribute("data-numcols", colKeys.length)
             if not opts.collapseRowsAt and not opts.collapseColsAt
-                table.show()
+                result.style.display = ""
             if opts.collapseRowsAt
                 setTimeout (->
                     collapseRowsAt rowHeaderHeaders, rowHeaderRows, rowAttrs, opts.collapseRowsAt

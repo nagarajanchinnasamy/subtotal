@@ -877,6 +877,9 @@
         buildGrandTotal(tbody, tr);
         result.setAttribute("data-numrows", rowKeys.length);
         result.setAttribute("data-numcols", colKeys.length);
+        if (!opts.collapseRowsAt && !opts.collapseColsAt) {
+          result.style.display = "";
+        }
         if (opts.collapseRowsAt) {
           setTimeout((function() {
             collapseRowsAt(rowHeaderHeaders, rowHeaderRows, rowAttrs, opts.collapseRowsAt);
