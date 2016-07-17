@@ -823,7 +823,7 @@
         }
       };
       main = function(rowAttrs, rowKeys, colAttrs, colKeys) {
-        var colHeaderCols, colHeaderHeaders, colHeaders, h, k, l, len, len1, result, rowHeaderHeaders, rowHeaderRows, rowHeaders, sTime, tbody, thead, tr;
+        var colHeaderCols, colHeaderHeaders, colHeaders, h, k, l, len, len1, result, rowHeaderHeaders, rowHeaderRows, rowHeaders, tbody, thead, tr;
         rowHeaders = [];
         colHeaders = [];
         rowHeaderHeaders = {};
@@ -834,7 +834,6 @@
           rowHeaders = processKeys(rowKeys, "pvtRowLabel");
         }
         if (colAttrs.length !== 0) {
-          sTime = Date.now();
           colHeaders = processKeys(colKeys, "pvtColLabel");
         }
         result = document.createElement("table");
@@ -857,7 +856,6 @@
           }
         }
         if (colAttrs.length !== 0) {
-          sTime = Date.now();
           buildRowTotalsHeader(colHeaderHeaders[0].tr, rowAttrs, colAttrs);
         }
         tbody = document.createElement("tbody");

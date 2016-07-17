@@ -45,11 +45,11 @@
                         return mp["Gender"] == "Male" ? 1 : -1;
                     }
                 },
-                rendererName: "Table With Subtotal" //,
-                // rendererOptions: {
-                    // collapseRowsAt: "Gender",
-                    // collapseColsAt: "Party"
-                // }
+                rendererName: "Table With Subtotal",
+                rendererOptions: {
+                    collapseRowsAt: "Gender",
+                    collapseColsAt: "Party"
+                }
             });
         });
     });

@@ -541,7 +541,6 @@ callWithJQuery ($) ->
             if rowAttrs.length != 0
                 rowHeaders = processKeys(rowKeys, "pvtRowLabel")
             if colAttrs.length != 0
-                sTime = Date.now()
                 colHeaders = processKeys(colKeys, "pvtColLabel")
             result = document.createElement("table")
             result.className = "pvtTable"
@@ -558,7 +557,6 @@ callWithJQuery ($) ->
                 if colAttrs.length == 0
                     buildRowTotalsHeader(rowHeaderHeaders.tr, rowAttrs, colAttrs)
             if colAttrs.length != 0
-                sTime = Date.now()
                 buildRowTotalsHeader(colHeaderHeaders[0].tr, rowAttrs, colAttrs)
             tbody = document.createElement("tbody")
             result.appendChild tbody
@@ -581,14 +579,11 @@ callWithJQuery ($) ->
                     if not opts.collapseColsAt
                         result.style.display = ""
                 ), 0
-                #collapseRowsAt rowHeaderHeaders, rowHeaderRows, rowAttrs, opts.collapseRowsAt
             if opts.collapseColsAt
-                #collapseColsAt colHeaderHeaders, colHeaderCols, colAttrs, opts.collapseColsAt
                 setTimeout (->
                     collapseColsAt colHeaderHeaders, colHeaderCols, colAttrs, opts.collapseColsAt
                     result.style.display = ""
                 ), 0
-
             return result
 
         return main(rowAttrs, rowKeys, colAttrs, colKeys)
