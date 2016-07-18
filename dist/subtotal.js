@@ -93,7 +93,7 @@
     })($.pivotUtilities.PivotData);
     $.pivotUtilities.SubtotalPivotData = SubtotalPivotData;
     SubtotalRenderer = function(pivotData, opts) {
-      var allTotal, arrowCollapsed, arrowExpanded, buildColHeaderHeader, buildColHeaderHeaders, buildColHeaderHeadersClickEvents, buildColHeaders, buildColTotals, buildColTotalsHeader, buildGrandTotal, buildRowHeaderHeaders, buildRowHeaderHeadersClickEvents, buildRowHeaders, buildRowTotalsHeader, buildValues, colAttrs, colKeys, colTotals, collapseCol, collapseColsAt, collapseRow, collapseRowsAt, createCell, defaults, expandCol, expandColsAt, expandRow, expandRowsAt, main, processKeys, rowAttrs, rowKeys, rowTotals, toggleCol, toggleColHeaderHeader, toggleRow, toggleRowHeaderHeader, tree;
+      var allTotal, arrowCollapsed, arrowExpanded, buildColHeaderHeader, buildColHeaderHeaders, buildColHeaderHeadersClickEvents, buildColHeaders, buildColTotals, buildColTotalsHeader, buildGrandTotal, buildRowHeaderHeaders, buildRowHeaderHeadersClickEvents, buildRowHeaders, buildRowTotalsHeader, buildValues, colAttrs, colKeys, colTotals, collapseCol, collapseColsAt, collapseRow, collapseRowsAt, createCell, defaults, expandChildCol, expandChildRow, expandCol, expandColsAt, expandRow, expandRowsAt, main, processKeys, rowAttrs, rowKeys, rowTotals, setColVisibility, toggleCol, toggleColHeaderHeader, toggleRow, toggleRowHeaderHeader, tree;
       defaults = {
         localeStrings: {
           totals: "Totals"
@@ -235,7 +235,9 @@
         colHeaderHeaders.push({
           "tr": tr,
           "th": th,
-          "clickStatus": "expanded"
+          "clickStatus": "expanded",
+          "expandedCount": 0,
+          "nHeaders": 0
         });
         return thead.appendChild(tr);
       };
@@ -276,13 +278,16 @@
         return results;
       };
       buildColHeaders = function(colHeaderHeaders, colHeaderCols, colHeader, rowAttrs, colAttrs) {
-        var h, k, len, ref, rowspan, style, th, tr;
+        var h, hh, k, len, ref, rowspan, style, th, tr;
         ref = colHeader.children;
         for (k = 0, len = ref.length; k < len; k++) {
           h = ref[k];
           buildColHeaders(colHeaderHeaders, colHeaderCols, h, rowAttrs, colAttrs);
         }
-        tr = colHeaderHeaders[colHeader.col].tr;
+        hh = colHeaderHeaders[colHeader.col];
+        ++hh.expandedCount;
+        ++hh.nHeaders;
+        tr = hh.tr;
         th = colHeader.th;
         th.setAttribute("data-colHeader", th.textContent);
         if (colHeader.col === colAttrs.length - 1 && rowAttrs.length !== 0) {
@@ -297,7 +302,7 @@
           th.textContent = " " + arrowExpanded + " " + th.textContent;
           th.onclick = function(event) {
             event = event || window.event;
-            return toggleCol(colHeaderCols, parseInt(event.target.getAttribute("data-node")));
+            return toggleCol(colHeaderHeaders, colHeaderCols, parseInt(event.target.getAttribute("data-node")));
           };
           rowspan = colAttrs.length - (colHeader.col + 1) + (rowAttrs.length !== 0 ? 1 : 0);
           style = "pvtColLabel col" + colHeader.row;
@@ -314,7 +319,7 @@
       buildRowHeaderHeaders = function(thead, rowHeaderHeaders, rowAttrs, colAttrs) {
         var i, rowAttr, textContent, th, tr;
         tr = document.createElement("tr");
-        rowHeaderHeaders.th = [];
+        rowHeaderHeaders.hh = [];
         for (i in rowAttrs) {
           rowAttr = rowAttrs[i];
           textContent = rowAttr;
@@ -324,9 +329,11 @@
           th = createCell("th", "pvtAxisLabel", textContent);
           th.setAttribute("data-rowAttr", rowAttr);
           tr.appendChild(th);
-          rowHeaderHeaders.th.push({
+          rowHeaderHeaders.hh.push({
             "th": th,
-            "clickStatus": "expanded"
+            "clickStatus": "expanded",
+            "expandedCount": 0,
+            "nHeaders": 0
           });
         }
         if (colAttrs.length !== 0) {
@@ -343,7 +350,7 @@
           if (!(i < rowAttrs.length - 1)) {
             continue;
           }
-          th = rowHeaderHeaders.th[i];
+          th = rowHeaderHeaders.hh[i];
           rowAttr = rowAttrs[i];
           results.push(th.th.onclick = function(event) {
             event = event || window.event;
@@ -363,8 +370,11 @@
         });
         return tr.appendChild(th);
       };
-      buildRowHeaders = function(tbody, rowHeaderRows, rowHeader, rowAttrs, colAttrs) {
-        var colspan, h, k, len, ref, results, th, tr;
+      buildRowHeaders = function(tbody, rowHeaderHeaders, rowHeaderRows, rowHeader, rowAttrs, colAttrs) {
+        var colspan, h, hh, k, len, ref, results, th, tr;
+        hh = rowHeaderHeaders.hh[rowHeader.col];
+        ++hh.expandedCount;
+        ++hh.nHeaders;
         tr = document.createElement("tr");
         th = rowHeader.th;
         th.setAttribute("rowspan", rowHeader.descendants + 1);
@@ -378,7 +388,7 @@
           th.textContent = " " + arrowExpanded + " " + th.textContent;
           th.onclick = function(event) {
             event = event || window.event;
-            return toggleRow(rowHeaderRows, parseInt(event.target.getAttribute("data-node")));
+            return toggleRow(rowHeaderHeaders, rowHeaderRows, parseInt(event.target.getAttribute("data-node")));
           };
           colspan = rowAttrs.length - (rowHeader.col + 1) + (colAttrs.length !== 0 ? 1 : 0);
           th = createCell("th", "pvtRowLabel", '', {
@@ -394,7 +404,7 @@
         results = [];
         for (k = 0, len = ref.length; k < len; k++) {
           h = ref[k];
-          results.push(buildRowHeaders(tbody, rowHeaderRows, h, rowAttrs, colAttrs));
+          results.push(buildRowHeaders(tbody, rowHeaderHeaders, rowHeaderRows, h, rowAttrs, colAttrs));
         }
         return results;
       };
@@ -475,8 +485,19 @@
         tr.appendChild(td);
         return result.appendChild(tr);
       };
-      collapseCol = function(colHeaderCols, c) {
-        var colspan, d, h, i, k, p, ref;
+      setColVisibility = function(visibility, h) {
+        h.th.style.display = visibility;
+        if (h.children.length) {
+          $('table.pvtTable tbody tr td.pvtColSubtotal.col' + h.row + '.colcol' + h.col).css('display', visibility);
+        } else {
+          $('table.pvtTable tbody tr td.pvtVal.col' + h.row).not('.pvtColSubtotal').css('display', visibility);
+        }
+        if (h.sTh) {
+          return h.sTh.style.display = visibility;
+        }
+      };
+      collapseCol = function(colHeaderHeaders, colHeaderCols, c) {
+        var colHeaderHeader, colspan, d, h, i, k, l, p, ref, ref1, ref2, results;
         if (!colHeaderCols[c]) {
           return;
         }
@@ -490,22 +511,9 @@
             continue;
           }
           d = colHeaderCols[c - i];
-          if (d.descendants !== 0) {
-            d.th.textContent = " " + arrowCollapsed + " " + d.th.getAttribute("data-colHeader");
-          }
-          d.clickStatus = "collapsed";
-          d.th.setAttribute("colspan", 1);
           if (d.th.style.display !== "none") {
             ++colspan;
-            d.th.style.display = "none";
-            if (d.children.length) {
-              $('table.pvtTable tbody tr td.pvtColSubtotal.col' + d.row + '.colcol' + d.col).hide();
-            } else {
-              $('table.pvtTable tbody tr td.pvtVal.col' + d.row).not('.pvtColSubtotal').hide();
-            }
-            if (d.sTh) {
-              d.sTh.style.display = "none";
-            }
+            setColVisibility("none", d);
           }
         }
         p = h.parent;
@@ -518,10 +526,36 @@
         }
         h.clickStatus = "collapsed";
         h.th.setAttribute("colspan", 1);
-        return h.th.style.display = "";
+        h.th.style.display = "";
+        colHeaderHeader = colHeaderHeaders[h.col];
+        colHeaderHeader.expandedCount--;
+        if (colHeaderHeader.expandedCount === 0) {
+          results = [];
+          for (i = l = ref1 = h.col, ref2 = colHeaderHeaders.length - 2; ref1 <= ref2 ? l <= ref2 : l >= ref2; i = ref1 <= ref2 ? ++l : --l) {
+            colHeaderHeader = colHeaderHeaders[i];
+            colHeaderHeader.th.textContent = " " + arrowCollapsed + " " + colHeaderHeader.th.getAttribute("data-colAttr");
+            results.push(colHeaderHeader.clickStatus = "collapsed");
+          }
+          return results;
+        }
       };
-      expandCol = function(colHeaderCols, c) {
-        var ch, colspan, d, h, i, k, l, len, p, ref, ref1, results;
+      expandChildCol = function(ch) {
+        var gch, k, len, ref, results;
+        if (ch.th.style.display === "none") {
+          setColVisibility("", ch);
+        }
+        if (ch.clickStatus !== "collapsed") {
+          ref = ch.children;
+          results = [];
+          for (k = 0, len = ref.length; k < len; k++) {
+            gch = ref[k];
+            results.push(expandChildCol(gch));
+          }
+          return results;
+        }
+      };
+      expandCol = function(colHeaderHeaders, colHeaderCols, c) {
+        var ch, colspan, h, hh, k, len, p, ref;
         if (!colHeaderCols[c]) {
           return;
         }
@@ -530,64 +564,38 @@
           return;
         }
         colspan = 0;
-        for (i = k = 1, ref = h.descendants; 1 <= ref ? k <= ref : k >= ref; i = 1 <= ref ? ++k : --k) {
-          if (!(h.descendants !== 0)) {
-            continue;
-          }
-          d = colHeaderCols[c - i];
-          if (d.descendants !== 0) {
-            d.th.textContent = " " + arrowCollapsed + " " + d.th.getAttribute("data-colHeader");
-          }
-          d.clickStatus = "collapsed";
-          d.th.setAttribute("colspan", 1);
-          if (d.th.style.display !== "none") {
-            ++colspan;
-            d.th.style.display = "none";
-            if (d.children.length) {
-              $('table.pvtTable tbody tr td.pvtColSubtotal.col' + d.row + '.colcol' + d.col).hide();
-            } else {
-              $('table.pvtTable tbody tr td.pvtVal.col' + d.row).not('.pvtColSubtotal').hide();
-            }
-            if (d.sTh) {
-              d.sTh.style.display = "none";
-            }
-          }
-        }
-        ref1 = h.children;
-        for (l = 0, len = ref1.length; l < len; l++) {
-          ch = ref1[l];
+        ref = h.children;
+        for (k = 0, len = ref.length; k < len; k++) {
+          ch = ref[k];
+          colspan = colspan + ch.th.colSpan;
           if (ch.th.style.display === "none") {
-            ++colspan;
-            ch.th.style.display = "";
-            if (ch.children.length) {
-              $('table.pvtTable tbody tr td.pvtColSubtotal.col' + ch.row + '.colcol' + ch.col).show();
-            } else {
-              $('table.pvtTable tbody tr td.pvtVal.col' + ch.row).not('.pvtColSubtotal').show();
-            }
-            if (ch.sTh) {
-              ch.sTh.style.display = "";
-            }
+            setColVisibility("", ch);
           }
+          expandChildCol(ch);
         }
-        h.th.setAttribute("colspan", h.children.length + 1);
         if (h.descendants !== 0) {
           h.th.textContent = " " + arrowExpanded + " " + h.th.getAttribute("data-colHeader");
         }
+        h.th.setAttribute("colspan", colspan + 1);
         h.clickStatus = "expanded";
         h.th.style.display = "";
         if (h.sTh) {
           h.sTh.style.display = "";
         }
         p = h.parent;
-        results = [];
         while (p !== null) {
           p.th.setAttribute("colspan", colspan + parseInt(p.th.getAttribute("colspan")));
-          results.push(p = p.parent);
+          p = p.parent;
         }
-        return results;
+        hh = colHeaderHeaders[h.col];
+        ++hh.expandedCount;
+        if (hh.expandedCount === hh.nHeaders) {
+          hh.th.textContent = " " + arrowExpanded + " " + hh.th.getAttribute("data-colAttr");
+          return hh.clickStatus = "expanded";
+        }
       };
-      collapseRow = function(rowHeaderRows, r) {
-        var d, h, i, k, p, ref, rowspan;
+      collapseRow = function(rowHeaderHeaders, rowHeaderRows, r) {
+        var d, h, i, j, k, l, p, ref, ref1, ref2, results, rowHeaderHeader, rowspan;
         if (!rowHeaderRows[r]) {
           return;
         }
@@ -601,11 +609,6 @@
             continue;
           }
           d = rowHeaderRows[r + i];
-          if (d.descendants !== 0) {
-            d.th.textContent = " " + arrowCollapsed + " " + d.th.getAttribute("data-rowHeader");
-          }
-          d.clickStatus = "collapsed";
-          d.th.setAttribute("rowspan", 1);
           if (d.tr.style.display !== "none") {
             ++rowspan;
             d.tr.style.display = "none";
@@ -621,10 +624,36 @@
         }
         h.clickStatus = "collapsed";
         h.th.setAttribute("rowspan", 1);
-        return h.tr.style.display = "";
+        h.tr.style.display = "";
+        rowHeaderHeader = rowHeaderHeaders.hh[h.col];
+        rowHeaderHeader.expandedCount--;
+        if (rowHeaderHeader.expandedCount === 0) {
+          results = [];
+          for (j = l = ref1 = h.col, ref2 = rowHeaderHeaders.hh.length - 2; ref1 <= ref2 ? l <= ref2 : l >= ref2; j = ref1 <= ref2 ? ++l : --l) {
+            rowHeaderHeader = rowHeaderHeaders.hh[j];
+            rowHeaderHeader.th.textContent = " " + arrowCollapsed + " " + rowHeaderHeader.th.getAttribute("data-rowAttr");
+            results.push(rowHeaderHeader.clickStatus = "collapsed");
+          }
+          return results;
+        }
       };
-      expandRow = function(rowHeaderRows, r) {
-        var c, d, h, i, k, l, len, p, ref, ref1, results, rowspan;
+      expandChildRow = function(ch) {
+        var gch, k, len, ref, results;
+        if (ch.tr.style.display === "none") {
+          ch.tr.style.display = "";
+        }
+        if (ch.clickStatus !== "collapsed") {
+          ref = ch.children;
+          results = [];
+          for (k = 0, len = ref.length; k < len; k++) {
+            gch = ref[k];
+            results.push(expandChildRow(gch));
+          }
+          return results;
+        }
+      };
+      expandRow = function(rowHeaderHeaders, rowHeaderRows, r) {
+        var ch, h, hh, k, len, p, ref, rowspan;
         if (!rowHeaderRows[r]) {
           return;
         }
@@ -633,123 +662,58 @@
           return;
         }
         rowspan = 0;
-        for (i = k = 1, ref = h.descendants; 1 <= ref ? k <= ref : k >= ref; i = 1 <= ref ? ++k : --k) {
-          if (!(h.descendants !== 0)) {
-            continue;
+        ref = h.children;
+        for (k = 0, len = ref.length; k < len; k++) {
+          ch = ref[k];
+          rowspan = rowspan + ch.th.rowSpan;
+          if (ch.tr.style.display === "none") {
+            ch.tr.style.display = "";
           }
-          d = rowHeaderRows[r + i];
-          if (d.descendants !== 0) {
-            d.th.textContent = " " + arrowCollapsed + " " + d.th.getAttribute("data-rowHeader");
-          }
-          d.clickStatus = "collapsed";
-          d.th.setAttribute("rowspan", 1);
-          if (d.tr.style.display !== "none") {
-            --rowspan;
-            d.tr.style.display = "none";
-          }
+          expandChildRow(ch);
         }
-        ref1 = h.children;
-        for (l = 0, len = ref1.length; l < len; l++) {
-          c = ref1[l];
-          if (c.tr.style.display === "none") {
-            ++rowspan;
-            c.tr.style.display = "";
-          }
-        }
-        h.th.setAttribute("rowspan", h.children.length + 1);
         if (h.descendants !== 0) {
           h.th.textContent = " " + arrowExpanded + " " + h.th.getAttribute("data-rowHeader");
         }
+        h.th.setAttribute("rowspan", rowspan + 1);
         h.clickStatus = "expanded";
         h.tr.style.display = "";
         p = h.parent;
-        results = [];
         while (p !== null) {
           p.th.setAttribute("rowspan", rowspan + parseInt(p.th.getAttribute("rowspan")));
-          results.push(p = p.parent);
+          p = p.parent;
         }
-        return results;
+        hh = rowHeaderHeaders.hh[h.col];
+        ++hh.expandedCount;
+        if (hh.expandedCount === hh.nHeaders) {
+          hh.th.textContent = " " + arrowExpanded + " " + hh.th.getAttribute("data-rowAttr");
+          return hh.clickStatus = "expanded";
+        }
       };
-      toggleCol = function(colHeaderCols, c) {
+      toggleCol = function(colHeaderHeaders, colHeaderCols, c) {
+        var h;
         if (!colHeaderCols[c]) {
           return;
         }
-        if (colHeaderCols[c].clickStatus === "collapsed") {
-          return expandCol(colHeaderCols, c);
+        h = colHeaderCols[c];
+        if (h.clickStatus === "collapsed") {
+          expandCol(colHeaderHeaders, colHeaderCols, c);
         } else {
-          return collapseCol(colHeaderCols, c);
+          collapseCol(colHeaderHeaders, colHeaderCols, c);
         }
+        return h.th.scrollIntoView;
       };
-      toggleRow = function(rowHeaderRows, r) {
+      toggleRow = function(rowHeaderHeaders, rowHeaderRows, r) {
         if (!rowHeaderRows[r]) {
           return;
         }
         if (rowHeaderRows[r].clickStatus === "collapsed") {
-          return expandRow(rowHeaderRows, r);
+          return expandRow(rowHeaderHeaders, rowHeaderRows, r);
         } else {
-          return collapseRow(rowHeaderRows, r);
+          return collapseRow(rowHeaderHeaders, rowHeaderRows, r);
         }
-      };
-      collapseRowsAt = function(rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr) {
-        var h, i, idx, nAttrs, nRows, results, th;
-        idx = rowAttrs.indexOf(rowAttr);
-        if (idx < 0 || idx === rowAttrs.length - 1) {
-          return;
-        }
-        i = idx;
-        nAttrs = rowAttrs.length - 1;
-        while (i < nAttrs) {
-          th = rowHeaderHeaders.th[i];
-          th.th.textContent = " " + arrowCollapsed + " " + rowAttrs[i];
-          th.clickStatus = "collapsed";
-          ++i;
-        }
-        i = 0;
-        nRows = rowHeaderRows.length;
-        results = [];
-        while (i < nRows) {
-          h = rowHeaderRows[i];
-          if (h.col === idx) {
-            collapseRow(rowHeaderRows, h.node);
-            results.push(i = i + h.descendants + 1);
-          } else {
-            results.push(++i);
-          }
-        }
-        return results;
-      };
-      expandRowsAt = function(rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr) {
-        var h, i, idx, j, k, nRows, ref, results, th;
-        idx = rowAttrs.indexOf(rowAttr);
-        if (idx < 0 || idx === rowAttrs.length - 1) {
-          return;
-        }
-        results = [];
-        for (i = k = 0, ref = idx; 0 <= ref ? k <= ref : k >= ref; i = 0 <= ref ? ++k : --k) {
-          th = rowHeaderHeaders.th[i];
-          th.th.textContent = " " + arrowExpanded + " " + rowAttrs[i];
-          th.clickStatus = "expanded";
-          j = 0;
-          nRows = rowHeaderRows.length;
-          results.push((function() {
-            var results1;
-            results1 = [];
-            while (j < nRows) {
-              h = rowHeaderRows[j];
-              if (h.col === i) {
-                expandRow(rowHeaderRows, h.node);
-                results1.push(j = j + h.descendants + 1);
-              } else {
-                results1.push(++j);
-              }
-            }
-            return results1;
-          })());
-        }
-        return results;
       };
       collapseColsAt = function(colHeaderHeaders, colHeaderCols, colAttrs, colAttr) {
-        var h, i, idx, nAttrs, nCols, results, th;
+        var h, hh, i, idx, nAttrs, nCols, results;
         idx = colAttrs.indexOf(colAttr);
         if (idx < 0 || idx === colAttrs.length - 1) {
           return;
@@ -757,9 +721,9 @@
         i = idx;
         nAttrs = colAttrs.length - 1;
         while (i < nAttrs) {
-          th = colHeaderHeaders[i].th;
-          th.textContent = " " + arrowCollapsed + " " + colAttrs[i];
-          th.clickStatus = "collapsed";
+          hh = colHeaderHeaders[i];
+          hh.th.textContent = " " + arrowCollapsed + " " + colAttrs[i];
+          hh.clickStatus = "collapsed";
           ++i;
         }
         i = 0;
@@ -767,46 +731,118 @@
         results = [];
         while (i < nCols) {
           h = colHeaderCols[i];
-          if (h.col === idx) {
-            collapseCol(colHeaderCols, i);
+          if (h.col === idx && h.clickStatus !== "collapsed" && h.th.style.display !== "none") {
+            collapseCol(colHeaderHeaders, colHeaderCols, parseInt(h.th.getAttribute("data-node")));
           }
           results.push(++i);
         }
         return results;
       };
       expandColsAt = function(colHeaderHeaders, colHeaderCols, colAttrs, colAttr) {
-        var h, i, idx, j, k, nCols, ref, results, th;
+        var colHeaderHeader, h, hh, i, idx, j, k, nCols, ref, results;
         idx = colAttrs.indexOf(colAttr);
         if (idx < 0 || idx === colAttrs.length - 1) {
           return;
         }
-        results = [];
         for (i = k = 0, ref = idx; 0 <= ref ? k <= ref : k >= ref; i = 0 <= ref ? ++k : --k) {
-          th = colHeaderHeaders[i].th;
-          th.textContent = " " + arrowExpanded + " " + colAttrs[i];
-          th.clickStatus = "expanded";
+          hh = colHeaderHeaders[i];
+          hh.th.textContent = " " + arrowExpanded + " " + colAttrs[i];
+          hh.clickStatus = "expanded";
           j = 0;
           nCols = colHeaderCols.length;
-          results.push((function() {
-            var results1;
-            results1 = [];
-            while (j < nCols) {
-              h = colHeaderCols[j];
-              if (h.col === i) {
-                expandCol(colHeaderCols, j);
-              }
-              results1.push(++j);
+          while (j < nCols) {
+            h = colHeaderCols[j];
+            if (h.col === i) {
+              expandCol(colHeaderHeaders, colHeaderCols, j);
             }
-            return results1;
-          })());
+            ++j;
+          }
+        }
+        ++idx;
+        results = [];
+        while (idx < colAttrs.length - 1) {
+          colHeaderHeader = colHeaderHeaders[idx];
+          if (colHeaderHeader.expandedCount === 0) {
+            colHeaderHeader.th.textContent = " " + arrowCollapsed + " " + colAttrs[idx];
+            colHeaderHeader.clickStatus = "collapsed";
+          } else if (colHeaderHeader.expandedCount === colHeaderHeader.nHeaders) {
+            colHeaderHeader.th.textContent = " " + arrowExpanded + " " + colAttrs[idx];
+            colHeaderHeader.clickStatus = "expanded";
+          }
+          results.push(++idx);
+        }
+        return results;
+      };
+      collapseRowsAt = function(rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr) {
+        var h, i, idx, j, nAttrs, nRows, results;
+        idx = rowAttrs.indexOf(rowAttr);
+        if (idx < 0 || idx === rowAttrs.length - 1) {
+          return;
+        }
+        i = idx;
+        nAttrs = rowAttrs.length - 1;
+        while (i < nAttrs) {
+          h = rowHeaderHeaders.hh[i];
+          h.th.textContent = " " + arrowCollapsed + " " + rowAttrs[i];
+          h.clickStatus = "collapsed";
+          ++i;
+        }
+        j = 0;
+        nRows = rowHeaderRows.length;
+        results = [];
+        while (j < nRows) {
+          h = rowHeaderRows[j];
+          if (h.col === idx && h.clickStatus !== "collapsed" && h.tr.style.display !== "none") {
+            collapseRow(rowHeaderHeaders, rowHeaderRows, j);
+            results.push(j = j + h.descendants + 1);
+          } else {
+            results.push(++j);
+          }
+        }
+        return results;
+      };
+      expandRowsAt = function(rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr) {
+        var h, hh, i, idx, j, k, nRows, ref, results, rowHeaderHeader;
+        idx = rowAttrs.indexOf(rowAttr);
+        if (idx < 0 || idx === rowAttrs.length - 1) {
+          return;
+        }
+        for (i = k = 0, ref = idx; 0 <= ref ? k <= ref : k >= ref; i = 0 <= ref ? ++k : --k) {
+          hh = rowHeaderHeaders.hh[i];
+          hh.th.textContent = " " + arrowExpanded + " " + rowAttrs[i];
+          hh.clickStatus = "expanded";
+          j = 0;
+          nRows = rowHeaderRows.length;
+          while (j < nRows) {
+            h = rowHeaderRows[j];
+            if (h.col === i) {
+              expandRow(rowHeaderHeaders, rowHeaderRows, j);
+              j = j + h.descendants + 1;
+            } else {
+              ++j;
+            }
+          }
+        }
+        ++idx;
+        results = [];
+        while (idx < rowAttrs.length - 1) {
+          rowHeaderHeader = rowHeaderHeaders.hh[idx];
+          if (rowHeaderHeader.expandedCount === 0) {
+            rowHeaderHeader.th.textContent = " " + arrowCollapsed + " " + rowAttrs[idx];
+            rowHeaderHeader.clickStatus = "collapsed";
+          } else if (rowHeaderHeader.expandedCount === rowHeaderHeader.nHeaders) {
+            rowHeaderHeader.th.textContent = " " + arrowExpanded + " " + rowAttrs[idx];
+            rowHeaderHeader.clickStatus = "expanded";
+          }
+          results.push(++idx);
         }
         return results;
       };
       toggleColHeaderHeader = function(colHeaderHeaders, colHeaderCols, colAttrs, colAttr) {
-        var idx, th;
+        var h, idx;
         idx = colAttrs.indexOf(colAttr);
-        th = colHeaderHeaders[idx].th;
-        if (th.clickStatus === "collapsed") {
+        h = colHeaderHeaders[idx];
+        if (h.clickStatus === "collapsed") {
           return expandColsAt(colHeaderHeaders, colHeaderCols, colAttrs, colAttr);
         } else {
           return collapseColsAt(colHeaderHeaders, colHeaderCols, colAttrs, colAttr);
@@ -815,7 +851,7 @@
       toggleRowHeaderHeader = function(rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr) {
         var idx, th;
         idx = rowAttrs.indexOf(rowAttr);
-        th = rowHeaderHeaders.th[idx];
+        th = rowHeaderHeaders.hh[idx];
         if (th.clickStatus === "collapsed") {
           return expandRowsAt(rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr);
         } else {
@@ -863,7 +899,7 @@
         if (rowAttrs.length !== 0) {
           for (l = 0, len1 = rowHeaders.length; l < len1; l++) {
             h = rowHeaders[l];
-            buildRowHeaders(tbody, rowHeaderRows, h, rowAttrs, colAttrs);
+            buildRowHeaders(tbody, rowHeaderHeaders, rowHeaderRows, h, rowAttrs, colAttrs);
           }
           buildRowHeaderHeadersClickEvents(rowHeaderHeaders, rowHeaderRows, rowAttrs);
         }

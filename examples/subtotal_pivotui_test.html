@@ -42,12 +42,12 @@
         $("#output").pivotUI(fixtureData, {
             dataClass: dataClass,
             rows: ["colour", "name"], 
-            cols: ["trials", "successes"],
+            cols: ["gender", "birthday", "trials", "successes"],
             aggregator: aggregator,
             renderers: renderers,
             rendererName: "Table With Subtotal",
             rendererOptions: {
-                collapseRowsAt: "colour"
+                // collapseRowsAt: "colour"
             }
         });
      });
