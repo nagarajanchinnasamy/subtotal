@@ -940,13 +940,13 @@
         return $(SubtotalRenderer(pvtData, opts)).barchart();
       },
       "Table With Subtotal Heatmap": function(pvtData, opts) {
-        return $(SubtotalRenderer(pvtData, opts)).heatmap();
+        return $(SubtotalRenderer(pvtData, opts)).heatmap("heatmap", opts);
       },
       "Table With Subtotal Row Heatmap": function(pvtData, opts) {
-        return $(SubtotalRenderer(pvtData, opts)).heatmap("rowheatmap");
+        return $(SubtotalRenderer(pvtData, opts)).heatmap("rowheatmap", opts);
       },
       "Table With Subtotal Col Heatmap": function(pvtData, opts) {
-        return $(SubtotalRenderer(pvtData, opts)).heatmap("colheatmap");
+        return $(SubtotalRenderer(pvtData, opts)).heatmap("colheatmap", opts);
       }
     };
   });
