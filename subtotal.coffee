@@ -300,9 +300,9 @@ callWithJQuery ($) ->
         setColVisibility = (visibility, h) ->
             h.th.style.display = visibility
             if h.children.length
-                $('table.pvtTable tbody tr td.pvtColSubtotal.col' + h.row + '.colcol' + h.col).css('display', visibility)
+                $(h.th).closest('table.pvtTable').find('tbody tr td.pvtColSubtotal.col' + h.row + '.colcol' + h.col).css('display', visibility)
             else
-                $('table.pvtTable tbody tr td.pvtVal.col' + h.row).not('.pvtColSubtotal').css('display', visibility)
+                $(h.th).closest('table.pvtTable').find('tbody tr td.pvtVal.col' + h.row).not('.pvtColSubtotal').css('display', visibility)
             if h.sTh
                 h.sTh.style.display = visibility
         
