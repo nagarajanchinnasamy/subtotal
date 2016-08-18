@@ -11,11 +11,11 @@
 
         <!-- PivotTable.js libs from ../dist -->
         <script type="text/javascript" src="../dist/subtotal.js"></script>
-       
+
         <style>
             body {font-family: Verdana;}
         </style>
-        
+
         <!-- optional: mobile support with jqueryui-touch-punch -->
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
 
@@ -24,7 +24,7 @@
     </head>
     <body>
     <script type="text/javascript">
-    // This example loads the "Canadian Parliament 2012" dataset 
+    // This example loads the "Canadian Parliament 2012" dataset
     // and adds derived attributes: "Age Bin" and "Gender Imbalance".
 
     $(function(){
@@ -41,7 +41,7 @@
         ];
         $("#output").pivot(fixtureData, {
             dataClass: dataClass,
-            rows: ["name", "colour"], 
+            rows: ["name", "colour"],
             cols: ["trials", "successes"],
             aggregator: aggregator,
             renderer: renderer,
@@ -50,7 +50,7 @@
     </script>
     <p><a href="index.html">&laquo; back to examples</a></p>
     <p></p>
-    <p>To expand and collapse rows, click on &#x25B6 and &#x25E2 arrows in the table. Scroll down to view the code.</p>
+    <p>To expand and collapse rows and columns, click on &#x25B6 and &#x25E2 arrows in the table. Scroll down to view the code.</p>
     <p></p>
     <div id="output" style="margin: 30px;"></div>
     <p></p>
