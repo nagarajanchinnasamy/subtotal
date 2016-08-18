@@ -439,7 +439,10 @@
           }
           totalAggregator = rowTotals[flatRowKey];
           val = totalAggregator.value();
-          td = createCell("td", "pvtTotal rowTotal", totalAggregator.format(val), {
+          style = "pvtTotal rowTotal";
+          style = rowHeader.children.length !== 0 ? style + " pvtRowSubtotal" : style;
+          style = style + " row" + rowHeader.row + " rowcol" + rowHeader.col;
+          td = createCell("td", style, totalAggregator.format(val), {
             "data-value": val,
             "data-row": "row" + rowHeader.row,
             "data-col": "col" + rowHeader.col

@@ -6,7 +6,7 @@ callWithJQuery = (pivotModule) ->
     # Plain browser env
     else
         pivotModule jQuery
-        
+
 callWithJQuery ($) ->
 
     class SubtotalPivotData extends $.pivotUtilities.PivotData
@@ -17,7 +17,7 @@ callWithJQuery ($) ->
             key = []
             addKey = false
             for attr in attrs
-                key.push record[attr] ? "null" 
+                key.push record[attr] ? "null"
                 flatKey = key.join(String.fromCharCode(0))
                 if not totals[flatKey]
                     totals[flatKey] = f(key.slice())
@@ -30,14 +30,14 @@ callWithJQuery ($) ->
         processRecord: (record) -> #this code is called in a tight loop
             rowKey = []
             colKey = []
-            
+
             @allTotal.push record
             rowKey = processKey record, @rowTotals, @rowKeys, @rowAttrs, (key) =>
                     return @aggregator(this, key, [])
             colKey = processKey record, @colTotals, @colKeys, @colAttrs, (key) =>
                     return @aggregator(this, [], key)
             m = rowKey.length-1
-            n = colKey.length-1            
+            n = colKey.length-1
             if m < 0 or n < 0
                 return
             for i in [0..m]
@@ -71,7 +71,7 @@ callWithJQuery ($) ->
         rowTotals = pivotData.rowTotals
         colTotals = pivotData.colTotals
         allTotal =pivotData.allTotal
-        
+
         createCell = (cellType, className, textContent, attributes) ->
             th = document.createElement(cellType)
             if className then th.className = className
@@ -88,7 +88,7 @@ callWithJQuery ($) ->
             flatKey = keysArr[0][0]
             nodePos = 0
             node = {"node": nodePos, "row": 0, "col": 0, "th": th, "parent": null, "children": [], "descendants": lastCol, "leaves": 1, "flatKey": flatKey}
-            headers[0] = node 
+            headers[0] = node
             rMark[0] = node
             c = 1
             while c <= lastCol
@@ -173,7 +173,7 @@ callWithJQuery ($) ->
             ++hh.nHeaders
             tr = hh.tr
             th = colHeader.th
-            th.setAttribute("data-colHeader", th.textContent) 
+            th.setAttribute("data-colHeader", th.textContent)
             if colHeader.col == colAttrs.length-1 and rowAttrs.length != 0
                 th.setAttribute("rowspan", 2)
             if colHeader.children.length !=0
@@ -193,7 +193,7 @@ callWithJQuery ($) ->
             colHeader.clickStatus = "expanded"
             colHeader.tr = tr
             colHeaderCols.push(colHeader)
-        
+
         buildRowHeaderHeaders = (thead, rowHeaderHeaders, rowAttrs, colAttrs) ->
             tr = document.createElement("tr")
             rowHeaderHeaders.hh = []
@@ -203,7 +203,7 @@ callWithJQuery ($) ->
                     textContent = " " + arrowExpanded + " " + rowAttr
                 th = createCell("th", "pvtAxisLabel", textContent)
                 th.setAttribute("data-rowAttr", rowAttr)
-                tr.appendChild th                
+                tr.appendChild th
                 rowHeaderHeaders.hh.push({"th": th, "clickStatus": "expanded", "expandedCount": 0, "nHeaders": 0})
             if colAttrs.length != 0
                 th = createCell("th")
@@ -233,7 +233,7 @@ callWithJQuery ($) ->
             tr = document.createElement("tr")
             th = rowHeader.th
             th.setAttribute("rowspan", rowHeader.descendants+1)
-            th.setAttribute("data-rowHeader", th.textContent) 
+            th.setAttribute("data-rowHeader", th.textContent)
             if rowHeader.col == rowAttrs.length-1 and colAttrs.length != 0
                 th.setAttribute("colspan", 2)
             th.setAttribute("data-node", rowHeaderRows.length)
@@ -270,7 +270,10 @@ callWithJQuery ($) ->
                 # buildRowTotal
                 totalAggregator = rowTotals[flatRowKey]
                 val = totalAggregator.value()
-                td = createCell("td", "pvtTotal rowTotal", totalAggregator.format(val), {"data-value": val, "data-row": "row"+rowHeader.row, "data-col": "col"+rowHeader.col})
+                style = "pvtTotal rowTotal"
+                style = if (rowHeader.children.length != 0) then  style +  " pvtRowSubtotal" else style
+                style = style + " row"+rowHeader.row+" rowcol"+rowHeader.col
+                td = createCell("td", style, totalAggregator.format(val), {"data-value": val, "data-row": "row"+rowHeader.row, "data-col": "col"+rowHeader.col})
                 tr.appendChild td
 
         buildColTotalsHeader = (rowAttrs, colAttrs) ->
@@ -305,7 +308,7 @@ callWithJQuery ($) ->
                 $(h.th).closest('table.pvtTable').find('tbody tr td.pvtVal.col' + h.row).not('.pvtColSubtotal').css('display', visibility)
             if h.sTh
                 h.sTh.style.display = visibility
-        
+
         collapseCol = (colHeaderHeaders, colHeaderCols, c) ->
             if not colHeaderCols[c]
                 return
@@ -334,7 +337,7 @@ callWithJQuery ($) ->
                     colHeaderHeader = colHeaderHeaders[i]
                     colHeaderHeader.th.textContent = " " + arrowCollapsed + " " + colHeaderHeader.th.getAttribute("data-colAttr")
                     colHeaderHeader.clickStatus = "collapsed"
-        
+
         expandChildCol = (ch) ->
             if ch.th.style.display is "none"
                 setColVisibility "", ch
@@ -620,7 +623,7 @@ callWithJQuery ($) ->
             return result
 
         return main(rowAttrs, rowKeys, colAttrs, colKeys)
-        
+
     $.pivotUtilities.subtotal_renderers =
         "Table With Subtotal":  (pvtData, opts) -> SubtotalRenderer(pvtData, opts)
         "Table With Subtotal Bar Chart":   (pvtData, opts) -> $(SubtotalRenderer(pvtData, opts)).barchart()
