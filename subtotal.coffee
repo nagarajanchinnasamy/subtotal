@@ -197,7 +197,7 @@ callWithJQuery ($) ->
         buildRowHeaderHeaders = (thead, rowHeaderHeaders, rowAttrs, colAttrs) ->
             tr = document.createElement("tr")
             rowHeaderHeaders.hh = []
-            for i, rowAttr of rowAttrs
+            for own i, rowAttr of rowAttrs
                 textContent = rowAttr
                 if i < rowAttrs.length-1
                     textContent = " " + arrowExpanded + " " + rowAttr
