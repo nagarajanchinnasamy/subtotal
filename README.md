@@ -58,8 +58,8 @@ $(function(){
     $.getJSON("mps.json", function(mps) {
         $("#output").pivot(mps, {
             dataClass: dataClass,
-            rows: ["Gender", "Province"],
-            cols: ["Party", "Age Bin", "Age"],
+            rows: ["Gender", "Province", "Age Bin"],
+            cols: ["Party", "Age", "Gender Imbalance"],
             renderer: renderer,
             derivedAttributes: {
                 "Age Bin": derivers.bin("Age", 10),
@@ -68,8 +68,8 @@ $(function(){
                 }
             },
             rendererOptions: {
-                collapseRowsAt: "Gender",
-                collapseColsAt: "Party"
+                collapseRowsAt: 1,
+                collapseColsAt: 0
             }
         });
     });
@@ -92,8 +92,8 @@ $(function(){
     $.getJSON("mps.json", function(mps) {
         $("#output").pivotUI(mps, {
             dataClass: dataClass,
-            rows: ["Gender", "Province"],
-            cols: ["Party", "Age Bin", "Age"],
+            rows: ["Gender", "Province", "Age Bin"],
+            cols: ["Party", "Age", "Gender Imbalance"],
             renderers: renderers,
             derivedAttributes: {
                 "Age Bin": derivers.bin("Age", 10),
@@ -103,8 +103,8 @@ $(function(){
             },
             rendererName: "Table With Subtotal",
             rendererOptions: {
-                collapseRowsAt: "Gender",
-                collapseColsAt: "Party"
+                collapseRowsAt: 1,
+                collapseColsAt: 0
             }
         });
     });
@@ -123,9 +123,9 @@ $(function(){
 
 ### Parameter: rendererOptions
 
-`collapseRowsAt` option can be set to one of the values of `rows` array. If this option is set, rows are collapsed at the given row attribute when the pivot table is initially rendered. The default behavior is to render all rows expanded initially (ie., no collapse)
+`collapseRowsAt` option can be set to a `string` value as one of the elements of `rows` array or to a `numeric` value as index of one of the elements of `rows` array. If this option is set, rows are collapsed at the given row attribute whenever the pivot table is (re)rendered.  The default behavior is to render all rows expanded initially (ie., no collapse).
 
-`collapseColsAt` option can be set to one of the values of `cols` array. If this option is set, columns are collapsed at the given column attribute when the pivot table is initially rendered. The default behavior is to render all columns expanded initially (ie., no collapse)
+`collapseColsAt` option can be set to a `string` value as one of the elements of `cols` array or to a `numeric` value as index of one of the elements of `cols` array. If this option is set, columns are collapsed at the given column attribute whenever the pivot table is (re)rendered. The default behavior is to render all columns expanded initially (ie., no collapse).
 
 ## How can I build the code and run the tests?
 
