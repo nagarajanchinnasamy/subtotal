@@ -127,6 +127,8 @@ $(function(){
 
 `collapseColsAt` option can be set to a `string` value as one of the elements of `cols` array or to a `numeric` value as index of one of the elements of `cols` array. If this option is set, columns are collapsed at the given column attribute whenever the pivot table is (re)rendered. The default behavior is to render all columns expanded initially (ie., no collapse).
 
+For both `collapseRowsAt` and `collapseColsAt` options, using the numerical index value is recommended as it results in a better usability during rerendering of the table after drang and drop of attributes.
+
 ## How can I build the code and run the tests?
 
 To install the development dependencies, just run `npm install`, which will create a `node_modules` directory with the files required to run the [Gulp](http://gulpjs.com/) build system.
