@@ -718,7 +718,12 @@
       };
       collapseColsAt = function(colHeaderHeaders, colHeaderCols, colAttrs, colAttr) {
         var h, hh, i, idx, nAttrs, nCols, results;
-        idx = colAttrs.indexOf(colAttr);
+        if (typeof colAttr === 'string') {
+          idx = colAttrs.indexOf(colAttr);
+        } else {
+          idx = colAttr;
+        }
+        console.log("idx = " + idx);
         if (idx < 0 || idx === colAttrs.length - 1) {
           return;
         }
@@ -744,7 +749,11 @@
       };
       expandColsAt = function(colHeaderHeaders, colHeaderCols, colAttrs, colAttr) {
         var colHeaderHeader, h, hh, i, idx, j, k, nCols, ref, results;
-        idx = colAttrs.indexOf(colAttr);
+        if (typeof colAttr === 'string') {
+          idx = colAttrs.indexOf(colAttr);
+        } else {
+          idx = colAttr;
+        }
         if (idx < 0 || idx === colAttrs.length - 1) {
           return;
         }
@@ -779,7 +788,11 @@
       };
       collapseRowsAt = function(rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr) {
         var h, i, idx, j, nAttrs, nRows, results;
-        idx = rowAttrs.indexOf(rowAttr);
+        if (typeof rowAttr === 'string') {
+          idx = rowAttrs.indexOf(rowAttr);
+        } else {
+          idx = rowAttr;
+        }
         if (idx < 0 || idx === rowAttrs.length - 1) {
           return;
         }
@@ -807,7 +820,11 @@
       };
       expandRowsAt = function(rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr) {
         var h, hh, i, idx, j, k, nRows, ref, results, rowHeaderHeader;
-        idx = rowAttrs.indexOf(rowAttr);
+        if (typeof rowAttr === 'string') {
+          idx = rowAttrs.indexOf(rowAttr);
+        } else {
+          idx = rowAttr;
+        }
         if (idx < 0 || idx === rowAttrs.length - 1) {
           return;
         }
@@ -915,10 +932,10 @@
         buildGrandTotal(tbody, tr);
         result.setAttribute("data-numrows", rowKeys.length);
         result.setAttribute("data-numcols", colKeys.length);
-        if (!opts.collapseRowsAt && !opts.collapseColsAt) {
+        if ((opts.collapseRowsAt == null) && (opts.collapseColsAt == null)) {
           result.style.display = "";
         }
-        if (opts.collapseRowsAt) {
+        if (opts.collapseRowsAt != null) {
           setTimeout((function() {
             collapseRowsAt(rowHeaderHeaders, rowHeaderRows, rowAttrs, opts.collapseRowsAt);
             if (!opts.collapseColsAt) {
@@ -926,7 +943,7 @@
             }
           }), 0);
         }
-        if (opts.collapseColsAt) {
+        if (opts.collapseColsAt != null) {
           setTimeout((function() {
             collapseColsAt(colHeaderHeaders, colHeaderCols, colAttrs, opts.collapseColsAt);
             return result.style.display = "";

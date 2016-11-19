@@ -456,7 +456,11 @@ callWithJQuery ($) ->
                 collapseRow(rowHeaderHeaders, rowHeaderRows, r)
 
         collapseColsAt = (colHeaderHeaders, colHeaderCols, colAttrs, colAttr) ->
-            idx = colAttrs.indexOf(colAttr)
+            if typeof colAttr is 'string'
+                idx = colAttrs.indexOf(colAttr)
+            else
+                idx = colAttr
+            console.log "idx = " + idx
             if idx < 0 or idx == colAttrs.length-1
                 return
             i = idx
@@ -475,7 +479,10 @@ callWithJQuery ($) ->
                 ++i
 
         expandColsAt = (colHeaderHeaders, colHeaderCols, colAttrs, colAttr) ->
-            idx = colAttrs.indexOf(colAttr)
+            if typeof colAttr is 'string'
+                idx = colAttrs.indexOf(colAttr)
+            else
+                idx = colAttr
             if idx < 0 or idx == colAttrs.length-1
                 return
             for i in [0..idx]
@@ -501,7 +508,10 @@ callWithJQuery ($) ->
                 ++idx
 
         collapseRowsAt = (rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr) ->
-            idx = rowAttrs.indexOf(rowAttr)
+            if typeof rowAttr is 'string'
+                idx = rowAttrs.indexOf(rowAttr)
+            else
+                idx = rowAttr
             if idx < 0 or idx == rowAttrs.length-1
                 return
             i = idx
@@ -522,7 +532,10 @@ callWithJQuery ($) ->
                     ++j
 
         expandRowsAt = (rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr) ->
-            idx = rowAttrs.indexOf(rowAttr)
+            if typeof rowAttr is 'string'
+                idx = rowAttrs.indexOf(rowAttr)
+            else
+                idx = rowAttr
             if idx < 0 or idx == rowAttrs.length-1
                 return
             for i in [0..idx]
@@ -607,15 +620,15 @@ callWithJQuery ($) ->
             buildGrandTotal(tbody, tr)
             result.setAttribute("data-numrows", rowKeys.length)
             result.setAttribute("data-numcols", colKeys.length)
-            if not opts.collapseRowsAt and not opts.collapseColsAt
+            if not opts.collapseRowsAt? and not opts.collapseColsAt?
                 result.style.display = ""
-            if opts.collapseRowsAt
+            if opts.collapseRowsAt?
                 setTimeout (->
                     collapseRowsAt rowHeaderHeaders, rowHeaderRows, rowAttrs, opts.collapseRowsAt
                     if not opts.collapseColsAt
                         result.style.display = ""
                 ), 0
-            if opts.collapseColsAt
+            if opts.collapseColsAt?
                 setTimeout (->
                     collapseColsAt colHeaderHeaders, colHeaderCols, colAttrs, opts.collapseColsAt
                     result.style.display = ""
