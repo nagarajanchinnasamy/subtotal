@@ -130,10 +130,10 @@
       };
       processKeys = function(keysArr, className) {
         var c, flatKey, header, headers, lastCol, lastRow, node, nodePos, r, rMark, repeats, th, x;
+        headers = [];
         lastRow = keysArr.length - 1;
         lastCol = keysArr[0].length - 1;
         rMark = [];
-        headers = [];
         th = createCell("th", className, keysArr[0][0]);
         flatKey = keysArr[0][0];
         nodePos = 0;
@@ -887,10 +887,10 @@
         rowHeaderRows = [];
         colHeaderHeaders = [];
         colHeaderCols = [];
-        if (rowAttrs.length !== 0) {
+        if (rowAttrs.length !== 0 && rowKeys.length !== 0) {
           rowHeaders = processKeys(rowKeys, "pvtRowLabel");
         }
-        if (colAttrs.length !== 0) {
+        if (colAttrs.length !== 0 && colKeys.length !== 0) {
           colHeaders = processKeys(colKeys, "pvtColLabel");
         }
         result = document.createElement("table");

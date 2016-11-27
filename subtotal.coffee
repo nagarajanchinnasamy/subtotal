@@ -80,10 +80,10 @@ callWithJQuery ($) ->
             return th
 
         processKeys = (keysArr, className) ->
+            headers = []
             lastRow = keysArr.length - 1
             lastCol = keysArr[0].length - 1
             rMark = []
-            headers = []
             th = createCell("th", className, keysArr[0][0])
             flatKey = keysArr[0][0]
             nodePos = 0
@@ -587,9 +587,9 @@ callWithJQuery ($) ->
             colHeaderHeaders = []
             colHeaderCols = []
 
-            if rowAttrs.length != 0
+            if rowAttrs.length != 0 and rowKeys.length != 0
                 rowHeaders = processKeys(rowKeys, "pvtRowLabel")
-            if colAttrs.length != 0
+            if colAttrs.length != 0 and colKeys.length != 0
                 colHeaders = processKeys(colKeys, "pvtColLabel")
             result = document.createElement("table")
             result.className = "pvtTable"
