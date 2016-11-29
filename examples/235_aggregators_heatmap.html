@@ -34,7 +34,7 @@
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
             
             <!-- for examples only! script to show code to user -->
-            <script type="text/javascript" src="show_code.js"></script>
+            <script type="text/javascript" src="js/show_code.js"></script>
     </head>
 
     <body>
@@ -50,7 +50,7 @@
         var sortAs =           $.pivotUtilities.sortAs;
         var tpl =              $.pivotUtilities.aggregatorTemplates;
 
-        $.get("montreal_2014.csv", function(montreal_2014) {
+        $.get("data/montreal_2014.csv", function(montreal_2014) {
             $("#output").pivotUI($.csv.toArrays(montreal_2014), {
                 hiddenAttributes: ["Date","Max Temp (C)","Mean Temp (C)",
                     "Min Temp (C)" ,"Total Rain (mm)","Total Snow (cm)"],

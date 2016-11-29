@@ -15,21 +15,13 @@
 
         <style>
             body {font-family: Verdana;}
-            .pvtRowSubtotal {
-                background-color: #EFEFEF !important;
-                font-weight:bold;
-            }
-            .pvtColSubtotal {
-                background-color: #EFEFEF !important;
-                font-weight:bold;
-            }
         </style>
 
         <!-- optional: mobile support with jqueryui-touch-punch -->
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
 
         <!-- for examples only! script to show code to user -->
-        <!-- <script type="text/javascript" src="show_code.js"></script> -->
+        <script type="text/javascript" src="js/show_code.js"></script>
     </head>
     <body>
     <script type="text/javascript">
@@ -38,54 +30,24 @@
 
     $(function() {
         var dataClass = $.pivotUtilities.SubtotalPivotData;
-        var derivers = $.pivotUtilities.derivers;
         var renderers = $.pivotUtilities.subtotal_renderers;
 
-        $.getJSON("mps.json", function(mps) {
+        $.getJSON("data/mps.json", function(mps) {
             $("#output").pivotUI(mps, {
                 dataClass: dataClass,
                 rows: ["Gender", "Province"],
-                cols: ["Party", "Age Bin", "Age"],
+                cols: ["Party", "Age"],
                 renderers: renderers,
-                derivedAttributes: {
-                    "Age Bin": derivers.bin("Age", 10),
-                    "Gender Imbalance": function(mp) {
-                        return mp["Gender"] == "Male" ? 1 : -1;
-                    }
-                },
-                rendererName: "Table With Subtotal",
-                rendererOptions: {
-                    collapseRowsAt: "Gender",
-                    collapseColsAt: "Party"
-                }
-            });
-            $("#output2").pivotUI(mps, {
-                dataClass: dataClass,
-                rows: ["Gender", "Province"],
-                cols: ["Party", "Age Bin", "Age"],
-                renderers: renderers,
-                derivedAttributes: {
-                    "Age Bin": derivers.bin("Age", 10),
-                    "Gender Imbalance": function(mp) {
-                        return mp["Gender"] == "Male" ? 1 : -1;
-                    }
-                },
-                rendererName: "Table With Subtotal",
-                rendererOptions: {
-                    collapseRowsAt: "Gender",
-                    collapseColsAt: "Party"
-                }
+                rendererName: "Table With Subtotal"
             });
         });
     });
     </script>
     <p><a href="index.html">&laquo; back to examples</a></p>
     <p></p>
-    <p>To expand and collapse rows and columns, click on &#x25B6 and &#x25E2 arrows in the table.</p>
+    <p>To expand and collapse rows and columns, click on &#x25B6 and &#x25E2 arrows in the table. Scroll down to view the code.</p>
     <p></p>
     <div id="output" style="margin: 30px;"></div>
-    <p></p>
-    <div id="output2" style="margin: 30px;"></div>
     <p></p>
     <p><a href="index.html">&laquo; back to examples</a></p>
      </body>

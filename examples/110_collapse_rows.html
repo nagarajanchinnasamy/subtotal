@@ -20,7 +20,7 @@
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
 
         <!-- for examples only! script to show code to user -->
-        <script type="text/javascript" src="show_code.js"></script>
+        <script type="text/javascript" src="js/show_code.js"></script>
     </head>
     <body>
     <script type="text/javascript">
@@ -30,25 +30,18 @@
     $(function(){
         var dataClass = $.pivotUtilities.SubtotalPivotData;
         var derivers = $.pivotUtilities.derivers;
-        var aggregator = $.pivotUtilities.aggregators["Count"]();
-        var renderers = $.pivotUtilities.subtotal_renderers;
-        var fixtureData = [
-            ["name",    "gender",   "colour",    "birthday",     "trials",   "successes"],
-            ["Nick",    "male",     "blue",      "1982-11-07",   103,        12],
-            ["Jane",    "female",   "red",       "1982-11-08",   95,         25],
-            ["John",    "male",     "blue",      "1982-12-08",   112,        30],
-            ["Carol",   "female",   "yellow",    "1983-12-08",   102,        14]
-        ];
-        $("#output").pivotUI(fixtureData, {
-            dataClass: dataClass,
-            rows: ["colour", "name"],
-            cols: ["gender", "birthday", "trials", "successes"],
-            aggregator: aggregator,
-            renderers: renderers,
-            rendererName: "Table With Subtotal",
-            rendererOptions: {
-                // collapseRowsAt: "colour"
-            }
+        var renderer = $.pivotUtilities.subtotal_renderers["Table With Subtotal"];
+
+        $.getJSON("data/mps.json", function(mps) {
+            $("#output").pivot(mps, {
+                dataClass: dataClass,
+                rows: ["Gender", "Province"],
+                cols: ["Party", "Age"],
+                renderer: renderer,
+                rendererOptions: {
+                    collapseRowsAt: 0 
+                }
+            });
         });
      });
     </script>
