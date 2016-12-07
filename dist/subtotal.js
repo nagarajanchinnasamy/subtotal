@@ -93,7 +93,7 @@
     })($.pivotUtilities.PivotData);
     $.pivotUtilities.SubtotalPivotData = SubtotalPivotData;
     SubtotalRenderer = function(pivotData, opts) {
-      var allTotal, arrowCollapsed, arrowExpanded, buildColHeaderHeader, buildColHeaderHeaders, buildColHeaderHeadersClickEvents, buildColHeaders, buildColTotals, buildColTotalsHeader, buildGrandTotal, buildRowHeaderHeaders, buildRowHeaderHeadersClickEvents, buildRowHeaders, buildRowTotalsHeader, buildValues, colAttrs, colKeys, colTotals, collapseCol, collapseColsAt, collapseRow, collapseRowsAt, createCell, defaults, expandChildCol, expandChildRow, expandCol, expandColsAt, expandRow, expandRowsAt, main, processKeys, rowAttrs, rowKeys, rowTotals, setColVisibility, toggleCol, toggleColHeaderHeader, toggleRow, toggleRowHeaderHeader, tree;
+      var addClass, allTotal, arrowCollapsed, arrowExpanded, buildColHeaderHeader, buildColHeaderHeaders, buildColHeaderHeadersClickEvents, buildColHeaders, buildColTotals, buildColTotalsHeader, buildGrandTotal, buildRowHeaderHeaders, buildRowHeaderHeadersClickEvents, buildRowHeaders, buildRowTotalsHeader, buildValues, classCollapsed, classExpanded, colAttrs, colKeys, colTotals, collapseCol, collapseColsAt, collapseRow, collapseRowsAt, createCell, defaults, expandChildCol, expandChildRow, expandCol, expandColsAt, expandRow, expandRowsAt, hasClass, main, processKeys, removeClass, replaceClass, rowAttrs, rowKeys, rowTotals, setColVisibility, toggleCol, toggleColHeaderHeader, toggleRow, toggleRowHeaderHeader, tree;
       defaults = {
         localeStrings: {
           totals: "Totals"
@@ -102,6 +102,8 @@
       opts = $.extend(defaults, opts);
       arrowCollapsed = "\u25B6";
       arrowExpanded = "\u25E2";
+      classExpanded = "expanded";
+      classCollapsed = "collapsed";
       colAttrs = pivotData.colAttrs;
       rowAttrs = pivotData.rowAttrs;
       rowKeys = pivotData.getRowKeys();
@@ -110,6 +112,25 @@
       rowTotals = pivotData.rowTotals;
       colTotals = pivotData.colTotals;
       allTotal = pivotData.allTotal;
+      hasClass = function(element, className) {
+        var regExp;
+        regExp = new RegExp("(?:^|\\s)" + className + "(?!\\S)", "g");
+        return element.className.match(regExp);
+      };
+      removeClass = function(element, className) {
+        var regExp;
+        regExp = new RegExp("(?:^|\\s)" + className + "(?!\\S)", "g");
+        return element.className = element.className.replace(regExp, '');
+      };
+      addClass = function(element, className) {
+        if (!hasClass(element, className)) {
+          return element.className += " " + className;
+        }
+      };
+      replaceClass = function(element, replaceClassName, byClassName) {
+        removeClass(element, replaceClassName);
+        return addClass(element, byClassName);
+      };
       createCell = function(cellType, className, textContent, attributes) {
         var attr, th, val;
         th = document.createElement(cellType);
@@ -222,20 +243,21 @@
         return headers;
       };
       buildColHeaderHeader = function(thead, colHeaderHeaders, rowAttrs, colAttrs, tr, col) {
-        var colAttr, textContent, th;
+        var className, colAttr, textContent, th;
         colAttr = colAttrs[col];
-        th = createCell("th", "pvtAxisLabel", colAttr);
         textContent = colAttr;
+        className = "pvtAxisLabel";
         if (col < colAttrs.length - 1) {
+          className += " expanded";
           textContent = " " + arrowExpanded + " " + colAttr;
         }
-        th = createCell("th", "pvtAxisLabel", textContent);
+        th = createCell("th", className, textContent);
         th.setAttribute("data-colAttr", colAttr);
         tr.appendChild(th);
         colHeaderHeaders.push({
           "tr": tr,
           "th": th,
-          "clickStatus": "expanded",
+          "clickStatus": classExpanded,
           "expandedCount": 0,
           "nHeaders": 0
         });
@@ -299,6 +321,7 @@
         th.setAttribute("data-node", colHeaderCols.length);
         tr.appendChild(th);
         if (colHeader.children.length !== 0) {
+          addClass(th, classExpanded);
           th.textContent = " " + arrowExpanded + " " + th.textContent;
           th.onclick = function(event) {
             event = event || window.event;
@@ -312,27 +335,29 @@
           colHeader.children[0].tr.appendChild(th);
           colHeader.sTh = th;
         }
-        colHeader.clickStatus = "expanded";
+        colHeader.clickStatus = classExpanded;
         colHeader.tr = tr;
         return colHeaderCols.push(colHeader);
       };
       buildRowHeaderHeaders = function(thead, rowHeaderHeaders, rowAttrs, colAttrs) {
-        var i, rowAttr, textContent, th, tr;
+        var className, i, rowAttr, textContent, th, tr;
         tr = document.createElement("tr");
         rowHeaderHeaders.hh = [];
         for (i in rowAttrs) {
           if (!hasProp.call(rowAttrs, i)) continue;
           rowAttr = rowAttrs[i];
           textContent = rowAttr;
+          className = "pvtAxisLabel";
           if (i < rowAttrs.length - 1) {
+            className += " expanded";
             textContent = " " + arrowExpanded + " " + rowAttr;
           }
-          th = createCell("th", "pvtAxisLabel", textContent);
+          th = createCell("th", className, textContent);
           th.setAttribute("data-rowAttr", rowAttr);
           tr.appendChild(th);
           rowHeaderHeaders.hh.push({
             "th": th,
-            "clickStatus": "expanded",
+            "clickStatus": classExpanded,
             "expandedCount": 0,
             "nHeaders": 0
           });
@@ -386,6 +411,7 @@
         th.setAttribute("data-node", rowHeaderRows.length);
         tr.appendChild(th);
         if (rowHeader.children.length !== 0) {
+          addClass(th, classExpanded);
           th.textContent = " " + arrowExpanded + " " + th.textContent;
           th.onclick = function(event) {
             event = event || window.event;
@@ -397,7 +423,7 @@
           });
           tr.appendChild(th);
         }
-        rowHeader.clickStatus = "expanded";
+        rowHeader.clickStatus = classExpanded;
         rowHeader.tr = tr;
         rowHeaderRows.push(rowHeader);
         tbody.appendChild(tr);
@@ -506,7 +532,7 @@
           return;
         }
         h = colHeaderCols[c];
-        if (h.clickStatus === "collapsed") {
+        if (h.clickStatus === classCollapsed) {
           return;
         }
         colspan = 0;
@@ -526,9 +552,10 @@
           p = p.parent;
         }
         if (h.descendants !== 0) {
+          replaceClass(h.th, classExpanded, classCollapsed);
           h.th.textContent = " " + arrowCollapsed + " " + h.th.getAttribute("data-colHeader");
         }
-        h.clickStatus = "collapsed";
+        h.clickStatus = classCollapsed;
         h.th.setAttribute("colspan", 1);
         h.th.style.display = "";
         colHeaderHeader = colHeaderHeaders[h.col];
@@ -537,8 +564,9 @@
           results = [];
           for (i = l = ref1 = h.col, ref2 = colHeaderHeaders.length - 2; ref1 <= ref2 ? l <= ref2 : l >= ref2; i = ref1 <= ref2 ? ++l : --l) {
             colHeaderHeader = colHeaderHeaders[i];
+            replaceClass(colHeaderHeader.th, classExpanded, classCollapsed);
             colHeaderHeader.th.textContent = " " + arrowCollapsed + " " + colHeaderHeader.th.getAttribute("data-colAttr");
-            results.push(colHeaderHeader.clickStatus = "collapsed");
+            results.push(colHeaderHeader.clickStatus = classCollapsed);
           }
           return results;
         }
@@ -548,7 +576,7 @@
         if (ch.th.style.display === "none") {
           setColVisibility("", ch);
         }
-        if (ch.clickStatus !== "collapsed") {
+        if (ch.clickStatus !== classCollapsed) {
           ref = ch.children;
           results = [];
           for (k = 0, len = ref.length; k < len; k++) {
@@ -564,7 +592,7 @@
           return;
         }
         h = colHeaderCols[c];
-        if (h.clickStatus === "expanded") {
+        if (h.clickStatus === classExpanded) {
           return;
         }
         colspan = 0;
@@ -578,10 +606,11 @@
           expandChildCol(ch);
         }
         if (h.descendants !== 0) {
+          replaceClass(h.th, classCollapsed, classExpanded);
           h.th.textContent = " " + arrowExpanded + " " + h.th.getAttribute("data-colHeader");
         }
         h.th.setAttribute("colspan", colspan + 1);
-        h.clickStatus = "expanded";
+        h.clickStatus = classExpanded;
         h.th.style.display = "";
         if (h.sTh) {
           h.sTh.style.display = "";
@@ -594,8 +623,9 @@
         hh = colHeaderHeaders[h.col];
         ++hh.expandedCount;
         if (hh.expandedCount === hh.nHeaders) {
+          replaceClass(hh.th, classCollapsed, classExpanded);
           hh.th.textContent = " " + arrowExpanded + " " + hh.th.getAttribute("data-colAttr");
-          return hh.clickStatus = "expanded";
+          return hh.clickStatus = classExpanded;
         }
       };
       collapseRow = function(rowHeaderHeaders, rowHeaderRows, r) {
@@ -604,7 +634,7 @@
           return;
         }
         h = rowHeaderRows[r];
-        if (h.clickStatus === "collapsed") {
+        if (h.clickStatus === classCollapsed) {
           return;
         }
         rowspan = 0;
@@ -624,9 +654,10 @@
           p = p.parent;
         }
         if (h.descendants !== 0) {
+          replaceClass(h.th, classExpanded, classCollapsed);
           h.th.textContent = " " + arrowCollapsed + " " + h.th.getAttribute("data-rowHeader");
         }
-        h.clickStatus = "collapsed";
+        h.clickStatus = classCollapsed;
         h.th.setAttribute("rowspan", 1);
         h.tr.style.display = "";
         rowHeaderHeader = rowHeaderHeaders.hh[h.col];
@@ -635,8 +666,9 @@
           results = [];
           for (j = l = ref1 = h.col, ref2 = rowHeaderHeaders.hh.length - 2; ref1 <= ref2 ? l <= ref2 : l >= ref2; j = ref1 <= ref2 ? ++l : --l) {
             rowHeaderHeader = rowHeaderHeaders.hh[j];
+            replaceClass(rowHeaderHeader.th, classExpanded, classCollapsed);
             rowHeaderHeader.th.textContent = " " + arrowCollapsed + " " + rowHeaderHeader.th.getAttribute("data-rowAttr");
-            results.push(rowHeaderHeader.clickStatus = "collapsed");
+            results.push(rowHeaderHeader.clickStatus = classCollapsed);
           }
           return results;
         }
@@ -646,7 +678,7 @@
         if (ch.tr.style.display === "none") {
           ch.tr.style.display = "";
         }
-        if (ch.clickStatus !== "collapsed") {
+        if (ch.clickStatus !== classCollapsed) {
           ref = ch.children;
           results = [];
           for (k = 0, len = ref.length; k < len; k++) {
@@ -662,7 +694,7 @@
           return;
         }
         h = rowHeaderRows[r];
-        if (h.clickStatus === "expanded") {
+        if (h.clickStatus === classExpanded) {
           return;
         }
         rowspan = 0;
@@ -676,10 +708,11 @@
           expandChildRow(ch);
         }
         if (h.descendants !== 0) {
+          replaceClass(h.th, classCollapsed, classExpanded);
           h.th.textContent = " " + arrowExpanded + " " + h.th.getAttribute("data-rowHeader");
         }
         h.th.setAttribute("rowspan", rowspan + 1);
-        h.clickStatus = "expanded";
+        h.clickStatus = classExpanded;
         h.tr.style.display = "";
         p = h.parent;
         while (p !== null) {
@@ -689,8 +722,9 @@
         hh = rowHeaderHeaders.hh[h.col];
         ++hh.expandedCount;
         if (hh.expandedCount === hh.nHeaders) {
+          replaceClass(hh.th, classCollapsed, classExpanded);
           hh.th.textContent = " " + arrowExpanded + " " + hh.th.getAttribute("data-rowAttr");
-          return hh.clickStatus = "expanded";
+          return hh.clickStatus = classExpanded;
         }
       };
       toggleCol = function(colHeaderHeaders, colHeaderCols, c) {
@@ -699,7 +733,7 @@
           return;
         }
         h = colHeaderCols[c];
-        if (h.clickStatus === "collapsed") {
+        if (h.clickStatus === classCollapsed) {
           expandCol(colHeaderHeaders, colHeaderCols, c);
         } else {
           collapseCol(colHeaderHeaders, colHeaderCols, c);
@@ -710,7 +744,7 @@
         if (!rowHeaderRows[r]) {
           return;
         }
-        if (rowHeaderRows[r].clickStatus === "collapsed") {
+        if (rowHeaderRows[r].clickStatus === classCollapsed) {
           return expandRow(rowHeaderHeaders, rowHeaderRows, r);
         } else {
           return collapseRow(rowHeaderHeaders, rowHeaderRows, r);
@@ -731,8 +765,9 @@
         nAttrs = colAttrs.length - 1;
         while (i < nAttrs) {
           hh = colHeaderHeaders[i];
+          replaceClass(hh.th, classExpanded, classCollapsed);
           hh.th.textContent = " " + arrowCollapsed + " " + colAttrs[i];
-          hh.clickStatus = "collapsed";
+          hh.clickStatus = classCollapsed;
           ++i;
         }
         i = 0;
@@ -740,7 +775,7 @@
         results = [];
         while (i < nCols) {
           h = colHeaderCols[i];
-          if (h.col === idx && h.clickStatus !== "collapsed" && h.th.style.display !== "none") {
+          if (h.col === idx && h.clickStatus !== classCollapsed && h.th.style.display !== "none") {
             collapseCol(colHeaderHeaders, colHeaderCols, parseInt(h.th.getAttribute("data-node")));
           }
           results.push(++i);
@@ -759,8 +794,9 @@
         }
         for (i = k = 0, ref = idx; 0 <= ref ? k <= ref : k >= ref; i = 0 <= ref ? ++k : --k) {
           hh = colHeaderHeaders[i];
+          replaceClass(hh.th, classCollapsed, classExpanded);
           hh.th.textContent = " " + arrowExpanded + " " + colAttrs[i];
-          hh.clickStatus = "expanded";
+          hh.clickStatus = classExpanded;
           j = 0;
           nCols = colHeaderCols.length;
           while (j < nCols) {
@@ -776,11 +812,13 @@
         while (idx < colAttrs.length - 1) {
           colHeaderHeader = colHeaderHeaders[idx];
           if (colHeaderHeader.expandedCount === 0) {
+            replaceClass(colHeaderHeader.th, classExpanded, classCollapsed);
             colHeaderHeader.th.textContent = " " + arrowCollapsed + " " + colAttrs[idx];
-            colHeaderHeader.clickStatus = "collapsed";
+            colHeaderHeader.clickStatus = classCollapsed;
           } else if (colHeaderHeader.expandedCount === colHeaderHeader.nHeaders) {
+            replaceClass(colHeaderHeader.th, classCollapsed, classExpanded);
             colHeaderHeader.th.textContent = " " + arrowExpanded + " " + colAttrs[idx];
-            colHeaderHeader.clickStatus = "expanded";
+            colHeaderHeader.clickStatus = classExpanded;
           }
           results.push(++idx);
         }
@@ -800,8 +838,9 @@
         nAttrs = rowAttrs.length - 1;
         while (i < nAttrs) {
           h = rowHeaderHeaders.hh[i];
+          replaceClass(h.th, classExpanded, classCollapsed);
           h.th.textContent = " " + arrowCollapsed + " " + rowAttrs[i];
-          h.clickStatus = "collapsed";
+          h.clickStatus = classCollapsed;
           ++i;
         }
         j = 0;
@@ -809,7 +848,7 @@
         results = [];
         while (j < nRows) {
           h = rowHeaderRows[j];
-          if (h.col === idx && h.clickStatus !== "collapsed" && h.tr.style.display !== "none") {
+          if (h.col === idx && h.clickStatus !== classCollapsed && h.tr.style.display !== "none") {
             collapseRow(rowHeaderHeaders, rowHeaderRows, j);
             results.push(j = j + h.descendants + 1);
           } else {
@@ -830,8 +869,9 @@
         }
         for (i = k = 0, ref = idx; 0 <= ref ? k <= ref : k >= ref; i = 0 <= ref ? ++k : --k) {
           hh = rowHeaderHeaders.hh[i];
+          replaceClass(hh.th, classCollapsed, classExpanded);
           hh.th.textContent = " " + arrowExpanded + " " + rowAttrs[i];
-          hh.clickStatus = "expanded";
+          hh.clickStatus = classExpanded;
           j = 0;
           nRows = rowHeaderRows.length;
           while (j < nRows) {
@@ -849,11 +889,13 @@
         while (idx < rowAttrs.length - 1) {
           rowHeaderHeader = rowHeaderHeaders.hh[idx];
           if (rowHeaderHeader.expandedCount === 0) {
+            replaceClass(rowHeaderHeader.th, classExpanded, classCollapsed);
             rowHeaderHeader.th.textContent = " " + arrowCollapsed + " " + rowAttrs[idx];
-            rowHeaderHeader.clickStatus = "collapsed";
+            rowHeaderHeader.clickStatus = classCollapsed;
           } else if (rowHeaderHeader.expandedCount === rowHeaderHeader.nHeaders) {
+            replaceClass(rowHeaderHeader.th, classCollapsed, classExpanded);
             rowHeaderHeader.th.textContent = " " + arrowExpanded + " " + rowAttrs[idx];
-            rowHeaderHeader.clickStatus = "expanded";
+            rowHeaderHeader.clickStatus = classExpanded;
           }
           results.push(++idx);
         }
@@ -863,7 +905,7 @@
         var h, idx;
         idx = colAttrs.indexOf(colAttr);
         h = colHeaderHeaders[idx];
-        if (h.clickStatus === "collapsed") {
+        if (h.clickStatus === classCollapsed) {
           return expandColsAt(colHeaderHeaders, colHeaderCols, colAttrs, colAttr);
         } else {
           return collapseColsAt(colHeaderHeaders, colHeaderCols, colAttrs, colAttr);
@@ -873,7 +915,7 @@
         var idx, th;
         idx = rowAttrs.indexOf(rowAttr);
         th = rowHeaderHeaders.hh[idx];
-        if (th.clickStatus === "collapsed") {
+        if (th.clickStatus === classCollapsed) {
           return expandRowsAt(rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr);
         } else {
           return collapseRowsAt(rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr);
