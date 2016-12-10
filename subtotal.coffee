@@ -61,8 +61,8 @@ callWithJQuery ($) ->
 
         opts = $.extend defaults, opts
 
-        arrowCollapsed = "\u25B6"
-        arrowExpanded = "\u25E2"
+        arrowCollapsed = opts.arrowCollapsed ?= "\u25B6"
+        arrowExpanded = opts.arrowExpanded ?= "\u25E2"
         classExpanded = "expanded" 
         classCollapsed = "collapsed"
         colAttrs = pivotData.colAttrs
@@ -269,7 +269,7 @@ callWithJQuery ($) ->
                     event = event || window.event
                     toggleRow(rowHeaderHeaders, rowHeaderRows, parseInt(event.target.getAttribute("data-node")))
                 colspan = rowAttrs.length-(rowHeader.col+1) + if colAttrs.length != 0 then 1 else 0
-                th = createCell("th", "pvtRowLabel", '', {"colspan": colspan})
+                th = createCell("th", "pvtRowLabel pvtRowSubtotal", '', {"colspan": colspan})
                 tr.appendChild(th)
             rowHeader.clickStatus = classExpanded
             rowHeader.tr = tr
@@ -493,7 +493,6 @@ callWithJQuery ($) ->
                 idx = colAttrs.indexOf(colAttr)
             else
                 idx = colAttr
-            console.log "idx = " + idx
             if idx < 0 or idx == colAttrs.length-1
                 return
             i = idx

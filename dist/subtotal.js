@@ -100,8 +100,8 @@
         }
       };
       opts = $.extend(defaults, opts);
-      arrowCollapsed = "\u25B6";
-      arrowExpanded = "\u25E2";
+      arrowCollapsed = opts.arrowCollapsed != null ? opts.arrowCollapsed : opts.arrowCollapsed = "\u25B6";
+      arrowExpanded = opts.arrowExpanded != null ? opts.arrowExpanded : opts.arrowExpanded = "\u25E2";
       classExpanded = "expanded";
       classCollapsed = "collapsed";
       colAttrs = pivotData.colAttrs;
@@ -418,7 +418,7 @@
             return toggleRow(rowHeaderHeaders, rowHeaderRows, parseInt(event.target.getAttribute("data-node")));
           };
           colspan = rowAttrs.length - (rowHeader.col + 1) + (colAttrs.length !== 0 ? 1 : 0);
-          th = createCell("th", "pvtRowLabel", '', {
+          th = createCell("th", "pvtRowLabel pvtRowSubtotal", '', {
             "colspan": colspan
           });
           tr.appendChild(th);
@@ -757,7 +757,6 @@
         } else {
           idx = colAttr;
         }
-        console.log("idx = " + idx);
         if (idx < 0 || idx === colAttrs.length - 1) {
           return;
         }

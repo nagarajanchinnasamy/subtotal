@@ -11,7 +11,18 @@ var gulp = require('gulp'),
     rename = require('gulp-rename'),
     sourcemaps = require('gulp-sourcemaps'),
     concat = require('gulp-concat'),
+    minifyCSS = require('gulp-minify-css'),
     serve = require('gulp-serve');
+
+gulp.task('makeCss', function() {
+    gulp.src('./subtotal.css')
+        .pipe(gulp.dest('./dist/'))
+
+    gulp.src('./subtotal.css')
+        .pipe(minifyCSS())
+        .pipe(concat('subtotal.min.css'))//trick to output to new file
+        .pipe(gulp.dest('./dist/'))
+});
 
 gulp.task('makeJs', function() {
     
@@ -82,7 +93,8 @@ gulp.task('serve', serve('.'));
 
 gulp.task('watch', function() {
   gulp.watch('./*.coffee', ['makeJs']);
+  gulp.watch('./subtotal.css', ['makeCss']);
 });
 
-gulp.task('default', ['makeJs']);
+gulp.task('default', ['makeJs', 'makeCss']);
 

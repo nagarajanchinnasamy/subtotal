@@ -2,11 +2,11 @@
 <html>
     <head>
         <title>Subtotal Demo</title>
-        <!-- external libs from cdnjs -->
+        <!-- external dependency libs from cdnjs -->
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
 
-        <!-- PivotTable.js libs from ../dist -->
+        <!-- PivotTable.js libs from cdnjs -->
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.1.0/pivot.min.js"></script>
         <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.1.0/pivot.min.css">
 
@@ -19,8 +19,6 @@
 
         <!-- for examples only! script to show code to user -->
         <script type="text/javascript" src="js/show_code.js"></script>
-
-        <link rel="stylesheet" type="text/css" href="./subtotal_examples.css">
     </head>
     <body>
     <script type="text/javascript">
@@ -36,23 +34,16 @@
             $("#output").pivot(mps, {
                 dataClass: dataClass,
                 rows: ["Gender", "Province"],
-                cols: ["Party", "Age Bin", "Age"],
+                cols: ["Party", "Age"],
                 renderer: renderer,
-                derivedAttributes: {
-                   "Age Bin": derivers.bin("Age", 10),
-                   "Gender Imbalance": function(mp) {
-                       return mp["Gender"] == "Male" ? 1 : -1;
-                   }
-               },
-               rendererOptions: {
-		   arrowCollapsed: "[+]",
-		   arrowExpanded: "[-]",
-                   collapseRowsAt: 0,
-                   collapseColsAt: 1
-               }
+                rendererOptions: {
+		    arrowCollapsed: "[+] ",
+		    arrowExpanded: "[-] ",
+                    collapseRowsAt: 0 
+                }
             });
         });
-    });
+     });
     </script>
     <p><a href="index.html">&laquo; back to examples</a></p>
     <p></p>
@@ -61,5 +52,5 @@
     <div id="output" style="margin: 30px;"></div>
     <p></p>
     <p><a href="index.html">&laquo; back to examples</a></p>
-     </body>
+    </body>
 </html>
