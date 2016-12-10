@@ -103,6 +103,8 @@ $(function(){
             },
             rendererName: "Table With Subtotal",
             rendererOptions: {
+                arrowCollapsed: "[+]",
+                arrowExpanded: "[-]",
                 collapseRowsAt: 1,
                 collapseColsAt: 0
             }
@@ -123,11 +125,13 @@ $(function(){
 
 ### Parameter: rendererOptions
 
-`collapseRowsAt` option can be set to a `string` value as one of the elements of `rows` array or to a `numeric` value as index of one of the elements of `rows` array. If this option is set, rows are collapsed at the given row attribute whenever the pivot table is (re)rendered.  The default behavior is to render all rows expanded initially (ie., no collapse).
+**`collapseRowsAt`** option can be set to a `string` value as one of the elements of `rows` array or to a `numeric` value as index of one of the elements of `rows` array. If this option is set, rows are collapsed at the given row attribute whenever the pivot table is (re)rendered.  The default behavior is to render all rows expanded initially (ie., no collapse).
 
-`collapseColsAt` option can be set to a `string` value as one of the elements of `cols` array or to a `numeric` value as index of one of the elements of `cols` array. If this option is set, columns are collapsed at the given column attribute whenever the pivot table is (re)rendered. The default behavior is to render all columns expanded initially (ie., no collapse).
+**`collapseColsAt`** option can be set to a `string` value as one of the elements of `cols` array or to a `numeric` value as index of one of the elements of `cols` array. If this option is set, columns are collapsed at the given column attribute whenever the pivot table is (re)rendered. The default behavior is to render all columns expanded initially (ie., no collapse).
 
 For both `collapseRowsAt` and `collapseColsAt` options, using the numerical index value is recommended as it results in a better usability during rerendering of the table after drang and drop of attributes.
+
+**`arrowCollapsed`** and **`arrowExpanded`** options can be used to customize the default arrows ("\u25B6" and "\u25E2" respectively) displayed with subtotal row/column labels and pivot axis labels.
 
 ## How can I build the code and run the tests?
 
