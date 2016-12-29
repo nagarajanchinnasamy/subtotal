@@ -52,14 +52,15 @@ callWithJQuery ($) ->
                         @tree[flatRowKey][flatColKey] = @aggregator(this, fRowKey, fColKey)
                     @tree[flatRowKey][flatColKey].push record
 
+
     $.pivotUtilities.SubtotalPivotData = SubtotalPivotData
 
     SubtotalRenderer = (pivotData, opts) ->
         defaults =
-            localeStrings:
-                totals: "Totals"
+            table: clickCallback: null
+            localeStrings: totals: "Totals"
 
-        opts = $.extend defaults, opts
+        opts = $.extend(true, {}, defaults, opts)
 
         arrowCollapsed = opts.arrowCollapsed ?= "\u25B6"
         arrowExpanded = opts.arrowExpanded ?= "\u25E2"
@@ -72,9 +73,9 @@ callWithJQuery ($) ->
         tree = pivotData.tree
         rowTotals = pivotData.rowTotals
         colTotals = pivotData.colTotals
-        allTotal =pivotData.allTotal
+        allTotal = pivotData.allTotal
 
-	# Based on http://stackoverflow.com/questions/195951/change-an-elements-class-with-javascript -- Begin
+        # Based on http://stackoverflow.com/questions/195951/change-an-elements-class-with-javascript -- Begin
         hasClass = (element, className) ->
             regExp = new RegExp("(?:^|\\s)" + className + "(?!\\S)", "g")
             element.className.match(regExp)
@@ -89,13 +90,26 @@ callWithJQuery ($) ->
         replaceClass = (element, replaceClassName, byClassName) ->
             removeClass element, replaceClassName
             addClass element, byClassName 
-	# Based on http://stackoverflow.com/questions/195951/change-an-elements-class-with-javascript -- End 
+        # Based on http://stackoverflow.com/questions/195951/change-an-elements-class-with-javascript -- End 
 
-        createCell = (cellType, className, textContent, attributes) ->
+        getTableEventHandlers = (value, rowValues, colValues) ->
+            if opts.table.eventHandlers?
+                tableEventHandlers = {}
+                for own tableEvent, tableEventHandler of opts.table.eventHandlers
+                    filters = {}
+                    filters[attr] = colValues[i] for own i, attr of colAttrs when colValues[i]?
+                    filters[attr] = rowValues[i] for own i, attr of rowAttrs when rowValues[i]?
+                    tableEventHandlers[tableEvent] = (e) -> tableEventHandler(e, value, filters, pivotData)
+                return tableEventHandlers
+
+        createCell = (cellType, className, textContent, attributes, eventHandlers) ->
             th = document.createElement(cellType)
             if className then th.className = className
             if textContent isnt null and textContent isnt undefined then th.textContent = textContent
             if attributes then th.setAttribute(attr, val) for own attr, val of attributes
+            if eventHandlers
+               for own event, handler of eventHandlers
+                   th.addEventListener(event, handler)
             return th
 
         processKeys = (keysArr, className) ->
@@ -104,17 +118,19 @@ callWithJQuery ($) ->
             lastCol = keysArr[0].length - 1
             rMark = []
             th = createCell("th", className, keysArr[0][0])
-            flatKey = keysArr[0][0]
+            key = []
+            key.push(keysArr[0][0])
             nodePos = 0
-            node = {"node": nodePos, "row": 0, "col": 0, "th": th, "parent": null, "children": [], "descendants": lastCol, "leaves": 1, "flatKey": flatKey}
-            headers[0] = node
+            node = {"node": nodePos, "row": 0, "col": 0, "th": th, "parent": null, "children": [], "descendants": lastCol, "leaves": 1, "key": key, "flatKey": key.join(String.fromCharCode(0))}
+            headers.push(node)
             rMark[0] = node
             c = 1
             while c <= lastCol
                 th = createCell("th", className, keysArr[0][c])
-                flatKey = flatKey + String.fromCharCode(0) + keysArr[0][c]
+                key = key.slice()
+                key.push(keysArr[0][c])
                 ++nodePos
-                node =  {"node": nodePos, "row": 0, "col": c, "th": th, "parent": rMark[c-1], "children": [], "descendants": lastCol-c, "leaves": 1, "flatKey": flatKey}
+                node =  {"node": nodePos, "row": 0, "col": c, "th": th, "parent": rMark[c-1], "children": [], "descendants": lastCol-c, "leaves": 1, "key": key, "flatKey": key.join(String.fromCharCode(0))}
                 rMark[c] = node
                 rMark[c-1].children.push(node)
                 ++c
@@ -122,27 +138,30 @@ callWithJQuery ($) ->
             r = 1
             while r <= lastRow
                 repeats = true
-                flatKey = ""
                 c = 0
+                key = []
+                key.push(keysArr[r][0])
                 while c <= lastCol
-                    flatKey = if c is 0 then keysArr[r][c] else flatKey + String.fromCharCode(0) + keysArr[r][c]
+                    if c > 0
+                        key = key.slice()
+                        key.push(keysArr[r][c])
                     if ((keysArr[r][c] is keysArr[rMark[c].row][c]) and (c isnt lastCol)  and (repeats))
                         repeats = true
                         ++c
                         continue
                     th = createCell("th", className, keysArr[r][c])
                     ++nodePos
-                    header = {"node": nodePos, "row": r, "col": c, "th": th, "parent": null, "children": [], "descendants": 0, "leaves": 1, "flatKey": flatKey}
+                    node = {"node": nodePos, "row": r, "col": c, "th": th, "parent": null, "children": [], "descendants": 0, "leaves": 1, "key": key, "flatKey": key.join(String.fromCharCode(0))}
                     if c is 0
-                        headers.push header
+                        headers.push node
                     else
-                        header.parent = rMark[c-1]
-                        rMark[c-1].children.push header
+                        node.parent = rMark[c-1]
+                        rMark[c-1].children.push node
                         x = 0
                         while x <= c-1
                             rMark[x].descendants = rMark[x].descendants + 1
                             ++x
-                    rMark[c] = header
+                    rMark[c] = node
                     repeats = false
                     ++c
                 c = 0
@@ -290,7 +309,7 @@ callWithJQuery ($) ->
                     style = if (colHeader.children.length != 0) then  style +  " pvtColSubtotal" else style
                     style = if (rowHeader.children.length != 0) then  style +  " pvtRowSubtotal" else style
                     style = style + " row"+rowHeader.row+" col"+colHeader.row+" rowcol"+rowHeader.col+" colcol"+colHeader.col
-                    td = createCell("td", style, aggregator.format(val), {"data-value": val})
+                    td = createCell("td", style, aggregator.format(val), {"data-value": val}, getTableEventHandlers(val, rowHeader.key, colHeader.key))
                     tr.appendChild td
                 # buildRowTotal
                 totalAggregator = rowTotals[flatRowKey]
@@ -298,7 +317,7 @@ callWithJQuery ($) ->
                 style = "pvtTotal rowTotal"
                 style = if (rowHeader.children.length != 0) then  style +  " pvtRowSubtotal" else style
                 style = style + " row"+rowHeader.row+" rowcol"+rowHeader.col
-                td = createCell("td", style, totalAggregator.format(val), {"data-value": val, "data-row": "row"+rowHeader.row, "data-col": "col"+rowHeader.col})
+                td = createCell("td", style, totalAggregator.format(val), {"data-value": val, "data-row": "row"+rowHeader.row, "data-col": "col"+rowHeader.col}, getTableEventHandlers(val, rowHeader.key, []))
                 tr.appendChild td
 
         buildColTotalsHeader = (rowAttrs, colAttrs) ->
@@ -315,13 +334,13 @@ callWithJQuery ($) ->
                 style = "pvtVal pvtTotal colTotal"
                 style = if h.children.length then style + " pvtColSubtotal" else style
                 style = style + " col"+h.row+" colcol"+h.col
-                td = createCell("td", style, totalAggregator.format(val), {"data-value": val, "data-for": "col"+h.col})
+                td = createCell("td", style, totalAggregator.format(val), {"data-value": val, "data-for": "col"+h.col}, getTableEventHandlers(val, [], h.key))
                 tr.appendChild td
 
         buildGrandTotal = (result, tr) ->
             totalAggregator = allTotal
             val = totalAggregator.value()
-            td = createCell("td", "pvtGrandTotal", totalAggregator.format(val), {"data-value": val})
+            td = createCell("td", "pvtGrandTotal", totalAggregator.format(val), {"data-value": val}, getTableEventHandlers(val, [], []))
             tr.appendChild td
             result.appendChild tr
 

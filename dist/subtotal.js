@@ -93,13 +93,16 @@
     })($.pivotUtilities.PivotData);
     $.pivotUtilities.SubtotalPivotData = SubtotalPivotData;
     SubtotalRenderer = function(pivotData, opts) {
-      var addClass, allTotal, arrowCollapsed, arrowExpanded, buildColHeaderHeader, buildColHeaderHeaders, buildColHeaderHeadersClickEvents, buildColHeaders, buildColTotals, buildColTotalsHeader, buildGrandTotal, buildRowHeaderHeaders, buildRowHeaderHeadersClickEvents, buildRowHeaders, buildRowTotalsHeader, buildValues, classCollapsed, classExpanded, colAttrs, colKeys, colTotals, collapseCol, collapseColsAt, collapseRow, collapseRowsAt, createCell, defaults, expandChildCol, expandChildRow, expandCol, expandColsAt, expandRow, expandRowsAt, hasClass, main, processKeys, removeClass, replaceClass, rowAttrs, rowKeys, rowTotals, setColVisibility, toggleCol, toggleColHeaderHeader, toggleRow, toggleRowHeaderHeader, tree;
+      var addClass, allTotal, arrowCollapsed, arrowExpanded, buildColHeaderHeader, buildColHeaderHeaders, buildColHeaderHeadersClickEvents, buildColHeaders, buildColTotals, buildColTotalsHeader, buildGrandTotal, buildRowHeaderHeaders, buildRowHeaderHeadersClickEvents, buildRowHeaders, buildRowTotalsHeader, buildValues, classCollapsed, classExpanded, colAttrs, colKeys, colTotals, collapseCol, collapseColsAt, collapseRow, collapseRowsAt, createCell, defaults, expandChildCol, expandChildRow, expandCol, expandColsAt, expandRow, expandRowsAt, getTableEventHandlers, hasClass, main, processKeys, removeClass, replaceClass, rowAttrs, rowKeys, rowTotals, setColVisibility, toggleCol, toggleColHeaderHeader, toggleRow, toggleRowHeaderHeader, tree;
       defaults = {
+        table: {
+          clickCallback: null
+        },
         localeStrings: {
           totals: "Totals"
         }
       };
-      opts = $.extend(defaults, opts);
+      opts = $.extend(true, {}, defaults, opts);
       arrowCollapsed = opts.arrowCollapsed != null ? opts.arrowCollapsed : opts.arrowCollapsed = "\u25B6";
       arrowExpanded = opts.arrowExpanded != null ? opts.arrowExpanded : opts.arrowExpanded = "\u25E2";
       classExpanded = "expanded";
@@ -131,8 +134,38 @@
         removeClass(element, replaceClassName);
         return addClass(element, byClassName);
       };
-      createCell = function(cellType, className, textContent, attributes) {
-        var attr, th, val;
+      getTableEventHandlers = function(value, rowValues, colValues) {
+        var attr, filters, i, ref, tableEvent, tableEventHandler, tableEventHandlers;
+        if (opts.table.eventHandlers != null) {
+          tableEventHandlers = {};
+          ref = opts.table.eventHandlers;
+          for (tableEvent in ref) {
+            if (!hasProp.call(ref, tableEvent)) continue;
+            tableEventHandler = ref[tableEvent];
+            filters = {};
+            for (i in colAttrs) {
+              if (!hasProp.call(colAttrs, i)) continue;
+              attr = colAttrs[i];
+              if (colValues[i] != null) {
+                filters[attr] = colValues[i];
+              }
+            }
+            for (i in rowAttrs) {
+              if (!hasProp.call(rowAttrs, i)) continue;
+              attr = rowAttrs[i];
+              if (rowValues[i] != null) {
+                filters[attr] = rowValues[i];
+              }
+            }
+            tableEventHandlers[tableEvent] = function(e) {
+              return tableEventHandler(e, value, filters, pivotData);
+            };
+          }
+          return tableEventHandlers;
+        }
+      };
+      createCell = function(cellType, className, textContent, attributes, eventHandlers) {
+        var attr, event, handler, th, val;
         th = document.createElement(cellType);
         if (className) {
           th.className = className;
@@ -147,16 +180,24 @@
             th.setAttribute(attr, val);
           }
         }
+        if (eventHandlers) {
+          for (event in eventHandlers) {
+            if (!hasProp.call(eventHandlers, event)) continue;
+            handler = eventHandlers[event];
+            th.addEventListener(event, handler);
+          }
+        }
         return th;
       };
       processKeys = function(keysArr, className) {
-        var c, flatKey, header, headers, lastCol, lastRow, node, nodePos, r, rMark, repeats, th, x;
+        var c, headers, key, lastCol, lastRow, node, nodePos, r, rMark, repeats, th, x;
         headers = [];
         lastRow = keysArr.length - 1;
         lastCol = keysArr[0].length - 1;
         rMark = [];
         th = createCell("th", className, keysArr[0][0]);
-        flatKey = keysArr[0][0];
+        key = [];
+        key.push(keysArr[0][0]);
         nodePos = 0;
         node = {
           "node": nodePos,
@@ -167,14 +208,16 @@
           "children": [],
           "descendants": lastCol,
           "leaves": 1,
-          "flatKey": flatKey
+          "key": key,
+          "flatKey": key.join(String.fromCharCode(0))
         };
-        headers[0] = node;
+        headers.push(node);
         rMark[0] = node;
         c = 1;
         while (c <= lastCol) {
           th = createCell("th", className, keysArr[0][c]);
-          flatKey = flatKey + String.fromCharCode(0) + keysArr[0][c];
+          key = key.slice();
+          key.push(keysArr[0][c]);
           ++nodePos;
           node = {
             "node": nodePos,
@@ -185,7 +228,8 @@
             "children": [],
             "descendants": lastCol - c,
             "leaves": 1,
-            "flatKey": flatKey
+            "key": key,
+            "flatKey": key.join(String.fromCharCode(0))
           };
           rMark[c] = node;
           rMark[c - 1].children.push(node);
@@ -195,10 +239,14 @@
         r = 1;
         while (r <= lastRow) {
           repeats = true;
-          flatKey = "";
           c = 0;
+          key = [];
+          key.push(keysArr[r][0]);
           while (c <= lastCol) {
-            flatKey = c === 0 ? keysArr[r][c] : flatKey + String.fromCharCode(0) + keysArr[r][c];
+            if (c > 0) {
+              key = key.slice();
+              key.push(keysArr[r][c]);
+            }
             if ((keysArr[r][c] === keysArr[rMark[c].row][c]) && (c !== lastCol) && repeats) {
               repeats = true;
               ++c;
@@ -206,7 +254,7 @@
             }
             th = createCell("th", className, keysArr[r][c]);
             ++nodePos;
-            header = {
+            node = {
               "node": nodePos,
               "row": r,
               "col": c,
@@ -215,20 +263,21 @@
               "children": [],
               "descendants": 0,
               "leaves": 1,
-              "flatKey": flatKey
+              "key": key,
+              "flatKey": key.join(String.fromCharCode(0))
             };
             if (c === 0) {
-              headers.push(header);
+              headers.push(node);
             } else {
-              header.parent = rMark[c - 1];
-              rMark[c - 1].children.push(header);
+              node.parent = rMark[c - 1];
+              rMark[c - 1].children.push(node);
               x = 0;
               while (x <= c - 1) {
                 rMark[x].descendants = rMark[x].descendants + 1;
                 ++x;
               }
             }
-            rMark[c] = header;
+            rMark[c] = node;
             repeats = false;
             ++c;
           }
@@ -460,7 +509,7 @@
             style = style + " row" + rowHeader.row + " col" + colHeader.row + " rowcol" + rowHeader.col + " colcol" + colHeader.col;
             td = createCell("td", style, aggregator.format(val), {
               "data-value": val
-            });
+            }, getTableEventHandlers(val, rowHeader.key, colHeader.key));
             tr.appendChild(td);
           }
           totalAggregator = rowTotals[flatRowKey];
@@ -472,7 +521,7 @@
             "data-value": val,
             "data-row": "row" + rowHeader.row,
             "data-col": "col" + rowHeader.col
-          });
+          }, getTableEventHandlers(val, rowHeader.key, []));
           results.push(tr.appendChild(td));
         }
         return results;
@@ -500,7 +549,7 @@
           td = createCell("td", style, totalAggregator.format(val), {
             "data-value": val,
             "data-for": "col" + h.col
-          });
+          }, getTableEventHandlers(val, [], h.key));
           results.push(tr.appendChild(td));
         }
         return results;
@@ -511,7 +560,7 @@
         val = totalAggregator.value();
         td = createCell("td", "pvtGrandTotal", totalAggregator.format(val), {
           "data-value": val
-        });
+        }, getTableEventHandlers(val, [], []));
         tr.appendChild(td);
         return result.appendChild(tr);
       };
