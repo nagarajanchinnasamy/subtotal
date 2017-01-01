@@ -53,20 +53,13 @@ You can use Subtotal.js with either `pivot()` or `pivotUI()` method of PivotTabl
 $(function(){
     var dataClass = $.pivotUtilities.SubtotalPivotData
     var renderer = $.pivotUtilities.subtotal_renderers["Table With Subtotal"];
-    var derivers = $.pivotUtilities.derivers;
     
     $.getJSON("mps.json", function(mps) {
         $("#output").pivot(mps, {
-            dataClass: dataClass,
-            rows: ["Gender", "Province", "Age Bin"],
-            cols: ["Party", "Age", "Gender Imbalance"],
-            renderer: renderer,
-            derivedAttributes: {
-                "Age Bin": derivers.bin("Age", 10),
-                "Gender Imbalance": function(mp) {
-                    return mp["Gender"] == "Male" ? 1 : -1;
-                }
-            },
+            dataClass: $.pivotUtilities.SubtotalPivotData,
+            rows: ["Gender", "Province"],
+            cols: ["Party", "Age"],
+            renderer: $.pivotUtilities.subtotal_renderers["Table With Subtotal"],
             rendererOptions: {
                 collapseRowsAt: 1,
                 collapseColsAt: 0
@@ -87,25 +80,15 @@ $(function(){
 $(function(){
     var dataClass = $.pivotUtilities.SubtotalPivotData;
     var renderers = $.pivotUtilities.subtotal_renderers;
-    var derivers = $.pivotUtilities.derivers;
     
     $.getJSON("mps.json", function(mps) {
         $("#output").pivotUI(mps, {
-            dataClass: dataClass,
-            rows: ["Gender", "Province", "Age Bin"],
-            cols: ["Party", "Age", "Gender Imbalance"],
-            renderers: renderers,
-            derivedAttributes: {
-                "Age Bin": derivers.bin("Age", 10),
-                "Gender Imbalance": function(mp) {
-                    return mp["Gender"] == "Male" ? 1 : -1;
-                }
-            },
+            dataClass: $.pivotUtilities.SubtotalPivotData,
+            rows: ["Gender", "Province"],
+            cols: ["Party", "Age"],
+            renderers: $.pivotUtilities.subtotal_renderers,
             rendererName: "Table With Subtotal",
             rendererOptions: {
-                arrowCollapsed: "[+]",
-                arrowExpanded: "[-]",
-                collapseRowsAt: 1,
                 collapseColsAt: 0
             }
         });
@@ -132,6 +115,8 @@ $(function(){
 For both `collapseRowsAt` and `collapseColsAt` options, using the numerical index value is recommended as it results in a better usability during rerendering of the table after drang and drop of attributes.
 
 **`arrowCollapsed`** and **`arrowExpanded`** options can be used to customize the default arrows ("\u25B6" and "\u25E2" respectively) displayed with subtotal row/column labels and pivot axis labels.
+
+**`table.eventHandlers`** option is set to a dictionary of events and their callback functions. On the occurence of an event given in this option, the corresponding callback function is invoked by passing the table cell element, value of the element, filtering criteria to fetch matching records from data and `SubtotalPivotData` instance. See [this example](http://nagarajanchinnasamy.com/subtotal/examples/260_event_handlers.html).
 
 ## How can I build the code and run the tests?
 
