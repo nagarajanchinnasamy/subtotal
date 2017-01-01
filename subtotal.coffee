@@ -11,20 +11,19 @@ callWithJQuery ($) ->
 
     class SubtotalPivotData extends $.pivotUtilities.PivotData
         constructor: (input, opts) ->
-            super(input, opts)
+            super input, opts
 
-        processKey = (record, totals, keys, attrs, f) ->
+        processKey = (record, totals, keys, attrs, getAggregator) ->
             key = []
             addKey = false
             for attr in attrs
                 key.push record[attr] ? "null"
-                flatKey = key.join(String.fromCharCode(0))
+                flatKey = key.join String.fromCharCode(0)
                 if not totals[flatKey]
-                    totals[flatKey] = f(key.slice())
+                    totals[flatKey] = getAggregator key.slice()
                     addKey = true
                 totals[flatKey].push record
-            if addKey
-                keys.push key
+            keys.push key if addKey
             return key
 
         processRecord: (record) -> #this code is called in a tight loop
@@ -33,25 +32,21 @@ callWithJQuery ($) ->
 
             @allTotal.push record
             rowKey = processKey record, @rowTotals, @rowKeys, @rowAttrs, (key) =>
-                    return @aggregator(this, key, [])
+                return @aggregator this, key, []
             colKey = processKey record, @colTotals, @colKeys, @colAttrs, (key) =>
-                    return @aggregator(this, [], key)
+                return @aggregator this, [], key
             m = rowKey.length-1
             n = colKey.length-1
-            if m < 0 or n < 0
-                return
+            return if m < 0 or n < 0
             for i in [0..m]
                 fRowKey = rowKey.slice(0, i+1)
-                flatRowKey = fRowKey.join(String.fromCharCode(0))
-                if not @tree[flatRowKey]
-                    @tree[flatRowKey] = {}
+                flatRowKey = fRowKey.join String.fromCharCode(0)
+                @tree[flatRowKey] = {} if not @tree[flatRowKey]
                 for j in [0..n]
-                    fColKey = colKey.slice(0, j+1)
-                    flatColKey = fColKey.join(String.fromCharCode(0))
-                    if not @tree[flatRowKey][flatColKey]
-                        @tree[flatRowKey][flatColKey] = @aggregator(this, fRowKey, fColKey)
+                    fColKey = colKey.slice 0, j+1
+                    flatColKey = fColKey.join String.fromCharCode(0)
+                    @tree[flatRowKey][flatColKey] = @aggregator this, fRowKey, fColKey if not @tree[flatRowKey][flatColKey]
                     @tree[flatRowKey][flatColKey].push record
-
 
     $.pivotUtilities.SubtotalPivotData = SubtotalPivotData
 
@@ -60,7 +55,7 @@ callWithJQuery ($) ->
             table: clickCallback: null
             localeStrings: totals: "Totals"
 
-        opts = $.extend(true, {}, defaults, opts)
+        opts = $.extend true, {}, defaults, opts
 
         arrowCollapsed = opts.arrowCollapsed ?= "\u25B6"
         arrowExpanded = opts.arrowExpanded ?= "\u25E2"
@@ -77,15 +72,15 @@ callWithJQuery ($) ->
 
         # Based on http://stackoverflow.com/questions/195951/change-an-elements-class-with-javascript -- Begin
         hasClass = (element, className) ->
-            regExp = new RegExp("(?:^|\\s)" + className + "(?!\\S)", "g")
-            element.className.match(regExp)
+            regExp = new RegExp "(?:^|\\s)" + className + "(?!\\S)", "g"
+            element.className.match regExp
 
         removeClass = (element, className) ->
-            regExp = new RegExp("(?:^|\\s)" + className + "(?!\\S)", "g")
-            element.className = element.className.replace(regExp, '')
+            regExp = new RegExp "(?:^|\\s)" + className + "(?!\\S)", "g"
+            element.className = element.className.replace regExp, ''
 
         addClass = (element, className) ->
-            if (!hasClass(element, className)) then element.className += (" " + className)
+            element.className += (" " + className) if not hasClass element, className
 
         replaceClass = (element, replaceClassName, byClassName) ->
             removeClass element, replaceClassName
@@ -93,23 +88,21 @@ callWithJQuery ($) ->
         # Based on http://stackoverflow.com/questions/195951/change-an-elements-class-with-javascript -- End 
 
         getTableEventHandlers = (value, rowValues, colValues) ->
-            if opts.table.eventHandlers?
-                tableEventHandlers = {}
-                for own tableEvent, tableEventHandler of opts.table.eventHandlers
-                    filters = {}
-                    filters[attr] = colValues[i] for own i, attr of colAttrs when colValues[i]?
-                    filters[attr] = rowValues[i] for own i, attr of rowAttrs when rowValues[i]?
-                    tableEventHandlers[tableEvent] = (e) -> tableEventHandler(e, value, filters, pivotData)
-                return tableEventHandlers
+            return if not opts.table and not opts.table.eventHandlers
+            tableEventHandlers = {}
+            for own tableEvent, tableEventHandler of opts.table.eventHandlers
+                filters = {}
+                filters[attr] = colValues[i] for own i, attr of colAttrs when colValues[i]?
+                filters[attr] = rowValues[i] for own i, attr of rowAttrs when rowValues[i]?
+                tableEventHandlers[tableEvent] = (e) -> tableEventHandler(e, value, filters, pivotData)
+            return tableEventHandlers
 
         createCell = (cellType, className, textContent, attributes, eventHandlers) ->
-            th = document.createElement(cellType)
-            if className then th.className = className
-            if textContent isnt null and textContent isnt undefined then th.textContent = textContent
-            if attributes then th.setAttribute(attr, val) for own attr, val of attributes
-            if eventHandlers
-               for own event, handler of eventHandlers
-                   th.addEventListener(event, handler)
+            th = document.createElement cellType
+            th.className = className if className?
+            th.textContent = textContent if textContent?
+            th.setAttribute attr, val for own attr, val of attributes when attributes?
+            th.addEventListener event, handler for own event, handler of eventHandlers when eventHandlers?
             return th
 
         processKeys = (keysArr, className) ->
@@ -117,41 +110,69 @@ callWithJQuery ($) ->
             lastRow = keysArr.length - 1
             lastCol = keysArr[0].length - 1
             rMark = []
-            th = createCell("th", className, keysArr[0][0])
+            th = createCell "th", className, keysArr[0][0]
             key = []
-            key.push(keysArr[0][0])
+            key.push keysArr[0][0]
             nodePos = 0
-            node = {"node": nodePos, "row": 0, "col": 0, "th": th, "parent": null, "children": [], "descendants": lastCol, "leaves": 1, "key": key, "flatKey": key.join(String.fromCharCode(0))}
-            headers.push(node)
+            node = {
+                node: nodePos,
+                row: 0,
+                col: 0,
+                th: th,
+                parent: null,
+                children: [],
+                descendants: lastCol,
+                leaves: 1,
+                key: key,
+                flatKey: key.join String.fromCharCode(0)}
+            headers.push node
             rMark[0] = node
             c = 1
             while c <= lastCol
-                th = createCell("th", className, keysArr[0][c])
+                th = createCell "th", className, keysArr[0][c]
                 key = key.slice()
-                key.push(keysArr[0][c])
+                key.push keysArr[0][c]
                 ++nodePos
-                node =  {"node": nodePos, "row": 0, "col": c, "th": th, "parent": rMark[c-1], "children": [], "descendants": lastCol-c, "leaves": 1, "key": key, "flatKey": key.join(String.fromCharCode(0))}
+                node =  {
+                    node: nodePos,
+                    row: 0,
+                    col: c,
+                    th: th,
+                    parent: rMark[c-1],
+                    children: [],
+                    descendants: lastCol-c,
+                    leaves: 1,
+                    key: key,
+                    flatKey: key.join String.fromCharCode(0)}
                 rMark[c] = node
-                rMark[c-1].children.push(node)
+                rMark[c-1].children.push node
                 ++c
             rMark[lastCol].leaves = 0
             r = 1
             while r <= lastRow
                 repeats = true
-                c = 0
                 key = []
-                key.push(keysArr[r][0])
+                c = 0
                 while c <= lastCol
-                    if c > 0
-                        key = key.slice()
-                        key.push(keysArr[r][c])
+                    key = key.slice()
+                    key.push keysArr[r][c]
                     if ((keysArr[r][c] is keysArr[rMark[c].row][c]) and (c isnt lastCol)  and (repeats))
                         repeats = true
                         ++c
                         continue
-                    th = createCell("th", className, keysArr[r][c])
+                    th = createCell "th", className, keysArr[r][c]
                     ++nodePos
-                    node = {"node": nodePos, "row": r, "col": c, "th": th, "parent": null, "children": [], "descendants": 0, "leaves": 1, "key": key, "flatKey": key.join(String.fromCharCode(0))}
+                    node = {
+                        node: nodePos,
+                        row: r,
+                        col: c,
+                        th: th,
+                        parent: null,
+                        children: [],
+                        descendants: 0,
+                        leaves: 1,
+                        key: key,
+                        flatKey: key.join String.fromCharCode(0)}
                     if c is 0
                         headers.push node
                     else
@@ -159,84 +180,86 @@ callWithJQuery ($) ->
                         rMark[c-1].children.push node
                         x = 0
                         while x <= c-1
-                            rMark[x].descendants = rMark[x].descendants + 1
+                            ++rMark[x].descendants
                             ++x
                     rMark[c] = node
                     repeats = false
                     ++c
-                c = 0
-                while c <= lastCol
-                    rMark[c].leaves = rMark[c].leaves + 1
-                    ++c
+                ++rMark[c].leaves for c in [0..lastCol]
                 rMark[lastCol].leaves = 0
                 ++r
             return headers
 
         buildColHeaderHeader = (thead, colHeaderHeaders, rowAttrs, colAttrs, tr, col) ->
             colAttr = colAttrs[col]
-            # th = createCell("th", "pvtAxisLabel", colAttr)
             textContent = colAttr
             className = "pvtAxisLabel"
             if col < colAttrs.length-1
                 className += " expanded"
                 textContent = " " + arrowExpanded + " " + colAttr
-            th = createCell("th", className, textContent)
-            th.setAttribute("data-colAttr", colAttr)
+            th = createCell "th", className, textContent
+            th.setAttribute "data-colAttr", colAttr
             tr.appendChild th
-            colHeaderHeaders.push({"tr": tr, "th": th, "clickStatus": classExpanded, "expandedCount": 0, "nHeaders": 0})
+            colHeaderHeaders.push {
+                tr: tr,
+                th: th,
+                clickStatus: classExpanded,
+                expandedCount: 0,
+                nHeaders: 0}
             thead.appendChild tr
 
         buildColHeaderHeaders = (thead, colHeaderHeaders, rowAttrs, colAttrs) ->
-            tr = document.createElement("tr")
+            tr = document.createElement "tr"
             if rowAttrs.length != 0
-                tr.appendChild createCell("th", null, null, {"colspan": rowAttrs.length, "rowspan": colAttrs.length});
+                tr.appendChild createCell "th", null, null, {
+                    colspan: rowAttrs.length,
+                    rowspan: colAttrs.length}
             buildColHeaderHeader thead, colHeaderHeaders, rowAttrs, colAttrs, tr, 0
             for c in [1..colAttrs.length] when c < colAttrs.length
                 tr = document.createElement("tr")
                 buildColHeaderHeader thead, colHeaderHeaders, rowAttrs, colAttrs, tr, c
 
         buildColHeaderHeadersClickEvents = (colHeaderHeaders, colHeaderCols, colAttrs) ->
-            for i in [0..colAttrs.length-1] when i < colAttrs.length-1
+            n = colAttrs.length-1
+            for i in [0..n] when i < n 
                 th = colHeaderHeaders[i].th
                 colAttr = colAttrs[i]
                 th.onclick = (event) ->
                     event = event || window.event
-                    toggleColHeaderHeader colHeaderHeaders, colHeaderCols, colAttrs, event.target.getAttribute("data-colAttr")
+                    toggleColHeaderHeader colHeaderHeaders, colHeaderCols, colAttrs, event.target.getAttribute "data-colAttr"
 
         buildColHeaders = (colHeaderHeaders, colHeaderCols, colHeader, rowAttrs, colAttrs) ->
             # DF Recurse
             for h in colHeader.children
-                buildColHeaders(colHeaderHeaders, colHeaderCols, h, rowAttrs, colAttrs)
+                buildColHeaders colHeaderHeaders, colHeaderCols, h, rowAttrs, colAttrs
             # Process
             hh = colHeaderHeaders[colHeader.col]
             ++hh.expandedCount
             ++hh.nHeaders
             tr = hh.tr
             th = colHeader.th
-            th.setAttribute("data-colHeader", th.textContent)
-            if colHeader.col == colAttrs.length-1 and rowAttrs.length != 0
-                th.setAttribute("rowspan", 2)
-            if colHeader.children.length !=0
-                th.setAttribute("colspan", colHeader.descendants+1)
+            th.setAttribute "data-colHeader", th.textContent
+            th.setAttribute("rowspan", 2) if colHeader.col == colAttrs.length-1 and rowAttrs.length != 0
+            th.setAttribute("colspan", colHeader.descendants+1) if colHeader.children.length !=0
             th.setAttribute("data-node", colHeaderCols.length)
             tr.appendChild(th)
-            if colHeader.children.length !=0
+            if colHeader.children.length != 0
                 addClass th, classExpanded
                 th.textContent = " " + arrowExpanded + " " + th.textContent
                 th.onclick = (event) ->
                     event = event || window.event
-                    toggleCol(colHeaderHeaders, colHeaderCols, parseInt(event.target.getAttribute("data-node")))
+                    toggleCol colHeaderHeaders, colHeaderCols, parseInt event.target.getAttribute "data-node"
                 rowspan = colAttrs.length-(colHeader.col+1) + if rowAttrs.length != 0 then 1 else 0
                 style = "pvtColLabel col" + colHeader.row
-                th = createCell("th", style, '', {"rowspan": rowspan})
-                colHeader.children[0].tr.appendChild(th)
+                th = createCell "th", style, '', {"rowspan": rowspan}
+                colHeader.children[0].tr.appendChild th
                 colHeader.sTh = th
             colHeader.clickStatus = classExpanded
             colHeader.tr = tr
-            colHeaderCols.push(colHeader)
+            colHeaderCols.push colHeader
 
         buildRowHeaderHeaders = (thead, rowHeaderHeaders, rowAttrs, colAttrs) ->
-            tr = document.createElement("tr")
+            tr = document.createElement "tr"
             rowHeaderHeaders.hh = []
             for own i, rowAttr of rowAttrs
                 textContent = rowAttr
@@ -244,58 +267,63 @@ callWithJQuery ($) ->
                 if i < rowAttrs.length-1
                     className += " expanded"
                     textContent = " " + arrowExpanded + " " + rowAttr
-                th = createCell("th", className, textContent)
-                th.setAttribute("data-rowAttr", rowAttr)
+                th = createCell "th", className, textContent
+                th.setAttribute "data-rowAttr", rowAttr
                 tr.appendChild th
-                rowHeaderHeaders.hh.push({"th": th, "clickStatus": classExpanded, "expandedCount": 0, "nHeaders": 0})
+                rowHeaderHeaders.hh.push {
+                    th: th,
+                    clickStatus: classExpanded,
+                    expandedCount: 0,
+                    nHeaders: 0}
             if colAttrs.length != 0
-                th = createCell("th")
+                th = createCell "th"
                 tr.appendChild th
             thead.appendChild tr
             rowHeaderHeaders.tr = tr
 
         buildRowHeaderHeadersClickEvents = (rowHeaderHeaders, rowHeaderRows, rowAttrs) ->
-            for i in [0..rowAttrs.length-1] when i < rowAttrs.length-1
+            n = rowAttrs.length-1
+            for i in [0..n] when i < n 
                 th = rowHeaderHeaders.hh[i]
                 rowAttr = rowAttrs[i]
                 th.th.onclick = (event) ->
                     event = event || window.event
-                    toggleRowHeaderHeader rowHeaderHeaders, rowHeaderRows, rowAttrs, event.target.getAttribute("data-rowAttr")
+                    toggleRowHeaderHeader rowHeaderHeaders, rowHeaderRows, rowAttrs, event.target.getAttribute "data-rowAttr"
 
         buildRowTotalsHeader = (tr, rowAttrs, colAttrs) ->
             rowspan = 1
             if colAttrs.length != 0
-                rowspan = colAttrs.length + (if rowAttrs.length ==0 then 0 else 1)
-            th = createCell("th", "pvtTotalLabel", opts.localeStrings.totals, {"rowspan": rowspan})
+                rowspan = colAttrs.length + (if rowAttrs.length == 0 then 0 else 1)
+            th = createCell "th", "pvtTotalLabel", opts.localeStrings.totals, {rowspan: rowspan}
             tr.appendChild th
 
         buildRowHeaders = (tbody, rowHeaderHeaders, rowHeaderRows, rowHeader, rowAttrs, colAttrs) ->
             hh = rowHeaderHeaders.hh[rowHeader.col]
             ++hh.expandedCount
             ++hh.nHeaders
-            tr = document.createElement("tr")
+            tr = document.createElement "tr"
             th = rowHeader.th
-            th.setAttribute("rowspan", rowHeader.descendants+1)
-            th.setAttribute("data-rowHeader", th.textContent)
+            th.setAttribute "rowspan", rowHeader.descendants+1
+            th.setAttribute "data-rowHeader", th.textContent
             if rowHeader.col == rowAttrs.length-1 and colAttrs.length != 0
-                th.setAttribute("colspan", 2)
-            th.setAttribute("data-node", rowHeaderRows.length)
-            tr.appendChild(th)
+                th.setAttribute "colspan", 2
+            th.setAttribute "data-node", rowHeaderRows.length
+            tr.appendChild th
             if rowHeader.children.length != 0
                 addClass th, classExpanded
                 th.textContent = " " + arrowExpanded + " " + th.textContent
                 th.onclick = (event) ->
                     event = event || window.event
-                    toggleRow(rowHeaderHeaders, rowHeaderRows, parseInt(event.target.getAttribute("data-node")))
+                    toggleRow rowHeaderHeaders, rowHeaderRows, parseInt event.target.getAttribute "data-node"
                 colspan = rowAttrs.length-(rowHeader.col+1) + if colAttrs.length != 0 then 1 else 0
-                th = createCell("th", "pvtRowLabel pvtRowSubtotal", '', {"colspan": colspan})
-                tr.appendChild(th)
+                th = createCell "th", "pvtRowLabel pvtRowSubtotal", '', {colspan: colspan}
+                tr.appendChild th
             rowHeader.clickStatus = classExpanded
             rowHeader.tr = tr
-            rowHeaderRows.push(rowHeader)
-            tbody.appendChild(tr)
+            rowHeaderRows.push rowHeader
+            tbody.appendChild tr
             for h in rowHeader.children
-                buildRowHeaders(tbody, rowHeaderHeaders, rowHeaderRows, h, rowAttrs, colAttrs)
+                buildRowHeaders tbody, rowHeaderHeaders, rowHeaderRows, h, rowAttrs, colAttrs
 
         buildValues = (rowHeaderRows, colHeaderCols) ->
             for rowHeader in rowHeaderRows
@@ -306,25 +334,29 @@ callWithJQuery ($) ->
                     aggregator = tree[flatRowKey][flatColKey] ? {value: (-> null), format: -> ""}
                     val = aggregator.value()
                     style = "pvtVal"
-                    style = if (colHeader.children.length != 0) then  style +  " pvtColSubtotal" else style
-                    style = if (rowHeader.children.length != 0) then  style +  " pvtRowSubtotal" else style
-                    style = style + " row"+rowHeader.row+" col"+colHeader.row+" rowcol"+rowHeader.col+" colcol"+colHeader.col
-                    td = createCell("td", style, aggregator.format(val), {"data-value": val}, getTableEventHandlers(val, rowHeader.key, colHeader.key))
+                    style += colHeader.children.length != 0 ? " pvtColSubtotal"
+                    style += rowHeader.children.length != 0 ? " pvtRowSubtotal"
+                    style += " row" + rowHeader.row + " col" + colHeader.row + " rowcol" + rowHeader.col + " colcol" +colHeader.col
+                    eventHandlers = getTableEventHandlers val, rowHeader.key, colHeader.key
+                    td = createCell "td", style, aggregator.format val, {"data-value": val}, eventHandlers
                     tr.appendChild td
                 # buildRowTotal
                 totalAggregator = rowTotals[flatRowKey]
                 val = totalAggregator.value()
                 style = "pvtTotal rowTotal"
-                style = if (rowHeader.children.length != 0) then  style +  " pvtRowSubtotal" else style
-                style = style + " row"+rowHeader.row+" rowcol"+rowHeader.col
-                td = createCell("td", style, totalAggregator.format(val), {"data-value": val, "data-row": "row"+rowHeader.row, "data-col": "col"+rowHeader.col}, getTableEventHandlers(val, rowHeader.key, []))
+                style +=  rowHeader.children.length != 0 ? " pvtRowSubtotal"
+                style += " row" + rowHeader.row + " rowcol" + rowHeader.col
+                td = createCell "td", style, totalAggregator.format val, {
+                    "data-value": val,
+                    "data-row": "row"+rowHeader.row,
+                    "data-col": "col"+rowHeader.col}, getTableEventHandlers val, rowHeader.key, []
                 tr.appendChild td
 
         buildColTotalsHeader = (rowAttrs, colAttrs) ->
-            tr = document.createElement("tr")
+            tr = document.createElement "tr"
             colspan = rowAttrs.length + (if colAttrs.length == 0 then 0 else 1)
-            th = createCell("th", "pvtTotalLabel", opts.localeStrings.totals, {"colspan": colspan})
-            tr.appendChild(th)
+            th = createCell "th", "pvtTotalLabel", opts.localeStrings.totals, {colspan: colspan}
+            tr.appendChild th
             return tr
 
         buildColTotals = (tr, colHeaderCols) ->
@@ -332,33 +364,45 @@ callWithJQuery ($) ->
                 totalAggregator = colTotals[h.flatKey]
                 val = totalAggregator.value()
                 style = "pvtVal pvtTotal colTotal"
-                style = if h.children.length then style + " pvtColSubtotal" else style
-                style = style + " col"+h.row+" colcol"+h.col
-                td = createCell("td", style, totalAggregator.format(val), {"data-value": val, "data-for": "col"+h.col}, getTableEventHandlers(val, [], h.key))
+                style += h.children.length ? " pvtColSubtotal"
+                style += " col" + h.row + " colcol" + h.col
+                td = createCell "td", style, totalAggregator.format val,
+                    {"data-value": val, "data-for": "col" + h.col},
+                    getTableEventHandlers val, [], h.key
                 tr.appendChild td
 
         buildGrandTotal = (result, tr) ->
             totalAggregator = allTotal
             val = totalAggregator.value()
-            td = createCell("td", "pvtGrandTotal", totalAggregator.format(val), {"data-value": val}, getTableEventHandlers(val, [], []))
+            td = createCell "td", "pvtGrandTotal", totalAggregator.format val,
+                {"data-value": val},
+                getTableEventHandlers val, [], []
             tr.appendChild td
             result.appendChild tr
 
         setColVisibility = (visibility, h) ->
             h.th.style.display = visibility
-            if h.children.length
-                $(h.th).closest('table.pvtTable').find('tbody tr td.pvtColSubtotal.col' + h.row + '.colcol' + h.col).css('display', visibility)
+            if h.children.length != 0
+                $(h.th)
+                    .closest 'table.pvtTable'
+                    .find 'tbody tr td.pvtColSubtotal.col' + h.row + '.colcol' + h.col
+                    .css 'display', visibility
             else
-                $(h.th).closest('table.pvtTable').find('tbody tr td.pvtVal.col' + h.row).not('.pvtColSubtotal').css('display', visibility)
-            if h.sTh
-                h.sTh.style.display = visibility
+                $(h.th)
+                    .closest 'table.pvtTable'
+                    .find 'tbody tr td.pvtVal.col' + h.row
+                    .not '.pvtColSubtotal'
+                    .css 'display', visibility
+            h.sTh.style.display = visibility if h.sTh
 
         collapseCol = (colHeaderHeaders, colHeaderCols, c) ->
             if not colHeaderCols[c]
                 return
+
             h = colHeaderCols[c]
             if h.clickStatus is classCollapsed
                 return
+
             colspan = 0
             for i in [1..h.descendants] when h.descendants != 0
                 d = colHeaderCols[c-i]
@@ -367,13 +411,13 @@ callWithJQuery ($) ->
                     setColVisibility "none", d
             p = h.parent
             while p isnt null
-                p.th.setAttribute("colspan", parseInt(p.th.getAttribute("colspan"))-colspan)
+                p.th.setAttribute("colspan", parseInt(p.th.getAttribute("colspan")) - colspan)
                 p = p.parent
             if h.descendants != 0
                 replaceClass h.th, classExpanded, classCollapsed
                 h.th.textContent = " " + arrowCollapsed + " " + h.th.getAttribute("data-colHeader")
             h.clickStatus = classCollapsed
-            h.th.setAttribute("colspan", 1)
+            h.th.setAttribute "colspan", 1
             h.th.style.display = ""
             colHeaderHeader = colHeaderHeaders[h.col]
             colHeaderHeader.expandedCount--
@@ -385,41 +429,36 @@ callWithJQuery ($) ->
                     colHeaderHeader.clickStatus = classCollapsed
 
         expandChildCol = (ch) ->
-            if ch.th.style.display is "none"
-                setColVisibility "", ch
-            if ch.clickStatus isnt classCollapsed
-                for gch in ch.children
-                    expandChildCol gch
+            setColVisibility "", ch if ch.th.style.display is "none"
+            expandChildCol gch for gch in ch.children if ch.clickStatus isnt classCollapsed
 
         expandCol = (colHeaderHeaders, colHeaderCols, c) ->
-            if not colHeaderCols[c]
-                return
+            return if not colHeaderCols[c]
+
             h = colHeaderCols[c]
-            if h.clickStatus is classExpanded
-                return
+            return if h.clickStatus is classExpanded
+
             colspan = 0
             for ch in h.children
-                colspan = colspan + ch.th.colSpan
-                if ch.th.style.display is "none"
-                    setColVisibility "", ch
+                colspan += ch.th.colSpan
+                setColVisibility "", ch if ch.th.style.display is "none"
                 expandChildCol ch
             if h.descendants != 0
                 replaceClass h.th, classCollapsed, classExpanded
-                h.th.textContent = " " + arrowExpanded + " " + h.th.getAttribute("data-colHeader")
-            h.th.setAttribute("colspan", colspan+1)
+                h.th.textContent = " " + arrowExpanded + " " + h.th.getAttribute "data-colHeader"
+            h.th.setAttribute "colspan", colspan+1
             h.clickStatus = classExpanded
             h.th.style.display = ""
-            if h.sTh
-                h.sTh.style.display = ""
+            h.sTh.style.display = "" if h.sTh?
             p = h.parent
             while p isnt null
-                p.th.setAttribute("colspan", (colspan + parseInt(p.th.getAttribute("colspan"))))
+                p.th.setAttribute "colspan", colspan + parseInt p.th.getAttribute "colspan"
                 p = p.parent
             hh = colHeaderHeaders[h.col]
             ++hh.expandedCount
-            if hh.expandedCount == hh.nHeaders
+            if hh.expandedCount is hh.nHeaders
                 replaceClass hh.th, classCollapsed, classExpanded
-                hh.th.textContent = " " + arrowExpanded + " " + hh.th.getAttribute("data-colAttr")
+                hh.th.textContent = " " + arrowExpanded + " " + hh.th.getAttribute "data-colAttr"
                 hh.clickStatus = classExpanded
 
         collapseRow = (rowHeaderHeaders, rowHeaderRows, r) ->
