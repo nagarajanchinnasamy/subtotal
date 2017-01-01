@@ -6,7 +6,6 @@
   <title>Jasmine Spec Runner</title>
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jasmine/2.4.1/jasmine.css">
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.1.0/pivot.min.css">
 
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/2.4.1/jasmine.js"></script>
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/2.4.1/jasmine-html.js"></script>
@@ -14,20 +13,21 @@
   <!-- boot.js is patched to not execute env, so we can execute after compilation of tests -->
   <script type="text/javascript" src="boot.js"></script> 
 
-  <script type="text/javascript" src="http://coffeescript.org/extras/coffee-script.js"></script>
-
   <!-- include source files here... -->
 
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.1.0/pivot.min.js"></script>
+
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.7.0/pivot.min.css">
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.7.0/pivot.min.js"></script>
+
   <script type="text/javascript" src="../dist/subtotal.js"></script>
  
   <!-- include spec files here... -->
-  <script type="text/coffeescript" src="pivot_spec.coffee"></script>
+  <script type="text/javascript" src="../dist/pivot_spec.js"></script>
 
-  <script type="text/coffeescript">
-    $ -> jasmine.getEnv().execute()
+  <script type="text/javascript">
+      $(function(){jasmine.getEnv().execute();});
   </script>
 
 </head>

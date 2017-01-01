@@ -135,15 +135,15 @@
         return addClass(element, byClassName);
       };
       getTableEventHandlers = function(value, rowValues, colValues) {
-        var attr, filters, i, ref, tableEvent, tableEventHandler, tableEventHandlers;
+        var attr, event, eventHandlers, filters, handler, i, ref;
         if (!opts.table && !opts.table.eventHandlers) {
           return;
         }
-        tableEventHandlers = {};
+        eventHandlers = {};
         ref = opts.table.eventHandlers;
-        for (tableEvent in ref) {
-          if (!hasProp.call(ref, tableEvent)) continue;
-          tableEventHandler = ref[tableEvent];
+        for (event in ref) {
+          if (!hasProp.call(ref, event)) continue;
+          handler = ref[event];
           filters = {};
           for (i in colAttrs) {
             if (!hasProp.call(colAttrs, i)) continue;
@@ -159,11 +159,11 @@
               filters[attr] = rowValues[i];
             }
           }
-          tableEventHandlers[tableEvent] = function(e) {
-            return tableEventHandler(e, value, filters, pivotData);
+          eventHandlers[event] = function(e) {
+            return handler(e, value, filters, pivotData);
           };
         }
-        return tableEventHandlers;
+        return eventHandlers;
       };
       createCell = function(cellType, className, textContent, attributes, eventHandlers) {
         var attr, event, handler, th, val;
@@ -174,17 +174,17 @@
         if (textContent != null) {
           th.textContent = textContent;
         }
-        for (attr in attributes) {
-          if (!hasProp.call(attributes, attr)) continue;
-          val = attributes[attr];
-          if (attributes != null) {
+        if (attributes != null) {
+          for (attr in attributes) {
+            if (!hasProp.call(attributes, attr)) continue;
+            val = attributes[attr];
             th.setAttribute(attr, val);
           }
         }
-        for (event in eventHandlers) {
-          if (!hasProp.call(eventHandlers, event)) continue;
-          handler = eventHandlers[event];
-          if (eventHandlers != null) {
+        if (eventHandlers != null) {
+          for (event in eventHandlers) {
+            if (!hasProp.call(eventHandlers, event)) continue;
+            handler = eventHandlers[event];
             th.addEventListener(event, handler);
           }
         }
@@ -483,7 +483,7 @@
         return results;
       };
       buildValues = function(rowHeaderRows, colHeaderCols) {
-        var aggregator, colHeader, eventHandlers, flatColKey, flatRowKey, k, l, len, len1, ref, ref1, ref2, ref3, results, rowHeader, style, td, totalAggregator, tr, val;
+        var aggregator, colHeader, eventHandlers, flatColKey, flatRowKey, k, l, len, len1, ref, results, rowHeader, style, td, totalAggregator, tr, val;
         results = [];
         for (k = 0, len = rowHeaderRows.length; k < len; k++) {
           rowHeader = rowHeaderRows[k];
@@ -502,25 +502,31 @@
             };
             val = aggregator.value();
             style = "pvtVal";
-            style += (ref1 = colHeader.children.length !== 0) != null ? ref1 : " pvtColSubtotal";
-            style += (ref2 = rowHeader.children.length !== 0) != null ? ref2 : " pvtRowSubtotal";
+            if (colHeader.children.length !== 0) {
+              style += " pvtColSubtotal";
+            }
+            if (rowHeader.children.length !== 0) {
+              style += " pvtRowSubtotal";
+            }
             style += " row" + rowHeader.row + " col" + colHeader.row + " rowcol" + rowHeader.col + " colcol" + colHeader.col;
             eventHandlers = getTableEventHandlers(val, rowHeader.key, colHeader.key);
-            td = createCell("td", style, aggregator.format(val, {
+            td = createCell("td", style, aggregator.format(val), {
               "data-value": val
-            }, eventHandlers));
+            }, eventHandlers);
             tr.appendChild(td);
           }
           totalAggregator = rowTotals[flatRowKey];
           val = totalAggregator.value();
           style = "pvtTotal rowTotal";
-          style += (ref3 = rowHeader.children.length !== 0) != null ? ref3 : " pvtRowSubtotal";
+          if (rowHeader.children.length !== 0) {
+            style += " pvtRowSubtotal";
+          }
           style += " row" + rowHeader.row + " rowcol" + rowHeader.col;
-          td = createCell("td", style, totalAggregator.format(val, {
+          td = createCell("td", style, totalAggregator.format(val), {
             "data-value": val,
             "data-row": "row" + rowHeader.row,
             "data-col": "col" + rowHeader.col
-          }, getTableEventHandlers(val, rowHeader.key, [])));
+          }, getTableEventHandlers(val, rowHeader.key, []));
           results.push(tr.appendChild(td));
         }
         return results;
@@ -536,19 +542,21 @@
         return tr;
       };
       buildColTotals = function(tr, colHeaderCols) {
-        var h, k, len, ref, results, style, td, totalAggregator, val;
+        var h, k, len, results, style, td, totalAggregator, val;
         results = [];
         for (k = 0, len = colHeaderCols.length; k < len; k++) {
           h = colHeaderCols[k];
           totalAggregator = colTotals[h.flatKey];
           val = totalAggregator.value();
           style = "pvtVal pvtTotal colTotal";
-          style += (ref = h.children.length) != null ? ref : " pvtColSubtotal";
+          if (h.children.length !== 0) {
+            style += " pvtColSubtotal";
+          }
           style += " col" + h.row + " colcol" + h.col;
-          td = createCell("td", style, totalAggregator.format(val, {
+          td = createCell("td", style, totalAggregator.format(val), {
             "data-value": val,
             "data-for": "col" + h.col
-          }, getTableEventHandlers(val, [], h.key)));
+          }, getTableEventHandlers(val, [], h.key));
           results.push(tr.appendChild(td));
         }
         return results;
@@ -557,9 +565,9 @@
         var td, totalAggregator, val;
         totalAggregator = allTotal;
         val = totalAggregator.value();
-        td = createCell("td", "pvtGrandTotal", totalAggregator.format(val, {
+        td = createCell("td", "pvtGrandTotal", totalAggregator.format(val), {
           "data-value": val
-        }, getTableEventHandlers(val, [], [])));
+        }, getTableEventHandlers(val, [], []));
         tr.appendChild(td);
         return result.appendChild(tr);
       };
@@ -596,7 +604,7 @@
         }
         p = h.parent;
         while (p !== null) {
-          p.th.setAttribute("colspan", (parseInt(p.th.getAttribute("colspan"))) - colspan);
+          p.th.setAttribute("colspan", parseInt(p.th.getAttribute("colspan")) - colspan);
           p = p.parent;
         }
         if (h.descendants !== 0) {
@@ -698,7 +706,7 @@
         }
         p = h.parent;
         while (p !== null) {
-          p.th.setAttribute("rowspan", parseInt(p.th.getAttribute("rowspan")) - rowspan);
+          p.th.setAttribute("rowspan", parseInt(p.th.getAttribute("rowspan") - rowspan));
           p = p.parent;
         }
         if (h.descendants !== 0) {
@@ -710,16 +718,17 @@
         h.tr.style.display = "";
         rowHeaderHeader = rowHeaderHeaders.hh[h.col];
         rowHeaderHeader.expandedCount--;
-        if (rowHeaderHeader.expandedCount === 0) {
-          results = [];
-          for (j = l = ref1 = h.col, ref2 = rowHeaderHeaders.hh.length - 2; ref1 <= ref2 ? l <= ref2 : l >= ref2; j = ref1 <= ref2 ? ++l : --l) {
-            rowHeaderHeader = rowHeaderHeaders.hh[j];
-            replaceClass(rowHeaderHeader.th, classExpanded, classCollapsed);
-            rowHeaderHeader.th.textContent = " " + arrowCollapsed + " " + rowHeaderHeader.th.getAttribute("data-rowAttr");
-            results.push(rowHeaderHeader.clickStatus = classCollapsed);
-          }
-          return results;
+        if (rowHeaderHeader.expandedCount !== 0) {
+          return;
         }
+        results = [];
+        for (j = l = ref1 = h.col, ref2 = rowHeaderHeaders.hh.length - 2; ref1 <= ref2 ? l <= ref2 : l >= ref2; j = ref1 <= ref2 ? ++l : --l) {
+          rowHeaderHeader = rowHeaderHeaders.hh[j];
+          replaceClass(rowHeaderHeader.th, classExpanded, classCollapsed);
+          rowHeaderHeader.th.textContent = " " + arrowCollapsed + " " + rowHeaderHeader.th.getAttribute("data-rowAttr");
+          results.push(rowHeaderHeader.clickStatus = classCollapsed);
+        }
+        return results;
       };
       expandChildRow = function(ch) {
         var gch, k, len, ref, results;
@@ -749,7 +758,7 @@
         ref = h.children;
         for (k = 0, len = ref.length; k < len; k++) {
           ch = ref[k];
-          rowspan = rowspan + ch.th.rowSpan;
+          rowspan += ch.th.rowSpan;
           if (ch.tr.style.display === "none") {
             ch.tr.style.display = "";
           }
@@ -777,7 +786,7 @@
       };
       toggleCol = function(colHeaderHeaders, colHeaderCols, c) {
         var h;
-        if (!colHeaderCols[c]) {
+        if (colHeaderCols[c] == null) {
           return;
         }
         h = colHeaderCols[c];
@@ -789,7 +798,7 @@
         return h.th.scrollIntoView;
       };
       toggleRow = function(rowHeaderHeaders, rowHeaderRows, r) {
-        if (!rowHeaderRows[r]) {
+        if (rowHeaderRows[r] == null) {
           return;
         }
         if (rowHeaderRows[r].clickStatus === classCollapsed) {
@@ -925,7 +934,7 @@
             h = rowHeaderRows[j];
             if (h.col === i) {
               expandRow(rowHeaderHeaders, rowHeaderRows, j);
-              j = j + h.descendants + 1;
+              j += h.descendants + 1;
             } else {
               ++j;
             }
@@ -976,10 +985,10 @@
         rowHeaderRows = [];
         colHeaderHeaders = [];
         colHeaderCols = [];
-        if (rowAttrs.length !== 0 && rowKeys.length !== 0) {
+        if (rowAttrs.length > 0 && rowKeys.length > 0) {
           rowHeaders = processKeys(rowKeys, "pvtRowLabel");
         }
-        if (colAttrs.length !== 0 && colKeys.length !== 0) {
+        if (colAttrs.length > 0 && colKeys.length > 0) {
           colHeaders = processKeys(colKeys, "pvtColLabel");
         }
         result = document.createElement("table");
@@ -987,7 +996,7 @@
         result.style.display = "none";
         thead = document.createElement("thead");
         result.appendChild(thead);
-        if (colAttrs.length !== 0) {
+        if (colAttrs.length > 0) {
           buildColHeaderHeaders(thead, colHeaderHeaders, rowAttrs, colAttrs);
           for (k = 0, len = colHeaders.length; k < len; k++) {
             h = colHeaders[k];
@@ -995,27 +1004,27 @@
           }
           buildColHeaderHeadersClickEvents(colHeaderHeaders, colHeaderCols, colAttrs);
         }
-        if (rowAttrs.length !== 0) {
+        if (rowAttrs.length > 0) {
           buildRowHeaderHeaders(thead, rowHeaderHeaders, rowAttrs, colAttrs);
           if (colAttrs.length === 0) {
             buildRowTotalsHeader(rowHeaderHeaders.tr, rowAttrs, colAttrs);
           }
         }
-        if (colAttrs.length !== 0) {
+        if (colAttrs.length > 0) {
           buildRowTotalsHeader(colHeaderHeaders[0].tr, rowAttrs, colAttrs);
         }
         tbody = document.createElement("tbody");
         result.appendChild(tbody);
-        if (rowAttrs.length !== 0) {
+        if (rowAttrs.length > 0) {
           for (l = 0, len1 = rowHeaders.length; l < len1; l++) {
             h = rowHeaders[l];
             buildRowHeaders(tbody, rowHeaderHeaders, rowHeaderRows, h, rowAttrs, colAttrs);
           }
-          buildRowHeaderHeadersClickEvents(rowHeaderHeaders, rowHeaderRows, rowAttrs);
         }
+        buildRowHeaderHeadersClickEvents(rowHeaderHeaders, rowHeaderRows, rowAttrs);
         buildValues(rowHeaderRows, colHeaderCols);
         tr = buildColTotalsHeader(rowAttrs, colAttrs);
-        if (colAttrs.length !== 0) {
+        if (colAttrs.length > 0) {
           buildColTotals(tr, colHeaderCols);
         }
         buildGrandTotal(tbody, tr);

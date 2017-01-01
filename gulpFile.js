@@ -26,7 +26,7 @@ gulp.task('makeCss', function() {
 
 gulp.task('makeJs', function() {
     
-    gulp.src(['./*.coffee'])
+    gulp.src(['./*.coffee', './tests/*.coffee'])
         //compile to js (and create map files)
         .pipe(sourcemaps.init())
         .pipe(coffee()).on('error', gutil.log)
@@ -92,7 +92,7 @@ gulp.task('major', function() {
 gulp.task('serve', serve('.'));
 
 gulp.task('watch', function() {
-  gulp.watch('./*.coffee', ['makeJs']);
+  gulp.watch('./*.coffee', './tests/*.coffee', ['makeJs']);
   gulp.watch('./subtotal.css', ['makeCss']);
 });
 
