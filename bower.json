@@ -33,6 +33,6 @@
     "url": "git://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer.git"
   },
   "dependencies": {
-    "pivottable": ">=2.1.0"
+    "pivottable": ">=2.7.0"
   }
 }

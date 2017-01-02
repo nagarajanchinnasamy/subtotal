@@ -29,22 +29,22 @@
 	},
 	"homepage": "https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer",
 	"dependencies": {
-		"pivottable": ">=2.1.0"
+		"pivottable": ">=2.7.0"
 	},
 	"devDependencies": {
 		"gulp-coffee": "^2.2.0",
-		"gulp-uglify": "^1.0.2",
+		"gulp-uglify": "^2.0.0",
 		"gulp-sourcemaps": "^1.2.8",
 		"gulp-serve": "^1.2.0",
 		"gulp": "^3.8.10",
 		"run-sequence": "^1.0.2",
 		"gulp-tag-version": "^1.2.1",
-		"gulp-git": "^0.5.5",
-		"gulp-bump": "^0.1.11",
-		"gulp-filter": "^1.0.2",
+		"gulp-git": "^1.12.0",
+		"gulp-bump": "^2.5.1",
+		"gulp-filter": "^4.0.0",
 		"gulp-util": "^3.0.1",
 		"gulp-rename": "^1.2.0",
-		"gulp-minify-css": "^0.3.11",
+		"gulp-minify-css": "^1.2.4",
 		"gulp-concat": "^2.4.2"
 	}
 }
