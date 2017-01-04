@@ -51,9 +51,6 @@ You can use Subtotal.js with either `pivot()` or `pivotUI()` method of PivotTabl
 
 ```javascript
 $(function(){
-    var dataClass = $.pivotUtilities.SubtotalPivotData
-    var renderer = $.pivotUtilities.subtotal_renderers["Table With Subtotal"];
-    
     $.getJSON("mps.json", function(mps) {
         $("#output").pivot(mps, {
             dataClass: $.pivotUtilities.SubtotalPivotData,
@@ -78,9 +75,6 @@ $(function(){
 
 ```javascript
 $(function(){
-    var dataClass = $.pivotUtilities.SubtotalPivotData;
-    var renderers = $.pivotUtilities.subtotal_renderers;
-    
     $.getJSON("mps.json", function(mps) {
         $("#output").pivotUI(mps, {
             dataClass: $.pivotUtilities.SubtotalPivotData,
