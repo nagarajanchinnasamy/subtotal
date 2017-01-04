@@ -59,7 +59,7 @@ callWithJQuery ($) ->
 
         arrowCollapsed = opts.arrowCollapsed ?= "\u25B6"
         arrowExpanded = opts.arrowExpanded ?= "\u25E2"
-        classExpanded = "expanded" 
+        classExpanded = "expanded"
         classCollapsed = "collapsed"
         colAttrs = pivotData.colAttrs
         rowAttrs = pivotData.rowAttrs
@@ -84,8 +84,8 @@ callWithJQuery ($) ->
 
         replaceClass = (element, replaceClassName, byClassName) ->
             removeClass element, replaceClassName
-            addClass element, byClassName 
-        # Based on http://stackoverflow.com/questions/195951/change-an-elements-class-with-javascript -- End 
+            addClass element, byClassName
+        # Based on http://stackoverflow.com/questions/195951/change-an-elements-class-with-javascript -- End
 
         getTableEventHandlers = (value, rowValues, colValues) ->
             return if not opts.table and not opts.table.eventHandlers
@@ -221,7 +221,7 @@ callWithJQuery ($) ->
 
         buildColHeaderHeadersClickEvents = (colHeaderHeaders, colHeaderCols, colAttrs) ->
             n = colAttrs.length-1
-            for i in [0..n] when i < n 
+            for i in [0..n] when i < n
                 th = colHeaderHeaders[i].th
                 colAttr = colAttrs[i]
                 th.onclick = (event) ->
@@ -283,7 +283,7 @@ callWithJQuery ($) ->
 
         buildRowHeaderHeadersClickEvents = (rowHeaderHeaders, rowHeaderRows, rowAttrs) ->
             n = rowAttrs.length-1
-            for i in [0..n] when i < n 
+            for i in [0..n] when i < n
                 th = rowHeaderHeaders.hh[i]
                 rowAttr = rowAttrs[i]
                 th.th.onclick = (event) ->
@@ -294,7 +294,7 @@ callWithJQuery ($) ->
             rowspan = 1
             if colAttrs.length != 0
                 rowspan = colAttrs.length + (if rowAttrs.length == 0 then 0 else 1)
-            th = createCell "th", "pvtTotalLabel", opts.localeStrings.totals, {rowspan: rowspan}
+            th = createCell "th", "pvtTotalLabel rowTotal", opts.localeStrings.totals, {rowspan: rowspan}
             tr.appendChild th
 
         buildRowHeaders = (tbody, rowHeaderHeaders, rowHeaderRows, rowHeader, rowAttrs, colAttrs) ->
@@ -358,7 +358,7 @@ callWithJQuery ($) ->
         buildColTotalsHeader = (rowAttrs, colAttrs) ->
             tr = document.createElement "tr"
             colspan = rowAttrs.length + (if colAttrs.length == 0 then 0 else 1)
-            th = createCell "th", "pvtTotalLabel", opts.localeStrings.totals, {colspan: colspan}
+            th = createCell "th", "pvtTotalLabel colTotal", opts.localeStrings.totals, {colspan: colspan}
             tr.appendChild th
             return tr
 
