@@ -250,7 +250,7 @@ callWithJQuery ($) ->
                     event = event || window.event
                     toggleCol colHeaderHeaders, colHeaderCols, parseInt event.target.getAttribute "data-node"
                 rowspan = colAttrs.length-(colHeader.col+1) + if rowAttrs.length != 0 then 1 else 0
-                style = "pvtColLabel col" + colHeader.row
+                style = "pvtColLabel pvtColSubtotal col" + colHeader.row
                 th = createCell "th", style, '', {"rowspan": rowspan}
                 colHeader.children[0].tr.appendChild th
                 colHeader.sTh = th
@@ -681,39 +681,39 @@ callWithJQuery ($) ->
             colHeaderHeaders = []
             colHeaderCols = []
 
-            rowHeaders = processKeys(rowKeys, "pvtRowLabel") if rowAttrs.length > 0 and rowKeys.length > 0
-            colHeaders = processKeys(colKeys, "pvtColLabel") if colAttrs.length > 0 and colKeys.length > 0
+            rowHeaders = processKeys rowKeys, "pvtRowLabel" if rowAttrs.length > 0 and rowKeys.length > 0
+            colHeaders = processKeys colKeys, "pvtColLabel" if colAttrs.length > 0 and colKeys.length > 0
 
-            result = document.createElement("table")
+            result = document.createElement "table"
             result.className = "pvtTable"
             result.style.display = "none"
 
-            thead = document.createElement("thead")
+            thead = document.createElement "thead"
             result.appendChild thead
 
             if colAttrs.length > 0
-                buildColHeaderHeaders(thead, colHeaderHeaders, rowAttrs, colAttrs)
+                buildColHeaderHeaders thead, colHeaderHeaders, rowAttrs, colAttrs
                 buildColHeaders colHeaderHeaders, colHeaderCols, h, rowAttrs, colAttrs for h in colHeaders
                 buildColHeaderHeadersClickEvents colHeaderHeaders, colHeaderCols, colAttrs
 
             if rowAttrs.length > 0
-                buildRowHeaderHeaders(thead, rowHeaderHeaders, rowAttrs, colAttrs)
-                buildRowTotalsHeader(rowHeaderHeaders.tr, rowAttrs, colAttrs) if colAttrs.length == 0
+                buildRowHeaderHeaders thead, rowHeaderHeaders, rowAttrs, colAttrs
+                buildRowTotalsHeader rowHeaderHeaders.tr, rowAttrs, colAttrs if colAttrs.length == 0
 
             if colAttrs.length > 0
-                buildRowTotalsHeader(colHeaderHeaders[0].tr, rowAttrs, colAttrs)
+                buildRowTotalsHeader colHeaderHeaders[0].tr, rowAttrs, colAttrs
 
-            tbody = document.createElement("tbody")
+            tbody = document.createElement "tbody"
             result.appendChild tbody
             buildRowHeaders tbody, rowHeaderHeaders, rowHeaderRows, h, rowAttrs, colAttrs for h in rowHeaders if rowAttrs.length > 0
             buildRowHeaderHeadersClickEvents rowHeaderHeaders, rowHeaderRows, rowAttrs
-            buildValues(rowHeaderRows, colHeaderCols)
-            tr = buildColTotalsHeader(rowAttrs, colAttrs)
-            buildColTotals(tr, colHeaderCols) if colAttrs.length > 0
-            buildGrandTotal(tbody, tr)
+            buildValues rowHeaderRows, colHeaderCols
+            tr = buildColTotalsHeader rowAttrs, colAttrs
+            buildColTotals tr, colHeaderCols if colAttrs.length > 0
+            buildGrandTotal tbody, tr
 
-            result.setAttribute("data-numrows", rowKeys.length)
-            result.setAttribute("data-numcols", colKeys.length)
+            result.setAttribute "data-numrows", rowKeys.length
+            result.setAttribute "data-numcols", colKeys.length
             result.style.display = "" if not opts.collapseRowsAt? and not opts.collapseColsAt?
             setTimeout (->
                 collapseRowsAt rowHeaderHeaders, rowHeaderRows, rowAttrs, opts.collapseRowsAt
@@ -727,11 +727,12 @@ callWithJQuery ($) ->
 
             return result
 
-        return main(rowAttrs, rowKeys, colAttrs, colKeys)
+        return main rowAttrs, rowKeys, colAttrs, colKeys
 
     $.pivotUtilities.subtotal_renderers =
-        "Table With Subtotal":  (pvtData, opts) -> SubtotalRenderer(pvtData, opts)
-        "Table With Subtotal Bar Chart":   (pvtData, opts) -> $(SubtotalRenderer(pvtData, opts)).barchart()
-        "Table With Subtotal Heatmap":   (pvtData, opts) -> $(SubtotalRenderer(pvtData, opts)).heatmap("heatmap", opts)
-        "Table With Subtotal Row Heatmap":   (pvtData, opts) -> $(SubtotalRenderer(pvtData, opts)).heatmap("rowheatmap", opts)
-        "Table With Subtotal Col Heatmap":  (pvtData, opts) -> $(SubtotalRenderer(pvtData, opts)).heatmap("colheatmap", opts)
+        "Table With Subtotal":  (pvtData, opts) -> SubtotalRenderer pvtData, opts
+        "Table With Subtotal Bar Chart":   (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).barchart()
+        "Table With Subtotal Heatmap":   (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "heatmap", opts
+        "Table With Subtotal Row Heatmap":   (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "rowheatmap", opts
+        "Table With Subtotal Col Heatmap":  (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "colheatmap", opts
+

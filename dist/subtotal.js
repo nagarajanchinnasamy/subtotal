@@ -374,7 +374,7 @@
             return toggleCol(colHeaderHeaders, colHeaderCols, parseInt(event.target.getAttribute("data-node")));
           };
           rowspan = colAttrs.length - (colHeader.col + 1) + (rowAttrs.length !== 0 ? 1 : 0);
-          style = "pvtColLabel col" + colHeader.row;
+          style = "pvtColLabel pvtColSubtotal col" + colHeader.row;
           th = createCell("th", style, '', {
             "rowspan": rowspan
           });
@@ -438,7 +438,7 @@
         if (colAttrs.length !== 0) {
           rowspan = colAttrs.length + (rowAttrs.length === 0 ? 0 : 1);
         }
-        th = createCell("th", "pvtTotalLabel", opts.localeStrings.totals, {
+        th = createCell("th", "pvtTotalLabel rowTotal", opts.localeStrings.totals, {
           rowspan: rowspan
         });
         return tr.appendChild(th);
@@ -535,7 +535,7 @@
         var colspan, th, tr;
         tr = document.createElement("tr");
         colspan = rowAttrs.length + (colAttrs.length === 0 ? 0 : 1);
-        th = createCell("th", "pvtTotalLabel", opts.localeStrings.totals, {
+        th = createCell("th", "pvtTotalLabel colTotal", opts.localeStrings.totals, {
           colspan: colspan
         });
         tr.appendChild(th);
