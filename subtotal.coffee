@@ -718,12 +718,10 @@ callWithJQuery ($) ->
             setTimeout (->
                 collapseRowsAt rowHeaderHeaders, rowHeaderRows, rowAttrs, opts.collapseRowsAt
                 if not opts.collapseColsAt
-                    result.style.display = ""
-            ), 0 if opts.collapseRowsAt?
+                    result.style.display = ""), 0 if opts.collapseRowsAt?
             setTimeout (->
                 collapseColsAt colHeaderHeaders, colHeaderCols, colAttrs, opts.collapseColsAt
-                result.style.display = ""
-            ), 0 if opts.collapseColsAt?
+                result.style.display = ""), 0 if opts.collapseColsAt?
 
             return result
 
@@ -735,4 +733,24 @@ callWithJQuery ($) ->
         "Table With Subtotal Heatmap":   (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "heatmap", opts
         "Table With Subtotal Row Heatmap":   (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "rowheatmap", opts
         "Table With Subtotal Col Heatmap":  (pvtData, opts) -> $(SubtotalRenderer pvtData, opts).heatmap "colheatmap", opts
+
+    usFmtPct = $.pivotUtilities.numberFormat digitsAfterDecimal:1, scaler: 100, suffix: "%"
+    aggregatorTemplates = $.pivotUtilities.aggregatorTemplates;
+
+    subtotalAggregatorTemplates =
+        fractionOf: (wrapped, type="row", formatter=usFmtPct) -> (x...) -> (data, rowKey, colKey) ->
+            rowKey = [] if typeof rowKey is "undefined"
+            colKey = [] if typeof colKey is "undefined"
+            selector: {row: [rowKey.slice(0, -1),[]], col: [[], colKey.slice(0, -1)]}[type]
+            inner: wrapped(x...)(data, rowKey, colKey)
+            push: (record) -> @inner.push record
+            format: formatter
+            value: -> @inner.value() / data.getAggregator(@selector...).inner.value()
+            numInputs: wrapped(x...)().numInputs
+
+    $.pivotUtilities.subtotalAggregatorTemplates = subtotalAggregatorTemplates
+
+    $.pivotUtilities.subtotal_aggregators = do (tpl = aggregatorTemplates, sTpl = subtotalAggregatorTemplates) ->
+        "Sum As Fraction Of Parent Row":        sTpl.fractionOf(tpl.sum(), "row", usFmtPct)
+        "Sum As Fraction Of Parent Column":     sTpl.fractionOf(tpl.sum(), "col", usFmtPct)
 

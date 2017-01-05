@@ -1,7 +1,8 @@
 (function() {
   var callWithJQuery,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty;
+    hasProp = {}.hasOwnProperty,
+    slice = [].slice;
 
   callWithJQuery = function(pivotModule) {
     if (typeof exports === "object" && typeof module === "object") {
@@ -14,7 +15,7 @@
   };
 
   callWithJQuery(function($) {
-    var SubtotalPivotData, SubtotalRenderer;
+    var SubtotalPivotData, SubtotalRenderer, aggregatorTemplates, subtotalAggregatorTemplates, usFmtPct;
     SubtotalPivotData = (function(superClass) {
       var processKey;
 
@@ -1051,7 +1052,7 @@
       };
       return main(rowAttrs, rowKeys, colAttrs, colKeys);
     };
-    return $.pivotUtilities.subtotal_renderers = {
+    $.pivotUtilities.subtotal_renderers = {
       "Table With Subtotal": function(pvtData, opts) {
         return SubtotalRenderer(pvtData, opts);
       },
@@ -1068,6 +1069,56 @@
         return $(SubtotalRenderer(pvtData, opts)).heatmap("colheatmap", opts);
       }
     };
+    usFmtPct = $.pivotUtilities.numberFormat({
+      digitsAfterDecimal: 1,
+      scaler: 100,
+      suffix: "%"
+    });
+    aggregatorTemplates = $.pivotUtilities.aggregatorTemplates;
+    subtotalAggregatorTemplates = {
+      fractionOf: function(wrapped, type, formatter) {
+        if (type == null) {
+          type = "row";
+        }
+        if (formatter == null) {
+          formatter = usFmtPct;
+        }
+        return function() {
+          var x;
+          x = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+          return function(data, rowKey, colKey) {
+            if (typeof rowKey === "undefined") {
+              rowKey = [];
+            }
+            if (typeof colKey === "undefined") {
+              colKey = [];
+            }
+            return {
+              selector: {
+                row: [rowKey.slice(0, -1), []],
+                col: [[], colKey.slice(0, -1)]
+              }[type],
+              inner: wrapped.apply(null, x)(data, rowKey, colKey),
+              push: function(record) {
+                return this.inner.push(record);
+              },
+              format: formatter,
+              value: function() {
+                return this.inner.value() / data.getAggregator.apply(data, this.selector).inner.value();
+              },
+              numInputs: wrapped.apply(null, x)().numInputs
+            };
+          };
+        };
+      }
+    };
+    $.pivotUtilities.subtotalAggregatorTemplates = subtotalAggregatorTemplates;
+    return $.pivotUtilities.subtotal_aggregators = (function(tpl, sTpl) {
+      return {
+        "Sum As Fraction Of Parent Row": sTpl.fractionOf(tpl.sum(), "row", usFmtPct),
+        "Sum As Fraction Of Parent Column": sTpl.fractionOf(tpl.sum(), "col", usFmtPct)
+      };
+    })(aggregatorTemplates, subtotalAggregatorTemplates);
   });
 
 }).call(this);
