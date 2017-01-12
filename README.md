@@ -112,6 +112,14 @@ For both `collapseRowsAt` and `collapseColsAt` options, using the numerical inde
 
 **`table.eventHandlers`** option is set to a dictionary of events and their callback functions. On the occurence of an event given in this option, the corresponding callback function is invoked by passing the table cell element, value of the element, filtering criteria to fetch matching records from data and `SubtotalPivotData` instance. See [this example](http://nagarajanchinnasamy.com/subtotal/examples/260_event_handlers.html).
 
+### Subtotal Aggregators
+
+`$.pivotUtilities.subtotal_aggregators` is a dictionary of aggregators specific to this plugin. Following are the names of the aggregators in this dictionary:
+    "Count As Fraction Of Parent Row"
+    "Count As Fraction Of Parent Column"
+    "Sum As Fraction Of Parent Row"
+    "Sum As Fraction Of Parent Column"
+
 ## How can I build the code and run the tests?
 
 To install the development dependencies, just run `npm install`, which will create a `node_modules` directory with the files required to run the [Gulp](http://gulpjs.com/) build system.
