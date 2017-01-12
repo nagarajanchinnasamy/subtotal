@@ -1034,20 +1034,27 @@
         if ((opts.collapseRowsAt == null) && (opts.collapseColsAt == null)) {
           result.style.display = "";
         }
+
+        /*
+        setTimeout (->
+            collapseRowsAt rowHeaderHeaders, rowHeaderRows, rowAttrs, opts.collapseRowsAt
+            if not opts.collapseColsAt
+                result.style.display = ""), 0 if opts.collapseRowsAt?
+        setTimeout (->
+            collapseColsAt colHeaderHeaders, colHeaderCols, colAttrs, opts.collapseColsAt
+            result.style.display = ""), 0 if opts.collapseColsAt?
+         */
         if (opts.collapseRowsAt != null) {
-          setTimeout((function() {
-            collapseRowsAt(rowHeaderHeaders, rowHeaderRows, rowAttrs, opts.collapseRowsAt);
-            if (!opts.collapseColsAt) {
-              return result.style.display = "";
-            }
-          }), 0);
+          collapseRowsAt(rowHeaderHeaders, rowHeaderRows, rowAttrs, opts.collapseRowsAt);
+        }
+        if (opts.collapseColsAt == null) {
+          result.style.display = "";
+          return result;
         }
         if (opts.collapseColsAt != null) {
-          setTimeout((function() {
-            collapseColsAt(colHeaderHeaders, colHeaderCols, colAttrs, opts.collapseColsAt);
-            return result.style.display = "";
-          }), 0);
+          collapseColsAt(colHeaderHeaders, colHeaderCols, colAttrs, opts.collapseColsAt);
         }
+        result.style.display = "";
         return result;
       };
       return main(rowAttrs, rowKeys, colAttrs, colKeys);

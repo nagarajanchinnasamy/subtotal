@@ -715,13 +715,12 @@ callWithJQuery ($) ->
             result.setAttribute "data-numrows", rowKeys.length
             result.setAttribute "data-numcols", colKeys.length
             result.style.display = "" if not opts.collapseRowsAt? and not opts.collapseColsAt?
-            setTimeout (->
-                collapseRowsAt rowHeaderHeaders, rowHeaderRows, rowAttrs, opts.collapseRowsAt
-                if not opts.collapseColsAt
-                    result.style.display = ""), 0 if opts.collapseRowsAt?
-            setTimeout (->
-                collapseColsAt colHeaderHeaders, colHeaderCols, colAttrs, opts.collapseColsAt
-                result.style.display = ""), 0 if opts.collapseColsAt?
+            collapseRowsAt rowHeaderHeaders, rowHeaderRows, rowAttrs, opts.collapseRowsAt if opts.collapseRowsAt?
+            if not opts.collapseColsAt?
+                result.style.display = ""
+                return result
+            collapseColsAt colHeaderHeaders, colHeaderCols, colAttrs, opts.collapseColsAt if opts.collapseColsAt?
+            result.style.display = ""
 
             return result
 
