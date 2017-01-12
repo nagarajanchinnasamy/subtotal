@@ -23,7 +23,7 @@
     <body>
     <script type="text/javascript">
     // This example loads the "Canadian Parliament 2012" dataset
-    // and demonstrates Sum As Fraction Of Parent Row / Column.
+    // and demonstrates Count / Sum As Fraction Of Parent Row / Column.
 
     $(function() {
         var dataClass = $.pivotUtilities.SubtotalPivotData;
@@ -36,7 +36,7 @@
                 rows: ["Gender", "Province"],
                 cols: ["Party", "Age"],
                 aggregators: aggregators,
-                aggregatorName: "Sum As Fraction Of Parent Row",
+                aggregatorName: "Count As Fraction Of Parent Row",
                 vals: ["Age"],
                 renderers: renderers,
                 rendererName: "Table With Subtotal",

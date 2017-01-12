@@ -1034,16 +1034,6 @@
         if ((opts.collapseRowsAt == null) && (opts.collapseColsAt == null)) {
           result.style.display = "";
         }
-
-        /*
-        setTimeout (->
-            collapseRowsAt rowHeaderHeaders, rowHeaderRows, rowAttrs, opts.collapseRowsAt
-            if not opts.collapseColsAt
-                result.style.display = ""), 0 if opts.collapseRowsAt?
-        setTimeout (->
-            collapseColsAt colHeaderHeaders, colHeaderCols, colAttrs, opts.collapseColsAt
-            result.style.display = ""), 0 if opts.collapseColsAt?
-         */
         if (opts.collapseRowsAt != null) {
           collapseRowsAt(rowHeaderHeaders, rowHeaderRows, rowAttrs, opts.collapseRowsAt);
         }
@@ -1122,6 +1112,8 @@
     $.pivotUtilities.subtotalAggregatorTemplates = subtotalAggregatorTemplates;
     return $.pivotUtilities.subtotal_aggregators = (function(tpl, sTpl) {
       return {
+        "Count As Fraction Of Parent Row": sTpl.fractionOf(tpl.count(), "row", usFmtPct),
+        "Count As Fraction Of Parent Column": sTpl.fractionOf(tpl.count(), "col", usFmtPct),
         "Sum As Fraction Of Parent Row": sTpl.fractionOf(tpl.sum(), "row", usFmtPct),
         "Sum As Fraction Of Parent Column": sTpl.fractionOf(tpl.sum(), "col", usFmtPct)
       };
