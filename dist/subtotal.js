@@ -1112,10 +1112,10 @@
     $.pivotUtilities.subtotalAggregatorTemplates = subtotalAggregatorTemplates;
     return $.pivotUtilities.subtotal_aggregators = (function(tpl, sTpl) {
       return {
-        "Count As Fraction Of Parent Row": sTpl.fractionOf(tpl.count(), "row", usFmtPct),
-        "Count As Fraction Of Parent Column": sTpl.fractionOf(tpl.count(), "col", usFmtPct),
         "Sum As Fraction Of Parent Row": sTpl.fractionOf(tpl.sum(), "row", usFmtPct),
-        "Sum As Fraction Of Parent Column": sTpl.fractionOf(tpl.sum(), "col", usFmtPct)
+        "Sum As Fraction Of Parent Column": sTpl.fractionOf(tpl.sum(), "col", usFmtPct),
+        "Count As Fraction Of Parent Row": sTpl.fractionOf(tpl.count(), "row", usFmtPct),
+        "Count As Fraction Of Parent Column": sTpl.fractionOf(tpl.count(), "col", usFmtPct)
       };
     })(aggregatorTemplates, subtotalAggregatorTemplates);
   });
