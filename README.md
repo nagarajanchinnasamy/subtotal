@@ -115,6 +115,7 @@ For both `collapseRowsAt` and `collapseColsAt` options, using the numerical inde
 ### Subtotal Aggregators
 
 `$.pivotUtilities.subtotal_aggregators` is a dictionary of aggregators specific to this plugin. Following are the names of the aggregators in this dictionary:
+
     "Count As Fraction Of Parent Row"
     "Count As Fraction Of Parent Column"
     "Sum As Fraction Of Parent Row"
