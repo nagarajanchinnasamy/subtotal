@@ -121,6 +121,8 @@ For both `collapseRowsAt` and `collapseColsAt` options, using the numerical inde
     "Sum As Fraction Of Parent Row"
     "Sum As Fraction Of Parent Column"
 
+[Please refer to this example](http://nagarajanchinnasamy.com/subtotal/examples/237_fraction_of_parent_aggregators.html).
+
 ## How can I build the code and run the tests?
 
 To install the development dependencies, just run `npm install`, which will create a `node_modules` directory with the files required to run the [Gulp](http://gulpjs.com/) build system.
