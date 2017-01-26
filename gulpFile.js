@@ -92,7 +92,7 @@ gulp.task('major', function() {
 gulp.task('serve', serve('.'));
 
 gulp.task('watch', function() {
-  gulp.watch('./*.coffee', './tests/*.coffee', ['makeJs']);
+  gulp.watch(['./*.coffee', './tests/*.coffee'], ['makeJs']);
   gulp.watch('./subtotal.css', ['makeCss']);
 });
 

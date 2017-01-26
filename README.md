@@ -102,6 +102,18 @@ $(function(){
 
 ### Parameter: rendererOptions
 
+**`rowSubtotalDisplay`** option can be used to control the way row-subtotals are displayed. It can take one of the following values:
+
+    "Hide On Expand"
+    "Enable"
+    "Disable" (Note: Currently Not Supported)
+
+**`colSubtotalDisplay`** option can be used to control the way column-subtotals are displayed. It can take one of the following values:
+
+    "Hide On Expand"
+    "Enable"
+    "Disable" (Note: Currently Not Supported)
+
 **`collapseRowsAt`** option can be set to a `string` value as one of the elements of `rows` array or to a `numeric` value as index of one of the elements of `rows` array. If this option is set, rows are collapsed at the given row attribute whenever the pivot table is (re)rendered.  The default behavior is to render all rows expanded initially (ie., no collapse).
 
 **`collapseColsAt`** option can be set to a `string` value as one of the elements of `cols` array or to a `numeric` value as index of one of the elements of `cols` array. If this option is set, columns are collapsed at the given column attribute whenever the pivot table is (re)rendered. The default behavior is to render all columns expanded initially (ie., no collapse).
