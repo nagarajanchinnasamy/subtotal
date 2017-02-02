@@ -884,7 +884,6 @@
         for (k = 0, len = ref.length; k < len; k++) {
           tagName = ref[k];
           cells = h.tr.getElementsByTagName(tagName);
-          console.log(cells);
           for (l = 0, len1 = cells.length; l < len1; l++) {
             cell = cells[l];
             removeClass(cell, classRowCollapsed + " " + classRowHide);

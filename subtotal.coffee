@@ -613,7 +613,6 @@ callWithJQuery ($) ->
         expandShowRowSubtotal = (h) ->
             for tagName in ["td", "th"]
                 cells = h.tr.getElementsByTagName tagName 
-                console.log cells
                 for cell in cells
                     removeClass cell, "#{classRowCollapsed} #{classRowHide}"
                     addClass cell, "#{classRowExpanded} #{classRowShow}" 
