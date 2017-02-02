@@ -54,7 +54,7 @@
         });
       });
     });
-    return describe("with rows/cols, subtotal_aggregators", function() {
+    describe("with collapsed rows and cols, subtotal_aggregators", function() {
       var table;
       table = null;
       beforeEach(function(done) {
@@ -97,8 +97,8 @@
         it("has the correct type and number of cells", function(done) {
           expect(table.find("th.pvtAxisLabel").length).toBe(4);
           expect(table.find("th.pvtAxisLabel.collapsed").length).toBe(2);
-          expect(table.find("th.pvtRowLabel.collapsed").length).toBe(2);
-          expect(table.find("th.pvtColLabel.collapsed").length).toBe(10);
+          expect(table.find("th.pvtRowLabel.rowcollapsed").length).toBe(4);
+          expect(table.find("th.pvtColLabel.colcollapsed").length).toBe(20);
           expect(table.find("th.pvtTotalLabel.rowTotal").length).toBe(1);
           expect(table.find("th.pvtTotalLabel.colTotal").length).toBe(1);
           expect(table.find("td.pvtVal.pvtColSubtotal.pvtRowSubtotal").length).toBe(20);
@@ -115,6 +115,75 @@
         return it("has a correct spot-checked cell with data value", function(done) {
           expect(table.find("td.pvtVal.pvtRowSubtotal.row0.col3.rowcol0.colcol1").text()).toBe("17.9%");
           expect(table.find("td.pvtVal.pvtTotal.colTotal.pvtColSubtotal.col3.colcol0").data("value")).toBe((50 + 30) / 280);
+          return done();
+        });
+      });
+    });
+    return describe("with row and col subtotal hidden on expand", function() {
+      var table;
+      table = null;
+      beforeEach(function(done) {
+        return table = $("<div>").pivotUI(fixtureData, {
+          dataClass: $.pivotUtilities.SubtotalPivotData,
+          rows: ["colour", "birthday", "name"],
+          cols: ["trials", "gender", "successes"],
+          aggregators: $.pivotUtilities.subtotal_aggregators,
+          vals: ["successes"],
+          renderers: $.pivotUtilities.subtotal_renderers,
+          rendererOptions: {
+            rowSubtotalDisplay: "Hide On Expand",
+            colSubtotalDisplay: "Hide On Expand"
+          },
+          onRefresh: done
+        });
+      });
+      it("has all the basic UI elements", function(done) {
+        expect(table.find("td.pvtAxisContainer").length).toBe(3);
+        expect(table.find("td.pvtRendererArea").length).toBe(1);
+        expect(table.find("td.pvtVals").length).toBe(1);
+        expect(table.find("select.pvtRenderer").length).toBe(1);
+        expect(table.find("select.pvtAggregator").length).toBe(1);
+        expect(table.find("span.pvtAttr").length).toBe(6);
+        return done();
+      });
+      it("reflects its inputs", function(done) {
+        expect(table.find("td.pvtUnused span.pvtAttr").length).toBe(0);
+        expect(table.find("td.pvtRows span.pvtAttr").length).toBe(3);
+        expect(table.find("td.pvtCols span.pvtAttr").length).toBe(3);
+        expect(table.find("select.pvtRenderer").val()).toBe("Table With Subtotal");
+        expect(table.find("select.pvtAggregator").val()).toBe("Sum As Fraction Of Parent Row");
+        return done();
+      });
+      it("renders a table", function(done) {
+        expect(table.find("table.pvtTable").length).toBe(1);
+        return done();
+      });
+      return describe("its renderer output", function() {
+        it("has the correct type and number of cells", function(done) {
+          expect(table.find("th.pvtAxisLabel").length).toBe(6);
+          expect(table.find("th.pvtAxisLabel.collapsed").length).toBe(0);
+          expect(table.find("th.pvtRowLabel.rowshow.rowcollapsed").length).toBe(0);
+          expect(table.find("th.pvtColLabel.colshow.colcollapsed").length).toBe(0);
+          expect(table.find("th.pvtRowLabel.rowshow.rowexpanded").length).toBe(14);
+          expect(table.find("th.pvtColLabel.colshow.colexpanded").length).toBe(9);
+          expect(table.find("th.pvtRowSubtotal.rowhide.rowexpanded").length).toBe(14);
+          expect(table.find("th.pvtColSubtotal.colhide.colexpanded").length).toBe(9);
+          expect(table.find("td.pvtColSubtotal.pvtRowSubtotal.colhide.colexpanded.rowhide.rowexpanded").length).toBe(9 * 14);
+          expect(table.find("th.pvtTotalLabel.rowTotal").length).toBe(1);
+          expect(table.find("th.pvtTotalLabel.colTotal").length).toBe(1);
+          expect(table.find("td.pvtTotal.rowTotal.pvtRowSubtotal").length).toBe(14);
+          expect(table.find("td.pvtTotal.colTotal.pvtColSubtotal").length).toBe(9);
+          expect(table.find("td.pvtGrandTotal").length).toBe(1);
+          return done();
+        });
+        it("has the correct textual representation", function(done) {
+          expect(table.find("th.pvtColLabel").text()).toBe(" \u25E2 95 \u25E2 102 \u25E2 103 \u25E2 112 \u25E2 female \u25E2 female \u25E2 male \u25E2 female \u25E2 male2514121412142530");
+          expect(table.find("th.pvtRowLabel").text()).toBe(" \u25E2 blue \u25E2 1982-11-07NickRaj \u25E2 1982-12-03Geeth \u25E2 1982-12-07Nila \u25E2 1982-12-08John \u25E2 1982-12-09Joshi \u25E2 red \u25E2 1982-11-05Malar \u25E2 1982-11-08JaneRaniSai \u25E2 yellow \u25E2 1982-11-07Mukhi \u25E2 1982-12-01Vel \u25E2 1982-12-06Yaazhi \u25E2 1983-11-11Carol");
+          return done();
+        });
+        return it("has a correct spot-checked cell with data value", function(done) {
+          expect(table.find("td.pvtVal.rowshow.colshow.row10.col5.rowcol2.colcol2").text()).toBe("100.0%");
+          expect(table.find("td.pvtVal[data-rownode=\"3\"][data-colnode=\"6\"]").text()).toBe("50.0%");
           return done();
         });
       });
@@ -165,10 +234,10 @@
         it("has the correct type and number of cells", function() {
           expect(table.find("th.pvtAxisLabel").length).toBe(4);
           expect(table.find("th.collapsed").length).toBe(0);
-          expect(table.find("th.expanded").length).toBe(14);
+          expect(table.find("th.expanded, th.rowexpanded, th.colexpanded").length).toBe(2 + 4 + 20);
           expect(table.find("th.pvtAxisLabel.expanded").length).toBe(2);
-          expect(table.find("th.pvtRowLabel.expanded").length).toBe(2);
-          expect(table.find("th.pvtColLabel.expanded").length).toBe(10);
+          expect(table.find("th.pvtRowLabel.rowexpanded").length).toBe(4);
+          expect(table.find("th.pvtColLabel.colexpanded").length).toBe(20);
           expect(table.find("th.pvtTotalLabel.rowTotal").length).toBe(1);
           expect(table.find("th.pvtTotalLabel.colTotal").length).toBe(1);
           expect(table.find("td.pvtVal.pvtColSubtotal.pvtRowSubtotal").length).toBe(20);
