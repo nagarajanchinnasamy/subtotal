@@ -2,7 +2,7 @@
 <html>
     <head>
         <title>Subtotal Demo</title>
-        <!-- external libs from cdnjs -->
+        <!-- external dependency libs from cdnjs -->
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
 
@@ -22,34 +22,26 @@
     </head>
     <body>
     <script type="text/javascript">
-    // This example loads the "Canadian Parliament 2012" dataset
-    // and adds derived attributes: "Age Bin" and "Gender Imbalance".
+    // This example demonstrates customization of expand / collapse arrow characters
 
-    $(function() {
+    $(function(){
         var dataClass = $.pivotUtilities.SubtotalPivotData;
-        var derivers = $.pivotUtilities.derivers;
-        var renderers = $.pivotUtilities.subtotal_renderers;
+        var renderer = $.pivotUtilities.subtotal_renderers["Table With Subtotal"];
 
         $.getJSON("data/mps.json", function(mps) {
-            $("#output").pivotUI(mps, {
+            $("#output").pivot(mps, {
                 dataClass: dataClass,
                 rows: ["Gender", "Province"],
-                cols: ["Party", "Age Bin", "Age"],
-                renderers: renderers,
-                derivedAttributes: {
-                    "Age Bin": derivers.bin("Age", 10),
-                    "Gender Imbalance": function(mp) {
-                        return mp["Gender"] == "Male" ? 1 : -1;
-                    }
-                },
-                rendererName: "Table With Subtotal",
+                cols: ["Party", "Age"],
+                renderer: renderer,
                 rendererOptions: {
-                    collapseRowsAt: 0,
-                    collapseColsAt: 1 
+                    arrowCollapsed: "[+] ",
+                    arrowExpanded: "[-] ",
+                    collapseRowsAt: 0 
                 }
             });
         });
-    });
+     });
     </script>
     <p><a href="index.html">&laquo; back to examples</a></p>
     <p></p>
@@ -58,5 +50,5 @@
     <div id="output" style="margin: 30px;"></div>
     <p></p>
     <p><a href="index.html">&laquo; back to examples</a></p>
-     </body>
+    </body>
 </html>

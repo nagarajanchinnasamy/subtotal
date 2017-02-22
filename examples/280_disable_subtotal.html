@@ -22,26 +22,26 @@
     </head>
     <body>
     <script type="text/javascript">
-    // This example loads the "Canadian Parliament 2012" dataset
-    // and demonstrates Count / Sum As Fraction Of Parent Row / Column.
+    // This example demonstrates disabling row or column subtotals
 
     $(function() {
         var dataClass = $.pivotUtilities.SubtotalPivotData;
         var renderers = $.pivotUtilities.subtotal_renderers;
-        var aggregators = $.extend($.pivotUtilities.subtotal_aggregators, $.pivotUtilities.aggregators)
 
         $.getJSON("data/mps.json", function(mps) {
             $("#output").pivotUI(mps, {
                 dataClass: dataClass,
                 rows: ["Gender", "Province"],
                 cols: ["Party", "Age"],
-                aggregators: aggregators,
-                aggregatorName: "Count As Fraction Of Parent Row",
-                vals: ["Age"],
                 renderers: renderers,
                 rendererName: "Table With Subtotal",
                 rendererOptions: {
-                    collapseColsAt: 0
+                    // rowSubtotalDisplay: {
+                        // disableSubtotal: true
+                    // }
+                    colSubtotalDisplay: {
+                        disableSubtotal: true
+                    }
                 }
             });
         });

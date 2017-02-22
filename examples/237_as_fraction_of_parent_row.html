@@ -22,26 +22,26 @@
     </head>
     <body>
     <script type="text/javascript">
-    // This example demonstrates hiding subtotals on expand
+    // This example demonstrates Count / Sum As Fraction Of Parent Row aggregators
 
     $(function() {
         var dataClass = $.pivotUtilities.SubtotalPivotData;
         var renderers = $.pivotUtilities.subtotal_renderers;
+        var aggregators = $.extend($.pivotUtilities.subtotal_aggregators, $.pivotUtilities.aggregators)
 
         $.getJSON("data/mps.json", function(mps) {
             $("#output").pivotUI(mps, {
                 dataClass: dataClass,
                 rows: ["Gender", "Province"],
                 cols: ["Party", "Age"],
+                aggregators: aggregators,
+                aggregatorName: "Count As Fraction Of Parent Row",
+                // aggregatorName: "Sum As Fraction Of Parent Row",
+                vals: ["Age"],
                 renderers: renderers,
                 rendererName: "Table With Subtotal",
                 rendererOptions: {
-                    // rowSubtotalDisplay: {
-                        // hideOnExpand: true
-                    // }
-                    colSubtotalDisplay: {
-                        hideOnExpand: true
-                    }
+                    collapseColsAt: 0
                 }
             });
         });

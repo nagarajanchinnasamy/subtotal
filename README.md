@@ -37,7 +37,7 @@ If you are loading the scripts directly (as in the [examples](http://nagarajanch
 3. load the Subtotal.js files:
   1. `subtotal.min.js`
 
-Here is the source code of an [exmaple](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/blob/master/examples/subtotal_pivot.html/) 
+Here is the source code of an [exmaple](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/blob/master/examples/105_default.html/) 
 
 ## How do I use the code?
 
@@ -102,17 +102,17 @@ $(function(){
 
 ### Parameter: rendererOptions
 
-**`rowSubtotalDisplay`** option can be used to control the way row-subtotals are displayed. It can take one of the following values:
+**`rowSubtotalDisplay`** option can be used to control the way row-subtotals are displayed. Following properties can be set in this option:
 
-    "Hide On Expand"
-    "Enable"
-    "Disable" (Note: Currently Not Supported)
+    "disableExpandCollapse" - Disables expand collapse operations.
+    "disableSubtotal" - Disables displaying of subtotals. This also disables expand collapse operations.
+    "hideOnExpand" - Enables hiding of subtotals when expanded.
 
-**`colSubtotalDisplay`** option can be used to control the way column-subtotals are displayed. It can take one of the following values:
+**`colSubtotalDisplay`** option can be used to control the way column-subtotals are displayed. Following properties can be set in this option:
 
-    "Hide On Expand"
-    "Enable"
-    "Disable" (Note: Currently Not Supported)
+    "disableExpandCollapse" - Disables expand collapse operations.
+    "disableSubtotal" - Disables displaying of subtotals. This also disables expand collapse operations.
+    "hideOnExpand" - Enables hiding of subtotals when expanded.
 
 **`collapseRowsAt`** option can be set to a `string` value as one of the elements of `rows` array or to a `numeric` value as index of one of the elements of `rows` array. If this option is set, rows are collapsed at the given row attribute whenever the pivot table is (re)rendered.  The default behavior is to render all rows expanded initially (ie., no collapse).
 
@@ -133,7 +133,7 @@ For both `collapseRowsAt` and `collapseColsAt` options, using the numerical inde
     "Sum As Fraction Of Parent Row"
     "Sum As Fraction Of Parent Column"
 
-[Please refer to this example](http://nagarajanchinnasamy.com/subtotal/examples/237_fraction_of_parent_aggregators.html).
+[Please refer to this example](http://nagarajanchinnasamy.com/subtotal/examples/237_as_fraction_of_parent_row.html).
 
 ## How can I build the code and run the tests?
 

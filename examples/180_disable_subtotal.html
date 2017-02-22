@@ -22,22 +22,25 @@
     </head>
     <body>
     <script type="text/javascript">
-    // This example loads the "Canadian Parliament 2012" dataset
-    // and adds derived attributes: "Age Bin" and "Gender Imbalance".
+    // This example demonstrates disabling of row / column subtotal display 
 
     $(function() {
         var dataClass = $.pivotUtilities.SubtotalPivotData;
-        var renderers = $.pivotUtilities.subtotal_renderers;
+        var renderer = $.pivotUtilities.subtotal_renderers["Table With Subtotal"];
 
         $.getJSON("data/mps.json", function(mps) {
-            $("#output").pivotUI(mps, {
+            $("#output").pivot(mps, {
                 dataClass: dataClass,
                 rows: ["Gender", "Province"],
                 cols: ["Party", "Age"],
-                renderers: renderers,
-                rendererName: "Table With Subtotal",
+                renderer: renderer,
                 rendererOptions: {
-                    rowSubtotalDisplay: "Hide On Expand"
+                    // rowSubtotalDisplay: {
+                        // disableSubtotal: true
+                    // },
+                    colSubtotalDisplay: {
+                        disableSubtotal: true
+                    }
                 }
             });
         });

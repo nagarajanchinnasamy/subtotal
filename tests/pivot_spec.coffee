@@ -188,8 +188,12 @@ describe "$.pivotUI()", ->
                 vals: ["successes"],
                 renderers: $.pivotUtilities.subtotal_renderers,
                 rendererOptions: {
-                    rowSubtotalDisplay: "Hide On Expand",
-                    colSubtotalDisplay: "Hide On Expand"
+                    rowSubtotalDisplay: {
+                        hideOnExpand: true
+                    },
+                    colSubtotalDisplay: {
+                        hideOnExpand: true
+                    }
                 },
                 onRefresh: done
 
