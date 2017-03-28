@@ -25,7 +25,6 @@
 
     $(function() {
         var dataClass = $.pivotUtilities.SubtotalPivotData;
-        var derivers = $.pivotUtilities.derivers;
         var renderers = $.pivotUtilities.subtotal_renderers;
 
         $.getJSON("data/mps.json", function(mps) {
@@ -34,7 +33,7 @@
                 rows: ["Province", "Age"],
                 cols: ["Party"],
                 aggregatorName: "Integer Sum",
-		vals: ["Age"],
+                vals: ["Age"],
                 renderers: renderers,
                 rendererName: "Table With Subtotal Heatmap",
                 rendererOptions: {

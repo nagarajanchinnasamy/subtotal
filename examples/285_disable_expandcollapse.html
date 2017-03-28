@@ -2,11 +2,11 @@
 <html>
     <head>
         <title>Subtotal Demo</title>
-        <!-- external dependency libs from cdnjs -->
+        <!-- external libs from cdnjs -->
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
 
-        <!-- PivotTable.js libs from cdnjs -->
+        <!-- PivotTable.js libs from ../dist -->
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.7.0/pivot.min.js"></script>
         <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.7.0/pivot.min.css">
 
@@ -22,26 +22,30 @@
     </head>
     <body>
     <script type="text/javascript">
-    // This example loads the "Canadian Parliament 2012" dataset
-    // and adds derived attributes: "Age Bin" and "Gender Imbalance".
+    // This example demonstrates disabling expand collapse operations 
 
-    $(function(){
+    $(function() {
         var dataClass = $.pivotUtilities.SubtotalPivotData;
-        var derivers = $.pivotUtilities.derivers;
-        var renderer = $.pivotUtilities.subtotal_renderers["Table With Subtotal"];
+        var renderers = $.pivotUtilities.subtotal_renderers;
 
         $.getJSON("data/mps.json", function(mps) {
-            $("#output").pivot(mps, {
+            $("#output").pivotUI(mps, {
                 dataClass: dataClass,
                 rows: ["Gender", "Province"],
                 cols: ["Party", "Age"],
-                renderer: renderer,
+                renderers: renderers,
+                rendererName: "Table With Subtotal",
                 rendererOptions: {
-                    collapseColsAt: 0 
+                    rowSubtotalDisplay: {
+                        disableExpandCollapse: true
+                    },
+                    colSubtotalDisplay: {
+                        disableExpandCollapse: true
+                    }
                 }
             });
         });
-     });
+    });
     </script>
     <p><a href="index.html">&laquo; back to examples</a></p>
     <p></p>
@@ -50,5 +54,5 @@
     <div id="output" style="margin: 30px;"></div>
     <p></p>
     <p><a href="index.html">&laquo; back to examples</a></p>
-    </body>
+     </body>
 </html>

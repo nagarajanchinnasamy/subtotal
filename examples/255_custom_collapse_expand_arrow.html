@@ -22,20 +22,19 @@
     </head>
     <body>
     <script type="text/javascript">
-    // This example loads the "Canadian Parliament 2012" dataset
-    // and adds derived attributes: "Age Bin" and "Gender Imbalance".
+    // This example demonstrates customization collapse / expand arrow characters
 
     $(function(){
         var dataClass = $.pivotUtilities.SubtotalPivotData;
-        var derivers = $.pivotUtilities.derivers;
-        var renderer = $.pivotUtilities.subtotal_renderers["Table With Subtotal"];
+        var renderers = $.pivotUtilities.subtotal_renderers;
 
         $.getJSON("data/mps.json", function(mps) {
-            $("#output").pivot(mps, {
+            $("#output").pivotUI(mps, {
                 dataClass: dataClass,
                 rows: ["Gender", "Province"],
                 cols: ["Party", "Age"],
-                renderer: renderer,
+                renderers: renderers,
+                rendererName: "Table With Subtotal",
                 rendererOptions: {
                     arrowCollapsed: "[+] ",
                     arrowExpanded: "[-] ",

@@ -2,11 +2,11 @@
 <html>
     <head>
         <title>Subtotal Demo</title>
-        <!-- external dependency libs from cdnjs -->
+        <!-- external libs from cdnjs -->
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
 
-        <!-- PivotTable.js libs from cdnjs -->
+        <!-- PivotTable.js libs from ../dist -->
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.7.0/pivot.min.js"></script>
         <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.7.0/pivot.min.css">
 
@@ -22,10 +22,9 @@
     </head>
     <body>
     <script type="text/javascript">
-    // This example loads the "Canadian Parliament 2012" dataset
-    // and adds derived attributes: "Age Bin" and "Gender Imbalance".
+    // This example demonstrates hiding row / column subtotals on expand
 
-    $(function(){
+    $(function() {
         var dataClass = $.pivotUtilities.SubtotalPivotData;
         var renderer = $.pivotUtilities.subtotal_renderers["Table With Subtotal"];
 
@@ -34,10 +33,18 @@
                 dataClass: dataClass,
                 rows: ["Gender", "Province"],
                 cols: ["Party", "Age"],
-                renderer: renderer
+                renderer: renderer,
+                rendererOptions: {
+                    // rowSubtotalDisplay: {
+                        // hideOnExpand: true
+                    // }
+                    colSubtotalDisplay: {
+                        hideOnExpand: true
+                    }
+                }
             });
         });
-     });
+    });
     </script>
     <p><a href="index.html">&laquo; back to examples</a></p>
     <p></p>
@@ -46,5 +53,5 @@
     <div id="output" style="margin: 30px;"></div>
     <p></p>
     <p><a href="index.html">&laquo; back to examples</a></p>
-    </body>
+     </body>
 </html>
