@@ -220,7 +220,7 @@ callWithJQuery ($) ->
             className = "pvtAxisLabel"
             if col < colAttrs.length-1
                 className += " expanded"
-                textContent = " " + arrowExpanded + " " + colAttr
+                textContent = " " + arrowExpanded + " " + colAttr if not (isColDisableExpandCollapse or isColDisable)
             th = createElement "th", className, textContent
             th.setAttribute "data-colAttr", colAttr
             tr.appendChild th
@@ -278,7 +278,7 @@ callWithJQuery ($) ->
                 "data-colHeader": th.textContent
             if isColSubtotal
                 addClass th, classColExpanded
-                th.textContent = " #{arrowExpanded} #{th.textContent}"
+                th.textContent = " #{arrowExpanded} #{th.textContent}" if not (isColDisableExpandCollapse or isColDisable)
                 th.onclick = (event) ->
                     event = event || window.event
                     toggleCol colHeaderHeaders, colHeaderCols, parseInt event.target.getAttribute "data-colnode"
@@ -304,7 +304,7 @@ callWithJQuery ($) ->
                 className = "pvtAxisLabel"
                 if i < rowAttrs.length-1
                     className += " expanded"
-                    textContent = " " + arrowExpanded + " " + rowAttr
+                    textContent = " " + arrowExpanded + " " + rowAttr if not (isRowDisableExpandCollapse or isRowDisable)
                 th = createElement "th", className, textContent
                 th.setAttribute "data-rowAttr", rowAttr
                 tr.appendChild th
@@ -352,7 +352,7 @@ callWithJQuery ($) ->
             if isRowSubtotal
                 addClass tr, classRowExpanded
                 addClass th, classRowExpanded
-                th.textContent = " " + arrowExpanded + " " + th.textContent
+                th.textContent = " " + arrowExpanded + " " + th.textContent if not (isRowDisableExpandCollapse or isRowDisable)
                 th.onclick = (event) ->
                     event = event || window.event
                     toggleRow rowHeaderHeaders, rowHeaderRows, parseInt event.target.getAttribute "data-rownode"
@@ -849,9 +849,7 @@ callWithJQuery ($) ->
             rowHeaders = processKeys rowKeys, "pvtRowLabel" if rowAttrs.length > 0 and rowKeys.length > 0
             colHeaders = processKeys colKeys, "pvtColLabel" if colAttrs.length > 0 and colKeys.length > 0
 
-            result = createElement "table"
-            result.className = "pvtTable"
-            result.style.display = "none"
+            result = createElement "table", "pvtTable", null, {style: "display: none;"}
 
             thead = createElement "thead"
             result.appendChild thead

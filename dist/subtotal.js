@@ -336,7 +336,9 @@
         className = "pvtAxisLabel";
         if (col < colAttrs.length - 1) {
           className += " expanded";
-          textContent = " " + arrowExpanded + " " + colAttr;
+          if (!(isColDisableExpandCollapse || isColDisable)) {
+            textContent = " " + arrowExpanded + " " + colAttr;
+          }
         }
         th = createElement("th", className, textContent);
         th.setAttribute("data-colAttr", colAttr);
@@ -410,7 +412,9 @@
         });
         if (isColSubtotal) {
           addClass(th, classColExpanded);
-          th.textContent = " " + arrowExpanded + " " + th.textContent;
+          if (!(isColDisableExpandCollapse || isColDisable)) {
+            th.textContent = " " + arrowExpanded + " " + th.textContent;
+          }
           th.onclick = function(event) {
             event = event || window.event;
             return toggleCol(colHeaderHeaders, colHeaderCols, parseInt(event.target.getAttribute("data-colnode")));
@@ -448,7 +452,9 @@
           className = "pvtAxisLabel";
           if (i < rowAttrs.length - 1) {
             className += " expanded";
-            textContent = " " + arrowExpanded + " " + rowAttr;
+            if (!(isRowDisableExpandCollapse || isRowDisable)) {
+              textContent = " " + arrowExpanded + " " + rowAttr;
+            }
           }
           th = createElement("th", className, textContent);
           th.setAttribute("data-rowAttr", rowAttr);
@@ -516,7 +522,9 @@
         if (isRowSubtotal) {
           addClass(tr, classRowExpanded);
           addClass(th, classRowExpanded);
-          th.textContent = " " + arrowExpanded + " " + th.textContent;
+          if (!(isRowDisableExpandCollapse || isRowDisable)) {
+            th.textContent = " " + arrowExpanded + " " + th.textContent;
+          }
           th.onclick = function(event) {
             event = event || window.event;
             return toggleRow(rowHeaderHeaders, rowHeaderRows, parseInt(event.target.getAttribute("data-rownode")));
@@ -1223,9 +1231,9 @@
         if (colAttrs.length > 0 && colKeys.length > 0) {
           colHeaders = processKeys(colKeys, "pvtColLabel");
         }
-        result = createElement("table");
-        result.className = "pvtTable";
-        result.style.display = "none";
+        result = createElement("table", "pvtTable", null, {
+          style: "display: none;"
+        });
         thead = createElement("thead");
         result.appendChild(thead);
         if (colAttrs.length > 0) {
