@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Subtotal Demo</title>
+        <!-- external libs from cdnjs -->
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+
+        <!-- PivotTable.js libs from ../dist -->
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.7.0/pivot.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.7.0/pivot.min.css">
+
+        <!-- subtotal.js libs from ../dist -->
+        <script type="text/javascript" src="../dist/subtotal.js"></script>
+        <link rel="stylesheet" type="text/css" href="../dist/subtotal.css">
+
+        <!-- optional: mobile support with jqueryui-touch-punch -->
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+
+        <!-- for examples only! script to show code to user -->
+        <script type="text/javascript" src="js/show_code.js"></script>
+    </head>
+    <body>
+    <script type="text/javascript">
+    // This example demonstrates disabling expand collapse operations 
+
+    $(function() {
+        var dataClass = $.pivotUtilities.SubtotalPivotData;
+        var renderers = $.pivotUtilities.subtotal_renderers;
+
+        $.getJSON("data/mps.json", function(mps) {
+            $("#output").pivotUI(mps, {
+                dataClass: dataClass,
+                rows: ["Gender", "Province"],
+                cols: ["Party", "Age"],
+                renderers: renderers,
+                rendererName: "Table With Subtotal",
+                rendererOptions: {
+                    rowSubtotalDisplay: {
+                        disableAfter: 0
+                    },
+                    colSubtotalDisplay: {
+                        disableAfter: 0
+                    }
+                }
+            });
+        });
+    });
+    </script>
+    <p><a href="index.html">&laquo; back to examples</a></p>
+    <p></p>
+    <p>To expand and collapse rows and columns, click on &#x25B6 and &#x25E2 arrows in the table. Scroll down to view the code.</p>
+    <p></p>
+    <div id="output" style="margin: 30px;"></div>
+    <p></p>
+    <p><a href="index.html">&laquo; back to examples</a></p>
+     </body>
+</html>
