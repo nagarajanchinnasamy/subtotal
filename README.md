@@ -22,118 +22,13 @@ Subtotal.js renders rows and columns of a pivot table with subtotals and lets th
 
 You can see the live demo at [examples page](http://nagarajanchinnasamy.com/subtotal/examples/index.html).
 
-## How do I load the code?
+## How can I get started?
 
-Subtotal.js implements the [Universal Module Definition (UMD)](https://github.com/umdjs/umd) pattern and so should be compatible with most approaches to script loading and dependency management: direct script loading with [RequireJS](http://requirejs.org/), [Browserify](http://browserify.org/) etc. For these options, you can grab it from [NPM](https://www.npmjs.com/package/subtotal) with `npm install subtotal` or via [Bower](http://bower.io/) with `bower install subtotal`. 
+To know how to load and use this library, please refer to [Getting Started Wiki Page](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/wiki/Getting-Started)
 
-If you are loading the scripts directly (as in the [examples](http://nagarajanchinnasamy.com/subtotal)), you need to:
+## API Documentation?
 
-1. load the dependencies:
-  1. jQuery in all cases
-  2. jQueryUI for the interactive `pivotUI()` function (see below)
-  3. D3.js, C3.js and/or Google Charts if you use [charting plugins](https://github.com/nicolaskruchten/pivottable/wiki/Optional-Extra-Renderers)
-2. load the PivotTable.js files:
-  1. `pivot.min.js`
-3. load the Subtotal.js files:
-  1. `subtotal.min.js`
-
-Here is the source code of an [exmaple](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/blob/master/examples/105_default.html/) 
-
-## How do I use the code?
-
-You can use Subtotal.js with either `pivot()` or `pivotUI()` method of PivotTable.js.
-
-### To use `pivot()` method
-
-1. Set the value of `dataClass` parameter to `$.pivotUtilities.SubtotalPivotData` 
-2. Set the value of `renderer` parameter to `$.pivotUtilities.subtotal_renderers[<*rendererName*>]`
-3. Optionally, set `rendererOptions`
-
-```javascript
-$(function(){
-    $.getJSON("mps.json", function(mps) {
-        $("#output").pivot(mps, {
-            dataClass: $.pivotUtilities.SubtotalPivotData,
-            rows: ["Gender", "Province"],
-            cols: ["Party", "Age"],
-            renderer: $.pivotUtilities.subtotal_renderers["Table With Subtotal"],
-            rendererOptions: {
-                collapseRowsAt: 1,
-                collapseColsAt: 0
-            }
-        });
-    });
-});
-```
-
-### To use `pivotUI()` method
-
-1. Set the value of `dataClass` parameter to `$.pivotUtilities.SubtotalPivotData` 
-2. Set the value of `renderers` parameter to `$.pivotUtilities.subtotal_renderers`
-3. Set the value of `rendererName` parameter to one of the subtotal renderers name
-4. Optionally, set `rendererOptions`
-
-```javascript
-$(function(){
-    $.getJSON("mps.json", function(mps) {
-        $("#output").pivotUI(mps, {
-            dataClass: $.pivotUtilities.SubtotalPivotData,
-            rows: ["Gender", "Province"],
-            cols: ["Party", "Age"],
-            renderers: $.pivotUtilities.subtotal_renderers,
-            rendererName: "Table With Subtotal",
-            rendererOptions: {
-                collapseColsAt: 0
-            }
-        });
-    });
-});
-```
-
-### Parameter: rendererName
-
-`rendererName` can take one of the following values:
-
-    "Table With Subtotal"
-    "Table With Subtotal Bar Chart"
-    "Table With Subtotal Heatmap"
-    "Table With Subtotal Row Heatmap"
-    "Table With Subtotal Col Heatmap"
-
-### Parameter: rendererOptions
-
-**`rowSubtotalDisplay`** option can be used to control the way row-subtotals are displayed. Following properties can be set in this option:
-
-    "disableExpandCollapse" - Disables expand collapse operations.
-    "disableSubtotal" - Disables displaying of subtotals. This also disables expand collapse operations.
-    "hideOnExpand" - Enables hiding of subtotals when expanded.
-
-**`colSubtotalDisplay`** option can be used to control the way column-subtotals are displayed. Following properties can be set in this option:
-
-    "disableExpandCollapse" - Disables expand collapse operations.
-    "disableSubtotal" - Disables displaying of subtotals. This also disables expand collapse operations.
-    "hideOnExpand" - Enables hiding of subtotals when expanded.
-
-**`collapseRowsAt`** option can be set to a `string` value as one of the elements of `rows` array or to a `numeric` value as index of one of the elements of `rows` array. If this option is set, rows are collapsed at the given row attribute whenever the pivot table is (re)rendered.  The default behavior is to render all rows expanded initially (ie., no collapse).
-
-**`collapseColsAt`** option can be set to a `string` value as one of the elements of `cols` array or to a `numeric` value as index of one of the elements of `cols` array. If this option is set, columns are collapsed at the given column attribute whenever the pivot table is (re)rendered. The default behavior is to render all columns expanded initially (ie., no collapse).
-
-For both `collapseRowsAt` and `collapseColsAt` options, using the numerical index value is recommended as it results in a better usability during rerendering of the table after drang and drop of attributes.
-
-**`arrowCollapsed`** and **`arrowExpanded`** options can be used to customize the default arrows ("\u25B6" and "\u25E2" respectively) displayed with subtotal row/column labels and pivot axis labels.
-
-**`table.eventHandlers`** option is set to a dictionary of events and their callback functions. On the occurence of an event given in this option, the corresponding callback function is invoked by passing the table cell element, value of the element, filtering criteria to fetch matching records from data and `SubtotalPivotData` instance. See [this example](http://nagarajanchinnasamy.com/subtotal/examples/260_event_handlers.html).
-
-### Subtotal Aggregators
-
-`$.pivotUtilities.subtotal_aggregators` is a dictionary of aggregators specific to this plugin. Following are the names of the aggregators in this dictionary:
-
-    "Count As Fraction Of Parent Row"
-    "Count As Fraction Of Parent Column"
-    "Sum As Fraction Of Parent Row"
-    "Sum As Fraction Of Parent Column"
-
-[Please refer to this example](http://nagarajanchinnasamy.com/subtotal/examples/237_as_fraction_of_parent_row.html).
+Please refer to [Wiki Pages](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/wiki)
 
 ## How can I build the code and run the tests?
 
