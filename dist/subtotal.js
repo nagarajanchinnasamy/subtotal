@@ -94,7 +94,7 @@
     })($.pivotUtilities.PivotData);
     $.pivotUtilities.SubtotalPivotData = SubtotalPivotData;
     SubtotalRenderer = function(pivotData, opts) {
-      var addClass, allTotal, arrowCollapsed, arrowExpanded, buildColHeaderHeader, buildColHeaderHeaders, buildColHeaderHeadersClickEvents, buildColHeaders, buildColTotals, buildColTotalsHeader, buildGrandTotal, buildRowHeaderHeaders, buildRowHeaderHeadersClickEvents, buildRowHeaders, buildRowTotalsHeader, buildValues, classColCollapsed, classColExpanded, classColHide, classColShow, classCollapsed, classExpanded, classRowCollapsed, classRowExpanded, classRowHide, classRowShow, clickStatusCollapsed, clickStatusExpanded, colAttrs, colDisableAfter, colKeys, colTotals, collapseCol, collapseColsAt, collapseHideDescendantRow, collapseRow, collapseRowsAt, collapseShowColSubtotal, collapseShowRowSubtotal, createElement, defaults, expandChildCol, expandChildRow, expandCol, expandColsAt, expandHideColSubtotal, expandHideRowSubtotal, expandRow, expandRowsAt, expandShowColSubtotal, expandShowRowSubtotal, getTableEventHandlers, hasClass, hideDescendantCol, isColDisable, isColDisableExpandCollapse, isColHideOnExpand, isRowDisable, isRowDisableExpandCollapse, isRowHideOnExpand, main, processKeys, ref, ref1, ref2, ref3, ref4, ref5, ref6, ref7, removeClass, replaceClass, rowAttrs, rowDisableAfter, rowKeys, rowTotals, setAttributes, showChildCol, showChildRow, toggleCol, toggleColHeaderHeader, toggleRow, toggleRowHeaderHeader, tree;
+      var addClass, allTotal, arrowCollapsed, arrowExpanded, buildColHeaderHeader, buildColHeaderHeaders, buildColHeaderHeadersClickEvents, buildColHeaders, buildColTotals, buildColTotalsHeader, buildGrandTotal, buildRowHeaderHeaders, buildRowHeaderHeadersClickEvents, buildRowHeaders, buildRowTotalsHeader, buildValues, classColCollapsed, classColExpanded, classColHide, classColShow, classCollapsed, classExpanded, classRowCollapsed, classRowExpanded, classRowHide, classRowShow, clickStatusCollapsed, clickStatusExpanded, colArrowOnInit, colAttrs, colClassOnInit, colClickStatusOnInit, colDisableAfter, colKeys, colTotals, collapseCol, collapseColsAt, collapseHideDescendantRow, collapseRow, collapseRowsAt, collapseShowColSubtotal, collapseShowRowSubtotal, colsCollapseAt, createElement, defaults, expandChildCol, expandChildRow, expandCol, expandColsAt, expandHideColSubtotal, expandHideRowSubtotal, expandRow, expandRowsAt, expandShowColSubtotal, expandShowRowSubtotal, getTableEventHandlers, hasClass, hideDescendantCol, isColDisable, isColDisableExpandCollapse, isColHideOnExpand, isRowDisable, isRowDisableExpandCollapse, isRowHideOnExpand, main, processKeys, ref, ref1, ref2, ref3, ref4, ref5, ref6, ref7, removeClass, replaceClass, rowAttrs, rowDisableAfter, rowKeys, rowTotals, rowsCollapseAt, setAttributes, setColInitParams, showChildCol, showChildRow, toggleCol, toggleColHeaderHeader, toggleRow, toggleRowHeaderHeader, tree;
       defaults = {
         table: {
           clickCallback: null
@@ -107,13 +107,15 @@
       isRowDisable = (ref = opts.rowSubtotalDisplay) != null ? ref.disableSubtotal : void 0;
       isRowHideOnExpand = (ref1 = opts.rowSubtotalDisplay) != null ? ref1.hideOnExpand : void 0;
       isRowDisableExpandCollapse = (ref2 = opts.rowSubtotalDisplay) != null ? ref2.disableExpandCollapse : void 0;
-      rowDisableAfter = (ref3 = opts.rowSubtotalDisplay) != null ? ref3.disableAfter != null ? ref3.disableAfter : ref3.disableAfter = 9999 : void 0;
+      rowDisableAfter = typeof ((ref3 = opts.rowSubtotalDisplay) != null ? ref3.disableAfter : void 0) !== 'undefined' ? opts.rowSubtotalDisplay.disableAfter : 9999;
       isColDisable = (ref4 = opts.colSubtotalDisplay) != null ? ref4.disableSubtotal : void 0;
       isColHideOnExpand = (ref5 = opts.colSubtotalDisplay) != null ? ref5.hideOnExpand : void 0;
       isColDisableExpandCollapse = (ref6 = opts.colSubtotalDisplay) != null ? ref6.disableExpandCollapse : void 0;
-      colDisableAfter = (ref7 = opts.colSubtotalDisplay) != null ? ref7.disableAfter != null ? ref7.disableAfter : ref7.disableAfter = 9999 : void 0;
+      colDisableAfter = typeof ((ref7 = opts.colSubtotalDisplay) != null ? ref7.disableAfter : void 0) !== 'undefined' ? opts.colSubtotalDisplay.disableAfter : 9999;
       arrowCollapsed = opts.arrowCollapsed != null ? opts.arrowCollapsed : opts.arrowCollapsed = "\u25B6";
       arrowExpanded = opts.arrowExpanded != null ? opts.arrowExpanded : opts.arrowExpanded = "\u25E2";
+      colsCollapseAt = typeof opts.collapseColsAt !== 'undefined' ? opts.collapseColsAt : 9999;
+      rowsCollapseAt = typeof opts.collapseRowsAt !== 'undefined' ? opts.collapseRowsAt : 9999;
       colAttrs = pivotData.colAttrs;
       rowAttrs = pivotData.rowAttrs;
       rowKeys = pivotData.getRowKeys();
@@ -134,6 +136,9 @@
       clickStatusCollapsed = "collapsed";
       classExpanded = "expanded";
       classCollapsed = "collapsed";
+      colArrowOnInit = arrowExpanded;
+      colClassOnInit = classColExpanded;
+      colClickStatusOnInit = clickStatusExpanded;
       hasClass = function(element, className) {
         var regExp;
         regExp = new RegExp("(?:^|\\s)" + className + "(?!\\S)", "g");
@@ -331,15 +336,26 @@
         }
         return headers;
       };
+      setColInitParams = function(col) {
+        colArrowOnInit = arrowExpanded;
+        colClassOnInit = classColExpanded;
+        colClickStatusOnInit = clickStatusExpanded;
+        if (col >= colsCollapseAt && !(isColDisable || col > colDisableAfter)) {
+          colArrowOnInit = arrowCollapsed;
+          colClassOnInit = classColCollapsed;
+          return colClickStatusOnInit = clickStatusCollapsed;
+        }
+      };
       buildColHeaderHeader = function(thead, colHeaderHeaders, rowAttrs, colAttrs, tr, col) {
         var className, colAttr, textContent, th;
         colAttr = colAttrs[col];
         textContent = colAttr;
         className = "pvtAxisLabel";
+        setColInitParams(col);
         if (col < colAttrs.length - 1) {
-          className += " expanded";
+          className += " " + colClassOnInit;
           if (!(isColDisableExpandCollapse || isColDisable || col > colDisableAfter)) {
-            textContent = " " + arrowExpanded + " " + colAttr;
+            textContent = " " + colArrowOnInit + " " + colAttr;
           }
         }
         th = createElement("th", className, textContent);
@@ -348,7 +364,7 @@
         colHeaderHeaders.push({
           tr: tr,
           th: th,
-          clickStatus: clickStatusExpanded,
+          clickStatus: colClickStatusOnInit,
           expandedCount: 0,
           nHeaders: 0
         });
@@ -392,26 +408,36 @@
         return results;
       };
       buildColHeaders = function(colHeaderHeaders, colHeaderCols, colHeader, rowAttrs, colAttrs) {
-        var colspan, h, hh, isColSubtotal, k, len, ref8, rowspan, sTh, style, th, tr;
+        var ch, colspan, h, hh, isColSubtotal, k, l, len, len1, ref8, ref9, rowspan, sTh, style, th, tr;
         ref8 = colHeader.children;
         for (k = 0, len = ref8.length; k < len; k++) {
           h = ref8[k];
           buildColHeaders(colHeaderHeaders, colHeaderCols, h, rowAttrs, colAttrs);
         }
+        setColInitParams(colHeader.col);
         isColSubtotal = colHeader.children.length !== 0;
         colHeader.node = colHeaderCols.length;
         hh = colHeaderHeaders[colHeader.col];
-        ++hh.expandedCount;
+        if (colHeader.col <= colsCollapseAt) {
+          ++hh.expandedCount;
+        }
         ++hh.nHeaders;
         tr = hh.tr;
         th = colHeader.th;
         addClass(th, "col" + colHeader.row + " colcol" + colHeader.col + " " + classColShow);
-        if (isColHideOnExpand || isColDisable || (isColSubtotal && colHeader.col > colDisableAfter)) {
+        colspan = 1;
+        if (isColDisable || colHeader.col > colDisableAfter) {
           colspan = colHeader.leaves;
-        } else if (isColSubtotal && colHeader.col <= colDisableAfter) {
-          colspan = colHeader.leaves + 1;
-        } else {
-          colspan = colHeader.descendants + 1;
+        } else if (isColSubtotal && colHeader.col < colsCollapseAt) {
+          colspan = 0;
+          ref9 = colHeader.children;
+          for (l = 0, len1 = ref9.length; l < len1; l++) {
+            ch = ref9[l];
+            colspan += parseInt(ch.th.getAttribute("colspan"));
+          }
+          if (!isColHideOnExpand) {
+            colspan += 1;
+          }
         }
         setAttributes(th, {
           "rowspan": colHeader.col === colAttrs.length - 1 && rowAttrs.length !== 0 ? 2 : 1,
@@ -420,32 +446,32 @@
           "data-colHeader": th.textContent
         });
         if (isColSubtotal) {
-          addClass(th, classColExpanded);
-          if (!(isColDisableExpandCollapse || isColDisable || colHeader.col > colDisableAfter)) {
-            th.textContent = " " + arrowExpanded + " " + th.textContent;
+          addClass(th, colClassOnInit);
+          if (!(isColDisable || colHeader.col > colDisableAfter || isColDisableExpandCollapse)) {
+            th.textContent = " " + colArrowOnInit + " " + th.textContent;
           }
           th.onclick = function(event) {
             event = event || window.event;
             return toggleCol(colHeaderHeaders, colHeaderCols, parseInt(event.target.getAttribute("data-colnode")));
           };
           rowspan = colAttrs.length - (colHeader.col + 1) + (rowAttrs.length !== 0 ? 1 : 0);
-          style = "pvtColLabel pvtColSubtotal " + classColExpanded;
+          style = "pvtColLabel pvtColSubtotal " + colClassOnInit;
           style += " col" + colHeader.row + " colcol" + colHeader.col;
-          if (isColHideOnExpand || isColDisable || colHeader.col > colDisableAfter) {
-            style += " " + classColHide;
-          }
           sTh = createElement("th", style, '', {
             "rowspan": rowspan,
             "data-colnode": colHeader.node
           });
-          addClass(sTh, isColHideOnExpand || isColDisable ? " " + classColHide : " " + classColShow);
-          if (isColHideOnExpand || isColDisable || colHeader.col > colDisableAfter) {
+          addClass(sTh, isColDisable || colHeader.col > colDisableAfter || (isColHideOnExpand && colHeader.col < colsCollapseAt) ? " " + classColHide : " " + classColShow);
+          if (isColDisable || colHeader.col > colDisableAfter || colHeader.col !== colsCollapseAt) {
             sTh.style.display = "none";
           }
           colHeader.children[0].tr.appendChild(sTh);
           colHeader.sTh = sTh;
         }
-        colHeader.clickStatus = clickStatusExpanded;
+        if ((colHeader.col > colDisableAfter && isColSubtotal) || colHeader.col > colsCollapseAt) {
+          th.style.display = "none";
+        }
+        colHeader.clickStatus = colClickStatusOnInit;
         tr.appendChild(th);
         colHeader.tr = tr;
         return colHeaderCols.push(colHeader);
@@ -584,15 +610,16 @@
             };
             val = aggregator.value();
             isColSubtotal = colHeader.children.length !== 0;
+            setColInitParams(colHeader.col);
             style = "pvtVal";
             if (isColSubtotal) {
-              style += " pvtColSubtotal " + classColExpanded;
+              style += " pvtColSubtotal " + colClassOnInit;
             }
             if (isRowSubtotal) {
               style += " pvtRowSubtotal " + classRowExpanded;
             }
             style += isRowSubtotal && (isRowHideOnExpand || isRowDisable || rowHeader.col > rowDisableAfter) ? " " + classRowHide : " " + classRowShow;
-            style += isColSubtotal && (isColHideOnExpand || isColDisable || colHeader.col > colDisableAfter) ? " " + classColHide : " " + classColShow;
+            style += isColSubtotal && (isColDisable || colHeader.col > colDisableAfter || (isColHideOnExpand && colHeader.col < colsCollapseAt)) ? " " + classColHide : " " + classColShow;
             style += (" row" + rowHeader.row) + (" col" + colHeader.row) + (" rowcol" + rowHeader.col) + (" colcol" + colHeader.col);
             eventHandlers = getTableEventHandlers(val, rowHeader.key, colHeader.key);
             td = createElement("td", style, aggregator.format(val), {
@@ -600,7 +627,7 @@
               "data-rownode": rowHeader.node,
               "data-colnode": colHeader.node
             }, eventHandlers);
-            if ((isRowSubtotal && (isRowHideOnExpand || isRowDisable || rowHeader.col > rowDisableAfter)) || (isColSubtotal && (isColHideOnExpand || isColDisable || colHeader.col > colDisableAfter))) {
+            if ((isRowSubtotal && (isRowHideOnExpand || isRowDisable || rowHeader.col > rowDisableAfter)) || isColDisable || colHeader.col > colDisableAfter || colHeader.col !== colsCollapseAt) {
               td.style.display = "none";
             }
             tr.appendChild(td);
@@ -644,6 +671,7 @@
           isColSubtotal = h.children.length !== 0;
           totalAggregator = colTotals[h.flatKey];
           val = totalAggregator.value();
+          setColInitParams(h.col);
           style = "pvtVal pvtTotal colTotal";
           if (isColSubtotal) {
             style += " pvtColSubtotal";
@@ -655,7 +683,7 @@
             "data-for": "col" + h.col,
             "data-colnode": "" + h.node
           }, getTableEventHandlers(val, [], h.key));
-          if (isColSubtotal && (isColHideOnExpand || isColDisable || h.col > colDisableAfter)) {
+          if (isColDisable || h.col > colDisableAfter || h.col !== colsCollapseAt) {
             td.style.display = "none";
           }
           results.push(tr.appendChild(td));
@@ -750,7 +778,7 @@
       };
       expandChildCol = function(ch) {
         var gch, k, len, ref8, results;
-        if (ch.descendants !== 0 && hasClass(ch.th, classColExpanded) && (isColHideOnExpand || isColDisable || ch.col > colDisableAfter)) {
+        if (ch.descendants !== 0 && hasClass(ch.th, classColExpanded) && (isColDisable || ch.col > colDisableAfter || isColHideOnExpand)) {
           ch.th.style.display = "";
         } else {
           showChildCol(ch);
@@ -857,7 +885,7 @@
         return replaceClass(h.tr, classRowExpanded, classRowCollapsed);
       };
       collapseRow = function(rowHeaderHeaders, rowHeaderRows, r) {
-        var d, h, i, isRowSubtotal, j, k, l, p, ref10, ref8, ref9, results, rowHeaderHeader, rowspan;
+        var d, h, hh, i, isRowSubtotal, j, k, l, p, ref10, ref8, ref9, results, rowspan;
         if (isRowDisable) {
           return;
         }
@@ -893,9 +921,9 @@
           p = p.parent;
         }
         h.clickStatus = clickStatusCollapsed;
-        rowHeaderHeader = rowHeaderHeaders.hh[h.col];
-        rowHeaderHeader.expandedCount--;
-        if (rowHeaderHeader.expandedCount !== 0) {
+        hh = rowHeaderHeaders.hh[h.col];
+        hh.expandedCount--;
+        if (hh.expandedCount !== 0) {
           return;
         }
         results = [];
@@ -903,10 +931,10 @@
           if (!(j <= rowDisableAfter)) {
             continue;
           }
-          rowHeaderHeader = rowHeaderHeaders.hh[j];
-          replaceClass(rowHeaderHeader.th, classExpanded, classCollapsed);
-          rowHeaderHeader.th.textContent = " " + arrowCollapsed + " " + rowHeaderHeader.th.getAttribute("data-rowAttr");
-          results.push(rowHeaderHeader.clickStatuatus = clickStatusCollapsed);
+          hh = rowHeaderHeaders.hh[j];
+          replaceClass(hh.th, classExpanded, classCollapsed);
+          hh.th.textContent = " " + arrowCollapsed + " " + hh.th.getAttribute("data-rowAttr");
+          results.push(hh.clickStatus = clickStatusCollapsed);
         }
         return results;
       };
@@ -1307,19 +1335,6 @@
         buildGrandTotal(tbody, tr);
         result.setAttribute("data-numrows", rowKeys.length);
         result.setAttribute("data-numcols", colKeys.length);
-        if ((opts.collapseRowsAt == null) && (opts.collapseColsAt == null)) {
-          result.style.display = "";
-        }
-        if (opts.collapseRowsAt != null) {
-          collapseRowsAt(rowHeaderHeaders, rowHeaderRows, rowAttrs, opts.collapseRowsAt);
-        }
-        if (opts.collapseColsAt == null) {
-          result.style.display = "";
-          return result;
-        }
-        if (opts.collapseColsAt != null) {
-          collapseColsAt(colHeaderHeaders, colHeaderCols, colAttrs, opts.collapseColsAt);
-        }
         result.style.display = "";
         return result;
       };

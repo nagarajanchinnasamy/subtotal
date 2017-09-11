@@ -34,8 +34,8 @@
         $.getJSON("data/mps.json", function(mps) {
             $("#output").pivotUI(mps, {
                 dataClass: dataClass,
-                rows: ["Gender", "Province", "Age Bin"],
-                cols: ["Party", "Age", "Gender Imbalance"],
+                rows: ["Gender"],
+                cols: ["Province", "Party", "Age Bin", "Gender Imbalance"],
                 renderers: renderers,
                 derivedAttributes: {
                     "Age Bin": derivers.bin("Age", 10),
@@ -45,8 +45,12 @@
                 },
                 rendererName: "Table With Subtotal",
                 rendererOptions: {
-                    collapseRowsAt: 1,
-                    collapseColsAt: 0
+                    collapseRowsAt: 0,
+                    collapseColsAt: 1,
+                    colSubtotalDisplay: {
+                        hideOnExpand: true,
+                        disableAfter: 1 
+                    }
                 }
             });
         });
