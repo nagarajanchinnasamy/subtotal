@@ -58,9 +58,13 @@ callWithJQuery ($) ->
         opts = $.extend true, {}, defaults, opts
 
         isRowDisable = opts.rowSubtotalDisplay?.disableSubtotal
+        rowDisableAfter = if typeof opts.rowSubtotalDisplay?.disableAfter isnt 'undefined' then opts.rowSubtotalDisplay.disableAfter else 9999
+        if typeof opts.rowSubtotalDisplay?disableFrom is 'undefined'
+            rowDisableFrom = if isRowDisable then 0 else rowDisableAfter + 1
+        else
+            rowDisableFrom = opts.rowSubtotalDisplay.disableFrom
         isRowHideOnExpand = opts.rowSubtotalDisplay?.hideOnExpand
         isRowDisableExpandCollapse = opts.rowSubtotalDisplay?.disableExpandCollapse
-        rowDisableAfter = if typeof opts.rowSubtotalDisplay?.disableAfter isnt 'undefined' then opts.rowSubtotalDisplay.disableAfter else 9999
         isDisplayOnTop = if typeof opts.rowSubtotalDisplay?.displayOnTop isnt 'undefined' then opts.rowSubtotalDisplay.displayOnTop else true
         isColDisable = opts.colSubtotalDisplay?.disableSubtotal
         isColHideOnExpand = opts.colSubtotalDisplay?.hideOnExpand
@@ -279,6 +283,7 @@ callWithJQuery ($) ->
 
         buildColHeader = (colHeaderHeaders, colHeaderCols, colHeader, rowAttrs, colAttrs) ->
             # DF Recurse
+            colHeader.childrenColSpan = 0
             for h in colHeader.children
                 buildColHeader colHeaderHeaders, colHeaderCols, h, rowAttrs, colAttrs
             # Process
@@ -301,10 +306,10 @@ callWithJQuery ($) ->
             if isColDisable or colHeader.col > colDisableAfter
                 colspan = colHeader.leaves
             else if isColSubtotal and colHeader.col < colsCollapseAt
-                colspan = 0;
-                for ch in colHeader.children
-                    colspan += parseInt(ch.th.getAttribute "colspan")
+                colspan = colHeader.childrenColSpan
                 colspan += 1 if not isColHideOnExpand
+            if colHeader.parent
+                colHeader.parent.childrenColSpan += colspan
             setAttributes th,
                 "rowspan": if colHeader.col == colAttrs.length-1 and rowAttrs.length != 0 then 2 else 1
                 "colspan": colspan, 
@@ -322,24 +327,30 @@ callWithJQuery ($) ->
                 style += " col#{colHeader.row} colcol#{colHeader.col}"
                 sTh = createElement "th", style, '', {"rowspan": rowspan, "data-colnode": colHeader.node}
                 addClass sTh, if isColDisable or colHeader.col > colDisableAfter or (isColHideOnExpand and colHeader.col < colsCollapseAt) then " #{classColHide}" else " #{classColShow}"
-                sTh.style.display = "none" if isColDisable or colHeader.col > colDisableAfter or colHeader.col > colsCollapseAt
+                sTh.style.display = "none" if isColDisable or colHeader.col > colDisableAfter or (isColHideOnExpand and colHeader.col < colsCollapseAt) or colHeader.col > colsCollapseAt
                 colHeader.children[0].tr.appendChild sTh
                 colHeader.sTh = sTh
-            th.style.display = "none" if (colHeader.col > colDisableAfter and isColSubtotal) or colHeader.col > colsCollapseAt
+            th.style.display = "none" if colHeader.col > colsCollapseAt
+
             colHeader.clickStatus = colClickStatusOnInit
             tr.appendChild(th)
             colHeader.tr = tr
             colHeaderCols.push colHeader
 
         setRowInitParams = (col) ->
-            rowArrowOnInit = arrowExpanded
-            rowClassOnInit = classRowExpanded
-            rowClickStatusOnInit = clickStatusExpanded
-
-            if col >= rowsCollapseAt and not (isRowDisable or col > rowDisableAfter) 
-                rowArrowOnInit = arrowCollapsed
-                rowClassOnInit = classRowCollapsed
-                rowClickStatusOnInit = clickStatusCollapsed
+            init = 
+                rowArrow: arrowExpanded
+                rowClass: classRowExpanded
+                rowClickStatus: clickStatusExpanded
+            if col >= rowsCollapseAt
+                init =
+                    rowArrow: arrowCollapsed
+                    rowClass: classRowCollapsed
+                    rowClickStatus: clickStatusCollapsed
+            if col >= rowDisableFrom
+                init =
+                    rowArrow: ""
+            return init
 
         buildRowHeaderHeaders = (thead, rowHeaderHeaders, rowAttrs, colAttrs) ->
             tr = createElement "tr"
@@ -349,7 +360,7 @@ callWithJQuery ($) ->
                 className = "pvtAxisLabel"
                 if i < rowAttrs.length-1
                     className += " expanded"
-                    textContent = " " + arrowExpanded + " " + rowAttr if not (isRowDisableExpandCollapse or isRowDisable or i > rowDisableAfter)
+                    textContent = " " + arrowExpanded + " " + rowAttr if not (isRowDisableExpandCollapse or i >= rowDisableFrom)
                 th = createElement "th", className, textContent
                 th.setAttribute "data-rowAttr", rowAttr
                 tr.appendChild th
@@ -382,6 +393,7 @@ callWithJQuery ($) ->
 
         buildRowHeader = (tbody, rowHeaderHeaders, rowHeaderRows, rowHeader, rowAttrs, colAttrs) ->
             # DF Recurse
+            rowHeader.childrenRowSpan = 0
             for h in rowHeader.children
                 buildRowHeader tbody, rowHeaderHeaders, rowHeaderRows, h, rowAttrs, colAttrs
             # Process
@@ -392,7 +404,7 @@ callWithJQuery ($) ->
             # rowHeader.node is not useful as columns are positioned depth-first 
             #
 
-            setRowInitParams rowHeader.col
+            init = setRowInitParams rowHeader.col
             isRowSubtotal = rowHeader.descendants != 0
             rowHeader.node = rowHeaderRows.length
             hh = rowHeaderHeaders.hh[rowHeader.col]
@@ -402,57 +414,65 @@ callWithJQuery ($) ->
             tr = createElement "tr", "pvtRowSubtotal row#{rowHeader.row}", "", "data-rownode": rowHeader.node 
             th = rowHeader.th
             addClass th, "row#{rowHeader.row} rowcol#{rowHeader.col} #{classRowShow}"
-            if rowHeader.col == rowAttrs.length-1
-                rowspan = 1
-            else if isRowDisable or rowHeader.col > rowDisableAfter
-                rowspan = rowHeader.descendants
-                rowspan += if isDisplayOnTop then 1 else 2
-            else if isRowSubtotal 
-                rowspan = 0;
-                for ch in rowHeader.children
-                    rowspan += parseInt(ch.th.getAttribute "rowspan")
-                rowspan += if isDisplayOnTop then 1 else 2 
+            rowspan = 1
+            if isRowSubtotal
+                if rowHeader.col >= rowDisableFrom # --> disabled
+                    rowspan = rowHeader.descendants
+                    rowspan += if isDisplayOnTop then 1 else 2
+                else
+                    if rowHeader.col < rowsCollapseAt # --> expanded
+                        rowspan = rowHeader.childrenRowSpan + 1
+                        rowspan += 1 if not isDisplayOnTop
+                    else  # --> collapsed
+                        if isDisplayOnTop
+                            rowspan = 1
+                        else
+                            #rowspan = rowHeader.descendants - rowHeader.leaves + 1
+                            rowspan = rowHeader.childrenRowSpan+2
+            if rowHeader.parent
+                rowHeader.parent.childrenRowSpan += rowspan
+
             setAttributes th,
                 "rowspan": rowspan
                 "colspan": if rowHeader.col == rowAttrs.length-1 and colAttrs.length != 0 then 2 else 1
                 "data-rownode": rowHeader.node,
                 "data-rowHeader": th.textContent
+            th.style.display = "none" if rowHeader.col > rowsCollapseAt
             tr.appendChild(th)
             if isRowSubtotal
-                th.style.display = "none" if rowHeader.col > rowsCollapseAt
                 tbody.insertBefore tr, rowHeader.children[0].tr
             else
-                th.style.display = "none" if rowHeader.col > rowsCollapseAt
                 tbody.appendChild tr
             rowHeader.tr = tr
  
             if isRowSubtotal
-                addClass th, rowClassOnInit
-                addClass tr, rowClassOnInit
-                th.textContent = " #{rowArrowOnInit} #{th.textContent}" if not
-                    (isRowDisable or rowHeader.col > rowDisableAfter or isRowDisableExpandCollapse)
+                addClass th, init.rowClass
+                addClass tr, init.rowClass
+                th.textContent = " #{init.rowArrow} #{th.textContent}" if not
+                    (rowHeader.col >= rowDisableFrom or isRowDisableExpandCollapse)
                 th.onclick = (event) ->
                     event = event || window.event
                     toggleRow rowHeaderHeaders, rowHeaderRows, parseInt event.target.getAttribute "data-rownode"
                 # Filler
                 colspan = rowAttrs.length-(rowHeader.col+1) + if colAttrs.length != 0 then 1 else 0
-                style = "pvtRowLabel pvtRowSubtotal #{rowClassOnInit}"
+                style = "pvtRowLabel pvtRowSubtotal #{init.rowClass}"
                 style += " row#{rowHeader.row} rowcol#{rowHeader.col}"
-                th = createElement "th", style, '', {"colspan": colspan, "data-rownode": rowHeader.node}
-                addClass th, if isRowDisable or rowHeader.col > rowDisableAfter or (isRowHideOnExpand and rowHeader.col < rowsCollapseAt) then " #{classRowHide}" else " #{classRowShow}"
-                th.style.display = "none" if isRowDisable or rowHeader.col > rowDisableAfter or rowHeader.col > rowsCollapseAt or not isDisplayOnTop or (isRowHideOnExpand and rowHeader.col < rowsCollapseAt)
-                tr.appendChild th
-                rowHeader.sTr = tr
-                if not isDisplayOnTop
+                if isDisplayOnTop
+                    th = createElement "th", style, '', {"colspan": colspan, "data-rownode": rowHeader.node}
+                    addClass th, if rowHeader.col >= rowDisableFrom or (isRowHideOnExpand and rowHeader.col < rowsCollapseAt) then " #{classRowHide}" else " #{classRowShow}"
+                    th.style.display = "none" if rowHeader.col >= rowDisableFrom or rowHeader.col > rowsCollapseAt or not isDisplayOnTop or (isRowHideOnExpand and rowHeader.col < rowsCollapseAt)
+                    tr.appendChild th
+                    rowHeader.sTr = tr
+                else 
                     tr = createElement "tr", "pvtRowSubtotal row#{rowHeader.row}", "", "data-rownode": rowHeader.node 
                     th = createElement "th", style, '', {"colspan": colspan, "data-rownode": rowHeader.node}
-                    addClass th, if isRowDisable or rowHeader.col > rowDisableAfter or (isRowHideOnExpand and rowHeader.col < rowsCollapseAt) then " #{classRowHide}" else " #{classRowShow}"
-                    th.style.display = "none" if isRowDisable or rowHeader.col > rowDisableAfter or rowHeader.col > rowsCollapseAt or (isRowHideOnExpand and rowHeader.col < rowsCollapseAt)
+                    addClass th, if rowHeader.col >= rowDisableFrom or (isRowHideOnExpand and rowHeader.col < rowsCollapseAt) then " #{classRowHide}" else " #{classRowShow}"
+                    th.style.display = "none" if rowHeader.col >= rowDisableFrom or rowHeader.col > rowsCollapseAt or (isRowHideOnExpand and rowHeader.col < rowsCollapseAt)
                     tr.appendChild th
                     tbody.appendChild tr
                     rowHeader.sTr = tr
 
-            rowHeader.clickStatus = rowClickStatusOnInit
+            rowHeader.clickStatus = init.rowClickStatus
             rowHeaderRows.push rowHeader
 
 
@@ -471,7 +491,7 @@ callWithJQuery ($) ->
                     style = "pvtVal"
                     style += " pvtColSubtotal #{colClassOnInit}" if isColSubtotal
                     style += " pvtRowSubtotal #{rowClassOnInit}" if isRowSubtotal
-                    style += if (isRowSubtotal and (isRowDisable or rowHeader.col > rowDisableAfter or not isDisplayOnTop or (isRowHideOnExpand and rowHeader.col < rowsCollapseAt))) or (rowHeader.col > rowsCollapseAt) then " #{classRowHide}" else " #{classRowShow}"
+                    style += if (isRowSubtotal and (rowHeader.col >= rowDisableFrom or (isRowHideOnExpand and rowHeader.col < rowsCollapseAt))) or (rowHeader.col > rowsCollapseAt) then " #{classRowHide}" else " #{classRowShow}"
                     style += if (isColSubtotal and (isColDisable or colHeader.col > colDisableAfter or (isColHideOnExpand and colHeader.col < colsCollapseAt))) or (colHeader.col > colsCollapseAt) then " #{classColHide}" else " #{classColShow}"
                     style += " row#{rowHeader.row}" +
                         " col#{colHeader.row}" +
@@ -482,7 +502,7 @@ callWithJQuery ($) ->
                         "data-value": val,
                         "data-rownode": rowHeader.node,
                         "data-colnode": colHeader.node, eventHandlers
-                    td.style.display = "none" if (rowHeader.col > rowsCollapseAt or colHeader.col > colsCollapseAt) or (isRowSubtotal and (isRowDisable or rowHeader.col > rowDisableAfter or (isRowHideOnExpand and rowHeader.col < rowsCollapseAt))) or (isColSubtotal and (isColDisable or colHeader.col > colDisableAfter or (isColHideOnExpand and colHeader.col > colsCollapseAt)))
+                    td.style.display = "none" if (rowHeader.col > rowsCollapseAt or colHeader.col > colsCollapseAt) or (isRowSubtotal and (rowHeader.col >= rowDisableFrom or (isRowHideOnExpand and rowHeader.col < rowsCollapseAt))) or (isColSubtotal and (isColDisable or colHeader.col > colDisableAfter or (isColHideOnExpand and colHeader.col < colsCollapseAt)))
                     
                     tr.appendChild td
 
@@ -491,14 +511,14 @@ callWithJQuery ($) ->
                 val = totalAggregator.value()
                 style = "pvtTotal rowTotal"
                 style += " pvtRowSubtotal" if isRowSubtotal 
-                style += if isRowSubtotal and (isRowDisable or rowHeader.col > rowDisableAfter or not isDisplayOnTop or (isRowHideOnExpand and rowHeader.col < rowsCollapseAt)) then " #{classRowHide}" else " #{classRowShow}"
+                style += if isRowSubtotal and (rowHeader.col >= rowDisableFrom or not isDisplayOnTop or (isRowHideOnExpand and rowHeader.col < rowsCollapseAt)) then " #{classRowHide}" else " #{classRowShow}"
                 style += " row#{rowHeader.row} rowcol#{rowHeader.col}"
                 td = createElement "td", style, totalAggregator.format(val),
                     "data-value": val,
                     "data-row": "row#{rowHeader.row}",
                     "data-rowcol": "col#{rowHeader.col}",
                     "data-rownode": rowHeader.node, getTableEventHandlers val, rowHeader.key, []
-                td.style.display = "none" if (rowHeader.col > rowsCollapseAt) or  (isRowSubtotal and (isRowDisable or rowHeader.col > rowDisableAfter or (isRowHideOnExpand and rowHeader.col < rowsCollapseAt)))
+                td.style.display = "none" if (rowHeader.col > rowsCollapseAt) or  (isRowSubtotal and (rowHeader.col >= rowDisableFrom or (isRowHideOnExpand and rowHeader.col < rowsCollapseAt)))
                 tr.appendChild td
 
         buildColTotalsHeader = (rowAttrs, colAttrs) ->
@@ -671,23 +691,22 @@ callWithJQuery ($) ->
                     removeClass cell, "#{classRowExpanded} #{classRowHide}"
                     addClass cell, "#{classRowCollapsed} #{classRowShow}"
                     cell.style.display = "" if not hasClass cell, classColHide
-            h.th.rowSpan = if isDisplayOnTop then 1 else h.th.rowSpan - h.descendants
+            h.th.rowSpan = if isDisplayOnTop then 1 else h.descendants - h.leaves + 2
             h.th.textContent = " " + arrowCollapsed + " " + h.th.getAttribute "data-rowHeader"
             replaceClass tr, classRowExpanded, classRowCollapsed
 
         collapseRow = (rowHeaderHeaders, rowHeaderRows, r) ->
-            return if isRowDisable or isRowDisableExpandCollapse
-
             h = rowHeaderRows[r]
-            return if not h or h.col > rowDisableAfter or h.clickStatus is clickStatusCollapsed
+            return if not h or h.clickStatus is clickStatusCollapsed or h.col >= rowDisableFrom or isRowDisableExpandCollapse 
 
             isRowSubtotal = h.descendants != 0
-            rowspan = if isRowSubtotal and not isDisplayOnTop then h.descendants else h.th.rowSpan-1
+            oldRowspan = h.th.rowSpan
             for i in [1..h.descendants] when h.descendants != 0
                 d = rowHeaderRows[r-i]
                 hideDescendantRow d
             if isRowSubtotal
                 collapseShowRowSubtotal h
+            rowspan = oldRowspan - h.th.rowSpan
             p = h.parent
             while p
                 p.th.rowSpan -= rowspan
@@ -699,7 +718,7 @@ callWithJQuery ($) ->
 
             return if hh.expandedCount != 0
 
-            for j in [h.col..rowHeaderHeaders.hh.length-2] when j <= rowDisableAfter
+            for j in [h.col..rowHeaderHeaders.hh.length-2] when j < rowDisableFrom
                 hh = rowHeaderHeaders.hh[j]
                 replaceClass hh.th, classExpanded, classCollapsed
                 hh.th.textContent = " " + arrowCollapsed + " " + hh.th.getAttribute "data-rowAttr"
@@ -716,7 +735,7 @@ callWithJQuery ($) ->
             tr.style.display = ""
 
         expandShowRowSubtotal = (h) ->
-            tr = if not isDisplayOnTop then h.sTr else h.tr 
+            tr = if isDisplayOnTop then h.tr else h.sTr 
             for tagName in ["td", "th"]
                 cells = tr.getElementsByTagName tagName 
                 for cell in cells
@@ -739,29 +758,39 @@ callWithJQuery ($) ->
             replaceClass tr, classRowCollapsed, classRowExpanded
 
         expandChildRow = (ch) ->
-            if ch.descendants != 0 and hasClass(ch.th, classRowExpanded) and (isRowHideOnExpand or isRowDisable or ch.col > rowDisableAfter)
-                tr = if not isDisplayOnTop then ch.sTr else ch.tr
-                tr.style.display = ""
-                ch.th.style.display = ""
+            if ch.descendants != 0
+                if hasClass(ch.th, classRowCollapsed)
+                    ch.tr.style.display = ""
+                    ch.th.style.display = ""
+                    ch.th.rowSpan = ch.descendants - ch.leaves + 2
+                    showChildRow ch
+                else
+                    ch.tr.style.display = ""
+                    ch.th.style.display = ""
+                    showChildRow ch if not (isRowHideOnExpand or ch.col >= rowDisableFrom)
+                    expandChildRow gch for gch in ch.children if ch.clickStatus isnt clickStatusCollapsed
             else
                 showChildRow ch
-            expandChildRow gch for gch in ch.children if ch.clickStatus isnt clickStatusCollapsed
 
         expandRow = (rowHeaderHeaders, rowHeaderRows, r) ->
             h = rowHeaderRows[r]
-            return if isRowDisable or isRowDisableExpandCollapse or not h or h.col > rowDisableAfter or h.clickStatus is clickStatusExpanded 
+            return if not h or h.clickStatus is clickStatusExpanded or isRowDisableExpandCollapse or h.col >= rowDisableFrom
 
             isRowSubtotal = h.descendants != 0
+            oldRowspan = h.th.rowSpan 
             rowspan = 0
             for ch in h.children
                 expandChildRow ch
                 rowspan += ch.th.rowSpan
-            h.th.rowSpan = rowspan+1
+            h.th.rowSpan = if isDisplayOnTop then rowspan+1 else rowspan+2
             if isRowSubtotal
+                # if isDisplayOnTop
+                #    rowspan--
                 if isRowHideOnExpand
                     expandHideRowSubtotal h
                 else
                     expandShowRowSubtotal h
+            rowspan = h.th.rowSpan - oldRowspan
             p = h.parent
             while p
                 p.th.rowSpan += rowspan
@@ -859,7 +888,7 @@ callWithJQuery ($) ->
 
             i = idx
             nAttrs = rowAttrs.length-1
-            while i < nAttrs and i <= rowDisableAfter
+            while i < nAttrs and i < rowDisableFrom
                 h = rowHeaderHeaders.hh[i]
                 replaceClass h.th, classExpanded, classCollapsed
                 h.th.textContent = " " + arrowCollapsed + " " + rowAttrs[i]
@@ -885,7 +914,7 @@ callWithJQuery ($) ->
             return if idx < 0 or idx == rowAttrs.length-1
 
             for i in [0..idx]
-                if i <= rowDisableAfter
+                if i < rowDisableFrom
                     hh = rowHeaderHeaders.hh[i]
                     replaceClass hh.th, classCollapsed, classExpanded
                     hh.th.textContent = " " + arrowExpanded + " " + rowAttrs[i]
@@ -900,7 +929,7 @@ callWithJQuery ($) ->
                     else
                         ++j
             ++idx
-            while idx < rowAttrs.length-1 and idx <= rowDisableAfter
+            while idx < rowAttrs.length-1 and idx < rowDisableFrom
                 rowHeaderHeader = rowHeaderHeaders.hh[idx]
                 if rowHeaderHeader.expandedCount == 0
                     replaceClass rowHeaderHeader.th, classExpanded, classCollapsed
@@ -926,12 +955,11 @@ callWithJQuery ($) ->
 
 
         toggleRowHeaderHeader = (rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr) ->
-            return if isRowDisable
             return if isRowDisableExpandCollapse
 
             idx = rowAttrs.indexOf rowAttr
             th = rowHeaderHeaders.hh[idx]
-            return if th.col > rowDisableAfter
+            return if th.col >= rowDisableFrom
             if th.clickStatus is clickStatusCollapsed
                 expandRowsAt rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr
             else
@@ -976,12 +1004,6 @@ callWithJQuery ($) ->
 
             result.setAttribute "data-numrows", rowKeys.length
             result.setAttribute "data-numcols", colKeys.length
-            # result.style.display = "" if not opts.collapseRowsAt? and not opts.collapseColsAt?
-            # collapseRowsAt rowHeaderHeaders, rowHeaderRows, rowAttrs, opts.collapseRowsAt if opts.collapseRowsAt?
-            # if not opts.collapseColsAt?
-            #     result.style.display = ""
-            #     return result
-            # collapseColsAt colHeaderHeaders, colHeaderCols, colAttrs, opts.collapseColsAt if opts.collapseColsAt?
             result.style.display = ""
 
             return result

@@ -31,14 +31,15 @@
         $.getJSON("data/mps.json", function(mps) {
             $("#output").pivotUI(mps, {
                 dataClass: dataClass,
-                rows: ["Gender", "Province"],
-                cols: ["Party", "Age"],
+                rows: ["Gender", "Party"],
+                cols: ["Age", "Province"],
                 renderers: renderers,
                 rendererName: "Table With Subtotal",
                 rendererOptions: {
-                    // rowSubtotalDisplay: {
-                        // hideOnExpand: true
-                    // }
+                    rowSubtotalDisplay: {
+                        hideOnExpand: true,
+                        displayOnTop: false
+                    },
                     colSubtotalDisplay: {
                         hideOnExpand: true
                     }
