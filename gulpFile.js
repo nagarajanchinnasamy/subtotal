@@ -13,6 +13,7 @@ var gulp = require('gulp'),
     concat = require('gulp-concat'),
     minifyCSS = require('gulp-minify-css'),
     serve = require('gulp-serve');
+    debug = require('gulp-debug');
 
 gulp.task('makeCss', function() {
     gulp.src('./subtotal.css')
@@ -34,13 +35,14 @@ gulp.task('makeJs', function() {
         .pipe(gulp.dest('./dist'))
         
         //minify js files as well
-        .pipe(filter('*.js'))//filter, to avoid doing this processing on the map files generated above 
-         .pipe(rename({
+        .pipe(filter('dist/*.js'))//filter, to avoid doing this processing on the map files generated above 
+        .pipe(rename({
             suffix: '.min'
         }))
         .pipe(sourcemaps.init({loadMaps: true}))//load the source maps generated in the first step
         .pipe(uglify())
         .pipe(sourcemaps.write('./'))
+        .pipe(debug())
         .pipe(gulp.dest('./dist'));
 });
 
