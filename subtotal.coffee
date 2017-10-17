@@ -187,6 +187,7 @@ callWithJQuery ($) ->
                     row++
                     return tree
                 tree)
+            return tree
 
         setColInitParams = (col) ->
             init = 
@@ -214,12 +215,12 @@ callWithJQuery ($) ->
             th = createElement "th", className, textContent
             th.setAttribute "data-colAttr", colAttr
             tr.appendChild th
-            colHeaderHeaders.push {
+            colHeaderHeaders.push
                 tr: tr,
                 th: th,
                 clickStatus: init.colClickStatus,
                 expandedCount: 0,
-                nHeaders: 0}
+                nodes: [],
             thead.appendChild tr
 
         buildColHeaderHeaders = (thead, colHeaderHeaders, rowAttrs, colAttrs) ->
@@ -247,29 +248,32 @@ callWithJQuery ($) ->
             for chKey in h.children
                 buildColHeader colHeaderHeaders, colHeaderCols, h[chKey], rowAttrs, colAttrs, node
             # Process
-            init = setColInitParams h.col
             hh = colHeaderHeaders[h.col]
-            ++hh.expandedCount if h.col <= colsCollapseAt
-            ++hh.nHeaders
+            ++hh.expandedCount if h.col < colsCollapseAt
+            hh.nodes.push h
 
+            h.node = node.counter
+            init = setColInitParams h.col
             firstChild = h[h.children[0]] if h.children.length isnt 0
-            addClass h.th, "#{classColShow} col#{h.row} colcol#{h.col}"
-            h.th.setAttribute "data-colnode", node.counter
+
+            addClass h.th, "#{classColShow} col#{h.row} colcol#{h.col} #{init.colClass}"
+            h.th.setAttribute "data-colnode", h.node
             h.th.colSpan = h.childrenSpan if h.children.length isnt 0
             if h.children.length is 0 and rowAttrs.length isnt 0
                 h.th.rowSpan = 2
             if h.leaves > 1 and not (isColDisable or h.col >= colDisableFrom)
-                if not isColDisableExpandCollapse
+                if not isColDisableExpandCollapse # and h.parent?.children.length isnt 1
                     h.th.textContent = "#{init.colArrow} #{h.text}"
                     h.th.onclick = (event) ->
                         event = event || window.event
                         toggleCol colHeaderHeaders, colHeaderCols, parseInt event.target.getAttribute "data-colnode"
-                if h.children.length > 1
                     h.sTh = createElement "th", "pvtColLabelFiller pvtColSubtotal"
+                    h.sTh.setAttribute "data-colnode", h.node
                     h.sTh.rowSpan = colAttrs.length-h.col
                     h.sTh.style.display = "none" if (isColHideOnExpand and h.col < colsCollapseAt) or h.col > colsCollapseAt
                     firstChild.tr.appendChild h.sTh
                     h.th.colSpan++
+            # h.sTh = firstChild.sTh if h.children.length is 1
 
             h.parent?.childrenSpan += h.th.colSpan
 
@@ -290,8 +294,7 @@ callWithJQuery ($) ->
                     rowClass: classRowCollapsed
                     rowClickStatus: clickStatusCollapsed
             if col >= rowDisableFrom
-                init =
-                    rowArrow: ""
+                init = rowArrow: ""
             return init
 
         buildRowHeaderHeaders = (thead, rowHeaderHeaders, rowAttrs, colAttrs) ->
@@ -307,10 +310,10 @@ callWithJQuery ($) ->
                 th.setAttribute "data-rowAttr", rowAttr
                 tr.appendChild th
                 rowHeaderHeaders.hh.push 
-                    th: th,
+                    th: th
                     clickStatus: if i < rowsCollapseAt then clickStatusExpanded else clickStatusCollapsed
-                    expandedCount: 0,
-                    nHeaders: 0
+                    expandedCount: 0
+                    headers: []
             if colAttrs.length != 0
                 th = createElement "th"
                 tr.appendChild th
@@ -340,20 +343,23 @@ callWithJQuery ($) ->
 
             # Process
             hh = rowHeaderHeaders.hh[h.col]
-            ++hh.expandedCount if h.col <= rowsCollapseAt
-            ++hh.nHeaders
+            ++hh.expandedCount if h.col < rowsCollapseAt
+            hh.headers.push h
 
+            h.node = node.counter
             init = setRowInitParams h.col
             firstChild = h[h.children[0]] if h.children.length isnt 0
 
-            addClass h.th, "pvtRowSubtotal row#{h.row} rowcol#{h.col}"
-            h.th.setAttribute "data-rownode", node.counter
+            addClass h.th, "row#{h.row} rowcol#{h.col} #{classRowShow}"
+            addClass h.th, "pvtRowSubtotal" if h.th.children.length isnt 0
+            h.th.setAttribute "data-rownode", h.node
             h.th.colSpan = 2 if h.col is rowAttrs.length-1 and colAttrs.length isnt 0
             h.th.rowSpan = h.childrenSpan if h.children.length isnt 0
 
             if (isDisplayOnTop and h.children.length is 1) or (not isDisplayOnTop and h.children.length isnt 0)
                 h.tr = firstChild.tr
                 h.tr.insertBefore h.th, firstChild.th
+                h.sTh = firstChild.sTh
             else
                 h.tr = createElement "tr", "pvtRowSubtotal row#{h.row}"
                 h.tr.appendChild h.th
@@ -368,6 +374,7 @@ callWithJQuery ($) ->
 
                 if h.children.length > 1
                     h.sTh = createElement "th", "pvtRowLabelFiller pvtRowSubtotal row#{h.row} rowcol#{h.col} #{init.rowClass}"
+                    h.sTh.setAttribute "data-rownode", h.node
                     h.sTh.colSpan = rowAttrs.length-(h.col+1) + if colAttrs.length != 0 then 1 else 0 
                     h.sTh.style.display = "none" if (isRowHideOnExpand and h.col < rowsCollapseAt) or h.col > rowsCollapseAt
                     h.th.rowSpan++
@@ -444,18 +451,17 @@ callWithJQuery ($) ->
             return tr
 
         buildColTotals = (tr, colHeaderCols) ->
-            for h in colHeaderCols when h.children.length isnt 1
-                isColSubtotal = h.descendants != 0
-                totalAggregator = colTotals[h.flatKey]
-                val = totalAggregator.value()
+            for h in colHeaderCols when h.leaves isnt 1
                 colInit = setColInitParams h.col
                 clsNames = "pvtVal pvtTotal colTotal #{colInit.colClass} col#{h.row} colcol#{h.col}"
-                clsNames += " pvtColSubtotal" if isColSubtotal
+                clsNames += " pvtColSubtotal" if h.children.length isnt 0 
+                totalAggregator = colTotals[h.flatKey]
+                val = totalAggregator.value()
                 td = createElement "td", clsNames, totalAggregator.format(val),
                     "data-value": val
                     "data-for": "col#{h.col}"
                     "data-colnode": "#{h.node}", getTableEventHandlers val, [], h.key
-                td.style.display = "none" if (h.col > colsCollapseAt) or (isColSubtotal and (isColDisable or h.col > colDisableAfter or (isColHideOnExpand and h.col < colsCollapseAt)))
+                td.style.display = "none" if (h.col > colsCollapseAt) or (h.children.length isnt 0 and (isColDisable or h.col > colDisableAfter or (isColHideOnExpand and h.col < colsCollapseAt)))
                 tr.appendChild td
 
         buildGrandTotal = (result, tr) ->
@@ -466,7 +472,6 @@ callWithJQuery ($) ->
                 getTableEventHandlers val, [], []
             tr.appendChild td
             result.appendChild tr
-
 
         hideDescendantCol = (d) ->
             $(d.th).closest 'table.pvtTable'
@@ -482,27 +487,31 @@ callWithJQuery ($) ->
                 .addClass "#{classColCollapsed} #{classColShow}"
                 .not ".pvtRowSubtotal.#{classRowHide}"
                 .css 'display', "" 
-            h.th.textContent = " " + arrowCollapsed + " " + h.th.getAttribute "data-colheader"
+            h.th.textContent = " " + arrowCollapsed + " " + h.text
             h.th.colSpan = 1
 
-        collapseCol = (colHeaderHeaders, colHeaderCols, c) ->
+        collapseChildCol = (ch, h) ->
+            for chKey in ch.children
+                collapseChildCol ch[chKey], h
+
+            hideDescendantCol ch
+
+        collapseCol = (colHeaderHeaders, colHeaderCols, c, opts) ->
             return if isColDisable or isColDisableExpandCollapse or not colHeaderCols[c]
 
             h = colHeaderCols[c]
-            return if h.col > colDisableAfter
-            return if h.clickStatus is clickStatusCollapsed
+            return if h.col >= colDisableFrom or h.clickStatus is clickStatusCollapsed
 
-            isColSubtotal = h.descendants != 0
-            colspan = h.th.colSpan 
-            for i in [1..h.descendants] when h.descendants != 0
-                d = colHeaderCols[c-i]
-                hideDescendantCol d
-            if isColSubtotal 
-                collapseShowColSubtotal h
-                --colspan
+            colSpan = h.th.colSpan - 1
+            for chKey in h.children
+                ch = h[chKey]
+                collapseChildCol ch, h
+
+            collapseShowColSubtotal h
+
             p = h.parent
             while p isnt null
-                p.th.colSpan -= colspan
+                p.th.colSpan -= colSpan
                 p = p.parent
             h.clickStatus = clickStatusCollapsed
             colHeaderHeader = colHeaderHeaders[h.col]
@@ -546,26 +555,23 @@ callWithJQuery ($) ->
                 ch.th.style.display = ""
             else
                 showChildCol ch
-            expandChildCol gch for gch in ch.children if ch.clickStatus isnt clickStatusCollapsed
+            expandChildCol ch[chKey] for chKey in ch.children if ch.clickStatus isnt clickStatusCollapsed
 
-        expandCol = (colHeaderHeaders, colHeaderCols, c) ->
-            return if isColDisable
-            return if isColDisableExpandCollapse
-            return if not colHeaderCols[c]
+        expandCol = (colHeaderHeaders, colHeaderCols, c, opts) ->
+            return if isColDisable or isColDisableExpandCollapse or not colHeaderCols[c]
 
             h = colHeaderCols[c]
-            return if h.col > colDisableAfter
-            return if h.clickStatus is clickStatusExpanded
+            return if h.col >= colDisableFrom or h.clickStatus is clickStatusExpanded
 
-            isColSubtotal = h.descendants != 0
-            colspan = 0
-            for ch in h.children
+            colSpan = 0
+            for chKey in h.children
+                ch = h[chKey]
                 expandChildCol ch
-                colspan += ch.th.colSpan
-            h.th.colSpan = colspan
-            if isColSubtotal
+                colSpan += ch.th.colSpan
+            h.th.colSpan = colSpan
+            if h.children.length isnt 0
                 replaceClass h.th, classColCollapsed, classColExpanded
-                h.th.textContent = " " + arrowExpanded + " " + h.th.getAttribute "data-colHeader"
+                h.th.textContent = " " + arrowExpanded + " " + h.text
                 if isColHideOnExpand
                     expandHideColSubtotal h
                     --colspan
@@ -573,15 +579,16 @@ callWithJQuery ($) ->
                     expandShowColSubtotal h
             p = h.parent
             while p
-                p.th.colSpan += colspan
+                p.th.colSpan += colSpan
                 p = p.parent
             h.clickStatus = clickStatusExpanded
             hh = colHeaderHeaders[h.col]
             ++hh.expandedCount
-            if hh.expandedCount is hh.nHeaders
+            if hh.expandedCount is hh.headers.length
                 replaceClass hh.th, classCollapsed, classExpanded
                 hh.th.textContent = " " + arrowExpanded + " " + hh.th.getAttribute "data-colAttr"
                 hh.clickStatus = clickStatusExpanded
+            console.warn "#{h.text}: #{colHeaderCols[38].th.colSpan}"
 
         hideDescendantRow = (d) ->
             d.tr.style.display = "none" if isDisplayOnTop
@@ -603,7 +610,7 @@ callWithJQuery ($) ->
             replaceClass h.tr, classRowExpanded, classRowCollapsed
             h.tr.style.display = ""
 
-        collapseRow = (rowHeaderHeaders, rowHeaderRows, r) ->
+        collapseRow = (rowHeaderHeaders, rowHeaderRows, r, opts) ->
             h = rowHeaderRows[r]
             return if not h or h.clickStatus is clickStatusCollapsed or h.col >= rowDisableFrom or isRowDisableExpandCollapse 
 
@@ -677,7 +684,7 @@ callWithJQuery ($) ->
                 nShown++
             return nShown
 
-        expandRow = (rowHeaderHeaders, rowHeaderRows, r) ->
+        expandRow = (rowHeaderHeaders, rowHeaderRows, r, opts) ->
             h = rowHeaderRows[r]
             return if not h or h.clickStatus is clickStatusExpanded or isRowDisableExpandCollapse or h.col >= rowDisableFrom
 
@@ -699,171 +706,57 @@ callWithJQuery ($) ->
             h.clickStatus = clickStatusExpanded
             hh = rowHeaderHeaders.hh[h.col]
             ++hh.expandedCount
-            if hh.expandedCount == hh.nHeaders
+            if hh.expandedCount == hh.headers.length
                 replaceClass hh.th, classCollapsed, classExpanded
                 hh.th.textContent = " " + arrowExpanded + " " + hh.th.getAttribute "data-rowAttr"
                 hh.clickStatus = clickStatusExpanded
 
-        toggleCol = (colHeaderHeaders, colHeaderCols, c) ->
-            return if not colHeaderCols[c]?
+        collapseAt = (headerHeaders, headers, attrs, attr, collapse, opts) ->
+            return if opts.disableSubtotal or opts.disableExpandCollapse
 
-            h = colHeaderCols[c]
-            if h.clickStatus is clickStatusCollapsed
-                expandCol(colHeaderHeaders, colHeaderCols, c)
-            else
-                collapseCol(colHeaderHeaders, colHeaderCols, c)
-            h.th.scrollIntoView
+            idx = attr
+            idx = attrs.indexOf attr if typeof attr is 'string'
+            n = attrs.length-2
+            return if idx < 0 or n < idx
 
-        toggleRow = (rowHeaderHeaders, rowHeaderRows, r) ->
-            h = rowHeaderRows[r]
-            return if not h
-
-            if h.clickStatus is clickStatusCollapsed
-                expandRow(rowHeaderHeaders, rowHeaderRows, r)
-            else
-                collapseRow(rowHeaderHeaders, rowHeaderRows, r)
-
-        collapseColsAt = (colHeaderHeaders, colHeaderCols, colAttrs, colAttr) ->
-            return if isColDisable
-            if typeof colAttr is 'string'
-                idx = colAttrs.indexOf colAttr
-            else
-                idx = colAttr
-            return if idx < 0 or idx == colAttrs.length-1
-            i = idx
-            nAttrs = colAttrs.length-1
-            while i < nAttrs and i <= colDisableAfter
-                hh = colHeaderHeaders[i]
+            for i in [idx..n] when i <= opts.disableFrom
+                hh = headerHeaders[i]
                 replaceClass hh.th, classExpanded, classCollapsed
-                hh.th.textContent = " " + arrowCollapsed + " " + colAttrs[i]
+                hh.th.textContent = " " + arrowCollapsed + " " + attrs[i]
                 hh.clickStatus = clickStatusCollapsed
-                ++i
-            i = 0
-            nCols = colHeaderCols.length
-            while i < nCols
-                h = colHeaderCols[i]
-                if h.col is idx and h.clickStatus isnt clickStatusCollapsed and h.th.style.display isnt "none"
-                    collapseCol colHeaderHeaders, colHeaderCols, parseInt h.th.getAttribute("data-colnode")
-                ++i
 
-        expandColsAt = (colHeaderHeaders, colHeaderCols, colAttrs, colAttr) ->
-            return if isColDisable
-            if typeof colAttr is 'string'
-                idx = colAttrs.indexOf colAttr
-            else
-                idx = colAttr
-            return if idx < 0 or idx == colAttrs.length-1
-            for i in [0..idx]
-                if i <= colDisableAfter
-                    hh = colHeaderHeaders[i]
-                    replaceClass hh.th, classCollapsed, classExpanded
-                    hh.th.textContent = " " + arrowExpanded + " " + colAttrs[i]
-                    hh.clickStatus = clickStatusExpanded
-                j = 0
-                nCols = colHeaderCols.length
-                while j < nCols
-                    h = colHeaderCols[j]
-                    expandCol colHeaderHeaders, colHeaderCols, j if h.col == i
-                    ++j
+                collapse headerHeaders, headers, h.node, opts for h in hh.headers when h.clickStatus isnt clickStatusCollapsed and h.th.style.display isnt "none" and h.leaves > 1
+
+        expandAt = (headerHeaders, headerNodes, attrs, attr, expand, opts) ->
+            return if opts.disableSubtotal or opts.disableExpandCollapse
+
+            idx = attr
+            idx = attrs.indexOf attr if typeof attr is 'string'
+            return if idx < 0 or idx == attrs.length-1
+
+            for i in [0..idx] when i < opts.disableFrom
+                hh = headerHeaders[i]
+                replaceClass hh.th, classCollapsed, classExpanded
+                hh.th.textContent = " " + arrowExpanded + " " + attrs[i]
+                hh.clickStatus = clickStatusExpanded
+
+                expand headerHeaders, headerNodes, h.node for h in hh.headers when h.leaves > 1
+
             ++idx
-            while idx < colAttrs.length-1 and idx <= colDisableAfter
-                colHeaderHeader = colHeaderHeaders[idx]
-                if colHeaderHeader.expandedCount == 0
-                    replaceClass colHeaderHeader.th, classExpanded, classCollapsed
-                    colHeaderHeader.th.textContent = " " + arrowCollapsed + " " + colAttrs[idx]
-                    colHeaderHeader.clickStatus = clickStatusCollapsed
-                else if colHeaderHeader.expandedCount == colHeaderHeader.nHeaders
-                    replaceClass colHeaderHeader.th, classCollapsed, classExpanded
-                    colHeaderHeader.th.textContent = " " + arrowExpanded + " " + colAttrs[idx]
-                    colHeaderHeader.clickStatus = clickStatusExpanded
+            while idx < attrs.length-1 and idx < opts.disableFrom
+                hh = headerHeaders[idx]
+                if hh.expandedCount == 0
+                    replaceClass hh.th, classExpanded, classCollapsed
+                    hh.th.textContent = " " + arrowCollapsed + " " + attrs[idx]
+                    hh.clickStatus = clickStatusCollapsed
+                else if hh.expandedCount == hh.nodes.length
+                    replaceClass hh.th, classCollapsed, classExpanded
+                    hh.th.textContent = " " + arrowExpanded + " " + attrs[idx]
+                    hh.clickStatus = clickStatusExpanded
                 ++idx
 
-        collapseRowsAt = (rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr) ->
-            return if isRowDisable
-            if typeof rowAttr is 'string'
-                idx = rowAttrs.indexOf rowAttr
-            else
-                idx = rowAttr
-
-            return if idx < 0 or idx == rowAttrs.length-1
-
-            i = idx
-            nAttrs = rowAttrs.length-1
-            while i < nAttrs and i < rowDisableFrom
-                h = rowHeaderHeaders.hh[i]
-                replaceClass h.th, classExpanded, classCollapsed
-                h.th.textContent = " " + arrowCollapsed + " " + rowAttrs[i]
-                h.clickStatus = clickStatusCollapsed
-                ++i
-            j = 0
-            nRows = rowHeaderRows.length
-            while j < nRows
-                h = rowHeaderRows[j]
-                if h.col is idx and h.clickStatus isnt clickStatusCollapsed and h.tr.style.display isnt "none"
-                    collapseRow rowHeaderHeaders, rowHeaderRows, j
-                ++j
-
-        expandRowsAt = (rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr) ->
-            return if isRowDisable
-            if typeof rowAttr is 'string'
-                idx = rowAttrs.indexOf rowAttr
-            else
-                idx = rowAttr
-
-            return if idx < 0 or idx == rowAttrs.length-1
-
-            for i in [0..idx]
-                if i < rowDisableFrom
-                    hh = rowHeaderHeaders.hh[i]
-                    replaceClass hh.th, classCollapsed, classExpanded
-                    hh.th.textContent = " " + arrowExpanded + " " + rowAttrs[i]
-                    hh.clickStatus = clickStatusExpanded
-                j = 0
-                nRows = rowHeaderRows.length
-                while j < nRows
-                    h = rowHeaderRows[j]
-                    expandRow rowHeaderHeaders, rowHeaderRows, j if h.col == i
-                    ++j
-            ++idx
-            while idx < rowAttrs.length-1 and idx < rowDisableFrom
-                rowHeaderHeader = rowHeaderHeaders.hh[idx]
-                if rowHeaderHeader.expandedCount == 0
-                    replaceClass rowHeaderHeader.th, classExpanded, classCollapsed
-                    rowHeaderHeader.th.textContent = " " + arrowCollapsed + " " + rowAttrs[idx]
-                    rowHeaderHeader.clickStatus = clickStatusCollapsed
-                else if rowHeaderHeader.expandedCount == rowHeaderHeader.nHeaders
-                    replaceClass rowHeaderHeader.th, classCollapsed, classExpanded
-                    rowHeaderHeader.th.textContent = " " + arrowExpanded + " " + rowAttrs[idx]
-                    rowHeaderHeader.clickStatus = clickStatusExpanded
-                ++idx
-
-        toggleColHeaderHeader = (colHeaderHeaders, colHeaderCols, colAttrs, colAttr) ->
-            return if isColDisable
-            return if isColDisableExpandCollapse
-
-            idx = colAttrs.indexOf colAttr
-            h = colHeaderHeaders[idx]
-            return if h.col > colDisableAfter
-            if h.clickStatus is clickStatusCollapsed
-                expandColsAt colHeaderHeaders, colHeaderCols, colAttrs, colAttr
-            else
-                collapseColsAt colHeaderHeaders, colHeaderCols, colAttrs, colAttr
-
-
-        toggleRowHeaderHeader = (rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr) ->
-            return if isRowDisableExpandCollapse
-
-            idx = rowAttrs.indexOf rowAttr
-            th = rowHeaderHeaders.hh[idx]
-            return if th.col >= rowDisableFrom
-            if th.clickStatus is clickStatusCollapsed
-                expandRowsAt rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr
-            else
-                collapseRowsAt rowHeaderHeaders, rowHeaderRows, rowAttrs, rowAttr
 
         main = (rowAttrs, rowKeys, colAttrs, colKeys) ->
-            rowHeaders = []
-            colHeaders = []
             rowHeaderHeaders = {}
             rowHeaderRows = []
             colHeaderHeaders = []
