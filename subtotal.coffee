@@ -77,19 +77,14 @@ callWithJQuery ($) ->
         colTotals = pivotData.colTotals
         allTotal = pivotData.allTotal
 
-        classRowExpanded = "rowexpanded"
-        classRowCollapsed = "rowcollapsed"
         classRowHide = "rowhide"
         classRowShow = "rowshow"
-        classColExpanded = "colexpanded"
-        classColCollapsed = "colcollapsed"
         classColHide = "colhide"
         classColShow = "colshow"
         clickStatusExpanded = "expanded"
         clickStatusCollapsed = "collapsed"
         classExpanded = "expanded"
         classCollapsed = "collapsed"
-
 
         # Based on http://stackoverflow.com/questions/195951/change-an-elements-class-with-javascript -- Begin
         hasClass = (element, className) ->
@@ -428,8 +423,8 @@ callWithJQuery ($) ->
         collapseShowColSubtotal = (h) ->
             $(h.th).closest 'table.pvtTable'
                 .find "tbody tr td[data-colnode=\"#{h.node}\"], th[data-colnode=\"#{h.node}\"]" 
-                .removeClass "#{classColExpanded} #{classColHide}"
-                .addClass "#{classColCollapsed} #{classColShow}"
+                .removeClass "#{classExpanded} #{classColHide}"
+                .addClass "#{classCollapsed} #{classColShow}"
                 .not ".pvtRowSubtotal.#{classRowHide}"
                 .css 'display', "" 
             h.th.textContent = " " + arrowCollapsed + " " + h.text
@@ -477,16 +472,16 @@ callWithJQuery ($) ->
         expandHideColSubtotal = (h) ->
             $(h.th).closest 'table.pvtTable'
                 .find "tbody tr td[data-colnode=\"#{h.node}\"], th[data-colnode=\"#{h.node}\"]" 
-                .removeClass "#{classColCollapsed} #{classColShow}" 
-                .addClass "#{classColExpanded} #{classColHide}" 
+                .removeClass "#{classCollapsed} #{classColShow}" 
+                .addClass "#{classExpanded} #{classColHide}" 
                 .css 'display', "none" 
             h.th.style.display = ""
 
         expandShowColSubtotal = (h) ->
             $(h.th).closest 'table.pvtTable'
                 .find "tbody tr td[data-colnode=\"#{h.node}\"], th[data-colnode=\"#{h.node}\"]" 
-                .removeClass "#{classColCollapsed} #{classColHide}"
-                .addClass "#{classColExpanded} #{classColShow}"
+                .removeClass "#{classCollapsed} #{classColHide}"
+                .addClass "#{classExpanded} #{classColShow}"
                 .not ".pvtRowSubtotal.#{classRowHide}"
                 .css 'display', "" 
             h.th.style.display = ""
@@ -494,12 +489,13 @@ callWithJQuery ($) ->
             h.sTh.style.display = "" if h.sTh?
 
         expandChildCol = (ch, opts) ->
-            if ch.descendants != 0 and hasClass(ch.th, classColExpanded) and (ch.col > opts.disableFrom or opts.hideOnExpand)
+            console.warn ch.text
+            if ch.descendants != 0 and ch.clickStatus is clickStatusCollapsed and (ch.col > opts.disableFrom or opts.hideOnExpand)
                 ch.th.style.display = ""
             else
                 showChildCol ch
-            expandChildCol ch[chKey], opts for chKey in ch.children if ch.clickStatus isnt clickStatusCollapsed
-
+            expandChildCol ch[chKey], opts for chKey in ch.children if ch.clickStatus is clickStatusExpanded
+            
         expandCol = (axisHeaders, h, opts) ->
             colSpan = 0
             for chKey in h.children
@@ -508,7 +504,7 @@ callWithJQuery ($) ->
                 colSpan += ch.th.colSpan
             h.th.colSpan = colSpan
             if h.children.length isnt 0
-                replaceClass h.th, classColCollapsed, classColExpanded
+                replaceClass h.th, classCollapsed, classExpanded
                 h.th.textContent = " " + arrowExpanded + " " + h.text
                 if opts.hideOnExpand
                     expandHideColSubtotal h
@@ -542,12 +538,12 @@ callWithJQuery ($) ->
         collapseShowRowSubtotal = (h) ->
             cells = h.tr.getElementsByTagName "td" 
             for cell in cells
-                removeClass cell, "#{classRowExpanded} #{classRowHide}"
-                addClass cell, "#{classRowCollapsed} #{classRowShow}"
+                removeClass cell, "#{classExpanded} #{classRowHide}"
+                addClass cell, "#{classCollapsed} #{classRowShow}"
                 cell.style.display = "" if not hasClass cell, classColHide
             h.sTh.textContent = " " + arrowCollapsed + " " + h.sTh.getAttribute "data-rowHeader"
-            replaceClass h.sTh, classRowExpanded, classRowCollapsed
-            replaceClass h.tr, classRowExpanded, classRowCollapsed
+            replaceClass h.sTh, classExpanded, classCollapsed
+            replaceClass h.tr, classExpanded, classCollapsed
             h.tr.style.display = ""
 
         collapseRow = (axisHeaders, h, opts) ->
@@ -591,25 +587,25 @@ callWithJQuery ($) ->
         expandShowRowSubtotal = (h) ->
             cells = h.tr.getElementsByTagName "td"
             for cell in cells
-                removeClass cell, "#{classRowCollapsed} #{classRowHide}"
-                addClass cell, "#{classRowExpanded} #{classRowShow}" 
+                removeClass cell, "#{classCollapsed} #{classRowHide}"
+                addClass cell, "#{classExpanded} #{classRowShow}" 
                 cell.style.display = "" if not hasClass cell, classColHide
             h.sTh.textContent = " " + arrowExpanded + " " + h.sTh.getAttribute "data-rowHeader"
             h.sTh.style.display = ""
-            replaceClass h.sTh, classRowCollapsed, classRowExpanded
+            replaceClass h.sTh, classCollapsed, classExpanded
             h.th.style.display = ""
-            replaceClass h.th, classRowCollapsed, classRowExpanded
-            replaceClass h.tr, classRowCollapsed, classRowExpanded
+            replaceClass h.th, classCollapsed, classExpanded
+            replaceClass h.tr, classCollapsed, classExpanded
             h.tr.style.display = ""
 
         expandHideRowSubtotal = (h) ->
             cells = h.tr.getElementsByTagName "td"
             for cell in cells
-                removeClass cell, "#{classRowCollapsed} #{classRowShow}"
-                addClass cell, "#{classRowExpanded} #{classRowHide}"
+                removeClass cell, "#{classCollapsed} #{classRowShow}"
+                addClass cell, "#{classExpanded} #{classRowHide}"
             h.th.textContent = " " + arrowExpanded + " " + h.th.getAttribute "data-rowHeader"
             h.th.style.display = ""
-            replaceClass h.tr, classRowCollapsed, classRowExpanded
+            replaceClass h.tr, classCollapsed, classExpanded
             h.tr.style.display = "none"
 
         expandChildRow = (ch) ->
@@ -660,7 +656,7 @@ callWithJQuery ($) ->
         expandAxis = (axisHeaders, col, attrs, opts) ->
             for i in [0..col] 
                 ah = axisHeaders.ah[i]
-                axisHeaders.expandAttrHeader axisHeaders, h, opts for h in ah.attrHeaders when h.leaves > 1
+                axisHeaders.expandAttrHeader axisHeaders, h, opts for h in ah.attrHeaders when h.clickStatus isnt clickStatusExpanded and h.leaves > 1
                 replaceClass ah.th, classCollapsed, classExpanded
                 ah.th.textContent = " " + arrowExpanded + " " + attrs[i]
                 ah.clickStatus = clickStatusExpanded
