@@ -94,7 +94,7 @@
     })($.pivotUtilities.PivotData);
     $.pivotUtilities.SubtotalPivotData = SubtotalPivotData;
     SubtotalRenderer = function(pivotData, opts) {
-      var addClass, adjustAxisHeader, allTotal, arrowCollapsed, arrowExpanded, buildAxisHeader, buildColAxisHeaders, buildColHeader, buildColTotals, buildColTotalsHeader, buildGrandTotal, buildRowAxisHeaders, buildRowHeader, buildRowTotalsHeader, buildValues, classColHide, classColShow, classCollapsed, classExpanded, classRowHide, classRowShow, clickStatusCollapsed, clickStatusExpanded, colAttrs, colKeys, colTotals, collapseAxis, collapseChildCol, collapseChildRow, collapseCol, collapseRow, collapseShowColSubtotal, collapseShowRowSubtotal, createElement, defaults, expandAxis, expandChildCol, expandChildRow, expandCol, expandHideColSubtotal, expandHideRowSubtotal, expandRow, expandShowColSubtotal, expandShowRowSubtotal, getTableEventHandlers, hasClass, hideDescendantCol, hideDescendantRow, main, processKeys, removeClass, replaceClass, rowAttrs, rowKeys, rowTotals, setAttributes, setHeaderAttribs, showChildCol, showChildRow, tree;
+      var addClass, adjustAxisHeader, allTotal, arrowCollapsed, arrowExpanded, buildAxisHeader, buildColAxisHeaders, buildColHeader, buildColTotals, buildColTotalsHeader, buildGrandTotal, buildRowAxisHeaders, buildRowHeader, buildRowTotalsHeader, buildValues, classColHide, classColShow, classCollapsed, classExpanded, classRowHide, classRowShow, clickStatusCollapsed, clickStatusExpanded, colAttrs, colKeys, colTotals, collapseAxis, collapseAxisHeaders, collapseChildCol, collapseChildRow, collapseCol, collapseHiddenColSubtotal, collapseRow, collapseShowColSubtotal, collapseShowRowSubtotal, createElement, defaults, expandAxis, expandChildCol, expandChildRow, expandCol, expandHideColSubtotal, expandHideRowSubtotal, expandRow, expandShowColSubtotal, expandShowRowSubtotal, getTableEventHandlers, hasClass, hideChildCol, hideDescendantRow, main, processKeys, removeClass, replaceClass, rowAttrs, rowKeys, rowTotals, setAttributes, setHeaderAttribs, showChildCol, showChildRow, tree;
       defaults = {
         table: {
           clickCallback: null
@@ -345,10 +345,12 @@
           arrow = "";
         }
         ah.th = createElement("th", "pvtAxisLabel " + hClass, "" + arrow + ah.text);
-        ah.th.onclick = function(event) {
-          event = event || window.event;
-          return ah.onClick(axisHeaders, col, attrs, opts);
-        };
+        if (col < attrs.length - 1 && col < opts.disableFrom && !opts.disableExpandCollapse) {
+          ah.th.onclick = function(event) {
+            event = event || window.event;
+            return ah.onClick(axisHeaders, col, attrs, opts);
+          };
+        }
         axisHeaders.ah.push(ah);
         return ah;
       };
@@ -393,18 +395,18 @@
         thead.appendChild(axisHeaders.tr);
         return axisHeaders;
       };
-      setHeaderAttribs = function(col, label, collapse, expand, attrs, opts) {
+      setHeaderAttribs = function(h, collapse, expand, attrs, opts) {
         var hProps;
         hProps = {
-          arrow: arrowExpanded,
+          arrow: " " + arrowExpanded + " ",
           clickStatus: clickStatusExpanded,
           onClick: collapse,
-          "class": classExpanded + " "
+          "class": classExpanded
         };
-        if (col === attrs.length - 1 || col >= opts.disableFrom || opts.disableExpandCollapse) {
+        if (h.col === attrs.length - 1 || h.col >= opts.disableFrom || opts.disableExpandCollapse || h.leaves === 1) {
           hProps.arrow = "";
         }
-        hProps.textContent = hProps.arrow + " " + label;
+        hProps.textContent = "" + hProps.arrow + h.text;
         return hProps;
       };
       buildColHeader = function(axisHeaders, attrHeaders, h, rowAttrs, colAttrs, node, opts) {
@@ -417,7 +419,7 @@
         ah = axisHeaders.ah[h.col];
         ah.attrHeaders.push(h);
         h.node = node.counter;
-        hProps = setHeaderAttribs(h.col, h.text, collapseCol, expandCol, colAttrs, opts.colSubtotalDisplay);
+        hProps = setHeaderAttribs(h, collapseCol, expandCol, colAttrs, opts.colSubtotalDisplay);
         h.onClick = hProps.onClick;
         addClass(h.th, classColShow + " col" + h.row + " colcol" + h.col + " " + hProps["class"]);
         h.th.setAttribute("data-colnode", h.node);
@@ -434,20 +436,20 @@
           if (!opts.colSubtotalDisplay.hideOnExpand) {
             h.th.colSpan++;
           }
-          h.th.onclick = function(event) {
-            event = event || window.event;
-            return h.onClick(axisHeaders, h, opts.colSubtotalDisplay);
-          };
+          if (!opts.colSubtotalDisplay.disableExpandCollapse) {
+            h.th.onclick = function(event) {
+              event = event || window.event;
+              return h.onClick(axisHeaders, h, opts.colSubtotalDisplay);
+            };
+          }
           h.sTh = createElement("th", "pvtColLabelFiller col" + h.row + " colcol" + h.col + " " + hProps["class"]);
           h.sTh.setAttribute("data-colnode", h.node);
           h.sTh.rowSpan = colAttrs.length - h.col;
-          if (opts.colSubtotalDisplay.hideOnExpand && h.col < opts.colSubtotalDisplay.collapseAt) {
+          if (opts.colSubtotalDisplay.hideOnExpand) {
             h.sTh.style.display = "none";
             addClass(h.sTh, classColHide);
           }
-          if (h.children.length !== 0) {
-            h[h.children[0]].tr.appendChild(h.sTh);
-          }
+          h[h.children[0]].tr.appendChild(h.sTh);
         }
         if ((ref1 = h.parent) != null) {
           ref1.childrenSpan += h.th.colSpan;
@@ -475,7 +477,7 @@
         ah = axisHeaders.ah[h.col];
         ah.attrHeaders.push(h);
         h.node = node.counter;
-        hProps = setHeaderAttribs(h.col, h.text, collapseRow, expandRow, rowAttrs, opts.rowSubtotalDisplay);
+        hProps = setHeaderAttribs(h, collapseRow, expandRow, rowAttrs, opts.rowSubtotalDisplay);
         h.onClick = hProps.onClick;
         if (h.children.length !== 0) {
           firstChild = h[h.children[0]];
@@ -494,20 +496,18 @@
           h.tr.insertBefore(h.th, firstChild.th);
           h.sTh = firstChild.sTh;
         } else {
-          h.tr = createElement("tr", "row" + h.row);
+          h.tr = createElement("tr", "row" + h.row + " " + hProps["class"]);
           h.tr.appendChild(h.th);
           if (h.leaves === 0) {
             tbody.appendChild(h.tr);
+          } else {
+            tbody.insertBefore(h.tr, firstChild.tr);
           }
         }
         if (h.leaves > 1 && h.col < opts.rowSubtotalDisplay.disableFrom) {
-          if (h.col < opts.rowSubtotalDisplay.collapseAt) {
-            ++ah.expandedCount;
-          }
+          ++ah.expandedCount;
+          ++ah.expandables;
           if (!opts.rowSubtotalDisplay.disableExpandCollapse) {
-            ++ah.expandables;
-            addClass(h.th, hProps["class"]);
-            h.th.textContent = hProps.arrow + " " + h.text;
             h.th.onclick = function(event) {
               event = event || window.event;
               return h.onClick(axisHeaders, h, opts.rowSubtotalDisplay);
@@ -516,11 +516,9 @@
           h.sTh = createElement("th", "pvtRowLabelFiller row" + h.row + " rowcol" + h.col + " " + hProps["class"]);
           h.sTh.setAttribute("data-rownode", h.node);
           h.sTh.colSpan = rowAttrs.length - (h.col + 1) + (colAttrs.length !== 0 ? 1 : 0);
-          if ((opts.rowSubtotalDisplay.hideOnExpand && h.col < opts.rowSubtotalDisplay.collapseAt) || h.col > opts.rowSubtotalDisplay.collapseAt) {
+          if (opts.rowSubtotalDisplay.hideOnExpand) {
             h.sTh.style.display = "none";
           }
-          h.th.rowSpan++;
-          addClass(h.tr, hProps["class"]);
           if (opts.rowSubtotalDisplay.displayOnTop) {
             h.tr.appendChild(h.sTh);
           } else {
@@ -528,7 +526,9 @@
             h.sTr.appendChild(h.sTh);
             tbody.appendChild(h.sTr);
           }
-          tbody.insertBefore(h.tr, firstChild.tr);
+        }
+        if (h.leaves > 1) {
+          h.th.rowSpan++;
         }
         if ((ref1 = h.parent) != null) {
           ref1.childrenSpan += h.th.rowSpan;
@@ -652,14 +652,27 @@
         tr.appendChild(td);
         return result.appendChild(tr);
       };
+      collapseAxisHeaders = function(axisHeaders, col, opts) {
+        var ah, collapsible, i, k, ref, ref1, results;
+        collapsible = Math.min(axisHeaders.ah.length - 2, opts.disableFrom - 1);
+        if (col > collapsible) {
+          return;
+        }
+        results = [];
+        for (i = k = ref = col, ref1 = collapsible; ref <= ref1 ? k <= ref1 : k >= ref1; i = ref <= ref1 ? ++k : --k) {
+          ah = axisHeaders.ah[i];
+          replaceClass(ah.th, classExpanded, classCollapsed);
+          ah.th.textContent = " " + arrowCollapsed + " " + ah.text;
+          ah.clickStatus = clickStatusCollapsed;
+          results.push(ah.onClick = expandAxis);
+        }
+        return results;
+      };
       adjustAxisHeader = function(axisHeaders, col, opts) {
         var ah;
         ah = axisHeaders.ah[col];
         if (ah.expandedCount === 0) {
-          replaceClass(ah.th, classExpanded, classCollapsed);
-          ah.th.textContent = " " + arrowCollapsed + " " + ah.text;
-          ah.clickStatus = clickStatusCollapsed;
-          return ah.onClick = expandAxis;
+          return collapseAxisHeaders(axisHeaders, col, opts);
         } else if (ah.expandedCount === ah.expandables) {
           replaceClass(ah.th, classCollapsed, classExpanded);
           ah.th.textContent = " " + arrowExpanded + " " + ah.text;
@@ -667,8 +680,15 @@
           return ah.onClick = collapseAxis;
         }
       };
-      hideDescendantCol = function(d) {
-        return $(d.th).closest('table.pvtTable').find("tbody tr td[data-colnode=\"" + d.node + "\"], th[data-colnode=\"" + d.node + "\"]").removeClass(classColShow).addClass(classColHide).css('display', "none");
+      hideChildCol = function(ch) {
+        return $(ch.th).closest('table.pvtTable').find("tbody tr td[data-colnode=\"" + ch.node + "\"], th[data-colnode=\"" + ch.node + "\"]").removeClass(classColShow).addClass(classColHide).css('display', "none");
+      };
+      collapseHiddenColSubtotal = function(h, opts) {
+        $(h.th).closest('table.pvtTable').find("tbody tr td[data-colnode=\"" + h.node + "\"], th[data-colnode=\"" + h.node + "\"]").removeClass(classExpanded).addClass(classCollapsed);
+        if (h.leaves > 1) {
+          h.th.textContent = " " + arrowCollapsed + " " + h.text;
+        }
+        return h.th.colSpan = 1;
       };
       collapseShowColSubtotal = function(h, opts) {
         var exclude;
@@ -677,7 +697,9 @@
           exclude += ", ." + classColHide;
         }
         $(h.th).closest('table.pvtTable').find("tbody tr td[data-colnode=\"" + h.node + "\"], th[data-colnode=\"" + h.node + "\"]").removeClass(classExpanded).addClass(classCollapsed).not(exclude).removeClass(classColHide).addClass(classColShow).css('display', "");
-        h.th.textContent = " " + arrowCollapsed + " " + h.text;
+        if (h.leaves > 1) {
+          h.th.textContent = " " + arrowCollapsed + " " + h.text;
+        }
         return h.th.colSpan = 1;
       };
       collapseChildCol = function(ch, h) {
@@ -689,7 +711,7 @@
             collapseChildCol(ch[chKey], h);
           }
         }
-        return hideDescendantCol(ch);
+        return hideChildCol(ch);
       };
       collapseCol = function(axisHeaders, h, opts) {
         var chKey, colSpan, k, len, p, ref;
@@ -701,13 +723,17 @@
             collapseChildCol(h[chKey], h);
           }
         }
-        collapseShowColSubtotal(h, opts);
-        if (hasClass(h.th, classColShow)) {
-          p = h.parent;
-          while (p) {
-            p.th.colSpan -= colSpan;
-            p = p.parent;
+        if (h.col < opts.disableFrom) {
+          if (hasClass(h.th, classColHide)) {
+            collapseHiddenColSubtotal(h, opts);
+          } else {
+            collapseShowColSubtotal(h, opts);
           }
+        }
+        p = h.parent;
+        while (p) {
+          p.th.colSpan -= colSpan;
+          p = p.parent;
         }
         h.clickStatus = clickStatusCollapsed;
         h.onClick = expandCol;
@@ -734,18 +760,12 @@
       };
       expandChildCol = function(ch, opts) {
         var chKey, k, len, ref, results;
-        if (ch.leaves !== 0 && (ch.col >= opts.disableFrom || (ch.clickStatus === clickStatusCollapsed && !opts.hideOnExpand) || (ch.clickStatus === clickStatusExpanded && opts.hideOnExpand))) {
-          replaceClass(ch.th, classColHide, classColShow);
-          ch.th.textContent = " " + arrowExpanded + " " + ch.text + " ";
-          ch.th.style.display = "";
-        } else {
-          showChildCol(ch);
-          if (ch.sTh && ch.clickStatus === clickStatusExpanded && opts.hideOnExpand) {
-            replaceClass(ch.sTh, classColShow, classColHide);
-            ch.sTh.style.display = "none";
-          }
+        showChildCol(ch);
+        if (ch.sTh && ch.clickStatus === clickStatusExpanded && opts.hideOnExpand) {
+          replaceClass(ch.sTh, classColShow, classColHide);
+          ch.sTh.style.display = "none";
         }
-        if (ch.clickStatus === clickStatusExpanded) {
+        if (ch.clickStatus === clickStatusExpanded || ch.col >= opts.disableFrom) {
           ref = ch.children;
           results = [];
           for (k = 0, len = ref.length; k < len; k++) {
@@ -757,6 +777,10 @@
       };
       expandCol = function(axisHeaders, h, opts) {
         var ch, chKey, colSpan, k, len, p, ref;
+        if (h.clickStatus === clickStatusExpanded) {
+          adjustAxisHeader(axisHeaders, h.col, opts);
+          return;
+        }
         colSpan = 0;
         ref = h.children;
         for (k = 0, len = ref.length; k < len; k++) {
@@ -766,11 +790,13 @@
           colSpan += ch.th.colSpan;
         }
         h.th.colSpan = colSpan;
-        if (opts.hideOnExpand) {
-          expandHideColSubtotal(h);
-          --colSpan;
-        } else {
-          expandShowColSubtotal(h);
+        if (h.col < opts.disableFrom) {
+          if (opts.hideOnExpand) {
+            expandHideColSubtotal(h);
+            --colSpan;
+          } else {
+            expandShowColSubtotal(h);
+          }
         }
         p = h.parent;
         while (p) {
@@ -923,6 +949,10 @@
       };
       expandRow = function(axisHeaders, h, opts) {
         var ch, chKey, k, len, p, ref, rowSpan;
+        if (h.clickStatus === clickStatusExpanded) {
+          adjustAxisHeader(axisHeaders, h.col, opts);
+          return;
+        }
         rowSpan = 0;
         ref = h.children;
         for (k = 0, len = ref.length; k < len; k++) {
@@ -953,7 +983,7 @@
       };
       collapseAxis = function(axisHeaders, col, attrs, opts) {
         var collapsible, h, i, k, ref, ref1, results;
-        collapsible = attrs.length - 2;
+        collapsible = Math.min(attrs.length - 2, opts.disableFrom - 1);
         if (col > collapsible) {
           return;
         }
@@ -975,7 +1005,8 @@
         return results;
       };
       expandAxis = function(axisHeaders, col, attrs, opts) {
-        var h, i, k, ref, results;
+        var ah, h, i, k, ref, results;
+        ah = axisHeaders.ah[col];
         results = [];
         for (i = k = 0, ref = col; 0 <= ref ? k <= ref : k >= ref; i = 0 <= ref ? ++k : --k) {
           results.push((function() {
@@ -984,9 +1015,7 @@
             results1 = [];
             for (l = 0, len = ref1.length; l < len; l++) {
               h = ref1[l];
-              if (h.clickStatus === clickStatusCollapsed && h.leaves > 1) {
-                results1.push(axisHeaders.expandAttrHeader(axisHeaders, h, opts));
-              }
+              results1.push(axisHeaders.expandAttrHeader(axisHeaders, h, opts));
             }
             return results1;
           })());
@@ -1038,8 +1067,8 @@
         }
         tr = buildColTotalsHeader(rowAttrs, colAttrs);
         buildGrandTotal(tbody, tr);
-        collapseAxis(colAxisHeaders, opts.colSubtotalDisplay.collapseAt, colAttrs, opts);
-        collapseAxis(rowAxisHeaders, opts.rowSubtotalDisplay.collapseAt, rowAttrs, opts);
+        collapseAxis(colAxisHeaders, opts.colSubtotalDisplay.collapseAt, colAttrs, opts.colSubtotalDisplay);
+        collapseAxis(rowAxisHeaders, opts.rowSubtotalDisplay.collapseAt, rowAttrs, opts.rowSubtotalDisplay);
         result.setAttribute("data-numrows", rowKeys.length);
         result.setAttribute("data-numcols", colKeys.length);
         result.style.display = "";
