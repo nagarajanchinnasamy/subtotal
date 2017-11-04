@@ -109,7 +109,7 @@ callWithJQuery ($) ->
         classCollapsed = "collapsed"
 
 
-        opts.rowSubtotalDisplay.displayOnTop = true;
+        # opts.rowSubtotalDisplay.displayOnTop = true;
 
         # Based on http://stackoverflow.com/questions/195951/change-an-elements-class-with-javascript -- Begin
         hasClass = (element, className) ->
@@ -351,7 +351,9 @@ callWithJQuery ($) ->
                 if opts.rowSubtotalDisplay.displayOnTop
                     h.tr.appendChild h.sTh
                 else
+                    h.th.rowSpan += 1 if not opts.rowSubtotalDisplay.hideOnExpand
                     h.sTr = createElement "tr", "row#{h.row} #{hProps.class}"
+                    h.sTr.style.display = "none" if opts.rowSubtotalDisplay.hideOnExpand
                     h.sTr.appendChild h.sTh
                     tbody.appendChild h.sTr
 
@@ -571,85 +573,96 @@ callWithJQuery ($) ->
             axisHeaders.ah[h.col].expandedCount++
             adjustAxisHeader axisHeaders, h.col, opts
 
-        hideDescendantRow = (d, opts) ->
-            d.tr.style.display = "none" if opts.displayOnTop
-            cells = d.tr.getElementsByTagName "td"
+        hideChildRow = (ch, opts) ->
+            ch.tr.style.display = "none"
+            ch.sTr.style.display = "none" if ch.sTr
+            ch.th.style.display = "none"
+            ch.sTh.style.display = "none" if ch.sTh
+            tr = if ch.sTr then ch.sTr else ch.tr
+            cells = tr.getElementsByTagName "td"
             replaceClass cell, classRowShow, classRowHide for cell in cells
-            if not opts.displayOnTop
-                cell.style.display = "none" for cell in cells
-                d.sTh.style.display = "none" if d.sTh
-                d.th.style.display = "none"
 
-        collapseShowRowSubtotal = (h) ->
-            cells = h.tr.getElementsByTagName "td" 
+        collapseShowRowSubtotal = (h, opts) ->
+            h.tr.style.display = ""
+            h.sTr.style.display = "" if h.sTr
+            h.th.style.display = "" 
+            h.th.textContent = " #{arrowCollapsed} #{h.text}"
+            h.th.rowSpan = if opts.displayOnTop then 1 else 2
+            replaceClass h.th, classExpanded, classCollapsed
+            if h.sTh
+                h.sTh.style.display = ""
+                replaceClass h.sTh, classExpanded, classCollapsed
+            tr = if h.sTr then h.sTr else h.tr
+            cells = tr.getElementsByTagName "td" 
             for cell in cells
                 removeClass cell, "#{classExpanded} #{classRowHide}"
                 addClass cell, "#{classCollapsed} #{classRowShow}"
                 cell.style.display = "" if not hasClass cell, classColHide
-            replaceClass h.th, classExpanded, classCollapsed
-            h.th.style.display = "" 
-            h.th.textContent = " #{arrowCollapsed} #{h.text}"
-            h.th.rowSpan = 1
-            replaceClass h.sTh, classExpanded, classCollapsed
-            h.sTh.style.display = ""
-            replaceClass h.tr, classExpanded, classCollapsed
-            h.tr.style.display = ""
 
         collapseChildRow = (ch, h, opts) ->
             collapseChildRow ch[chKey], h, opts for chKey in ch.children
-            hideDescendantRow ch, opts
+            hideChildRow ch, opts
 
         collapseRow = (axisHeaders, h, opts) ->
-            rowSpan = h.th.rowSpan - 1
+            rowSpan = h.th.rowSpan
             collapseChildRow h[chKey], h, opts for chKey in h.children
-            collapseShowRowSubtotal h
-            if opts.displayOnTop
-                p = h.parent
-                while p
-                    p.th.rowSpan -= rowSpan
-                    p = p.parent
+            collapseShowRowSubtotal h, opts
+            diffRowSpan = rowSpan - h.th.rowSpan 
+            p = h.parent
+            while p
+                p.th.rowSpan -= diffRowSpan
+                p = p.parent
             h.clickStatus = clickStatusCollapsed
             h.onClick = expandRow
             axisHeaders.ah[h.col].expandedCount--
             adjustAxisHeader axisHeaders, h.col, opts
 
         showChildRow = (h, opts) ->
-            cells = h.tr.getElementsByTagName "td" 
+            h.tr.style.display = ""
+            h.th.style.display = ""
+            tr = h.tr
+            if ((h.clickStatus is clickStatusExpanded and not opts.hideOnExpand) or h.clickStatus is clickStatusCollapsed)
+                h.sTr.style.display = ""
+                h.sTh.style.display = ""
+                tr = h.sTr
+            cells = tr.getElementsByTagName "td" 
             for cell in cells
                 replaceClass cell, classRowHide, classRowShow
-            if not opts.displayOnTop
-                cell.style.display = "" for cell in cells when not hasClass cell, classColHide
-                h.th.style.display = "" if h.descendants == 0 or h.clickStatus isnt clickStatusCollapsed
-                h.sTh.style.display = "" if h.sTh
-            h.tr.style.display = ""
+                cell.style.display = "" if not hasClass cell, classColHide
 
-        expandShowRowSubtotal = (h) ->
+        expandShowRowSubtotal = (h, opts) ->
+            h.tr.style.display = ""
+            replaceClass h.tr, classCollapsed, classExpanded
+            h.sTr.style.display = "" if h.sTr
+            h.th.style.display = ""
+            replaceClass h.th, classCollapsed, classExpanded
+            h.th.textContent = " #{arrowExpanded} #{h.text}"
+            h.sTh.style.display = "" if h.sTh
+            replaceClass h.sTh, classCollapsed, classExpanded
+            tr = if h.sTr then h.sTr else h.tr
             cells = h.tr.getElementsByTagName "td"
             for cell in cells
                 removeClass cell, "#{classCollapsed} #{classRowHide}"
                 addClass cell, "#{classExpanded} #{classRowShow}" 
                 cell.style.display = "" if not hasClass cell, classColHide
-            replaceClass h.th, classCollapsed, classExpanded
-            h.th.textContent = " #{arrowExpanded} #{h.text}"
-            h.th.style.display = ""
-            h.sTh.style.display = ""
-            replaceClass h.sTh, classCollapsed, classExpanded
-            replaceClass h.tr, classCollapsed, classExpanded
-            h.tr.style.display = ""
 
-        expandHideRowSubtotal = (h) ->
-            cells = h.tr.getElementsByTagName "td"
+        expandHideRowSubtotal = (h, opts) ->
+            h.tr.style.display = ""
+            replaceClass h.tr, classCollapsed, classExpanded
+            h.sTr.style.display = "none" if h.sTr
+            h.th.style.display = ""
+            h.th.textContent = " #{arrowExpanded} #{h.text}"
+            h.sTh.style.display = "none" if h.sTh
+            tr = if h.sTr then h.sTr else h.tr
+            cells = tr.getElementsByTagName "td"
             for cell in cells
                 removeClass cell, "#{classCollapsed} #{classRowShow}"
                 addClass cell, "#{classExpanded} #{classRowHide}"
-            h.th.textContent = " #{arrowExpanded} #{h.text}"
-            h.th.style.display = ""
-            replaceClass h.tr, classCollapsed, classExpanded
-            h.tr.style.display = "none"
 
         expandChildRow = (ch, opts) ->
+            console.warn "#{ch.text}: #{ch.clickStatus}"
             showChildRow ch, opts
-            expandChildRow ch[chKey], opts for chKey in ch.children when ch.clickStatus is clickStatusExpanded
+            expandChildRow ch[chKey], opts for chKey in ch.children if ch.clickStatus is clickStatusExpanded
 
         expandRow = (axisHeaders, h, opts) ->
             if h.clickStatus is clickStatusExpanded
@@ -662,15 +675,16 @@ callWithJQuery ($) ->
                 rowSpan += ch.th.rowSpan
             if h.leaves > 1 
                 if opts.hideOnExpand
-                    expandHideRowSubtotal h
+                    expandHideRowSubtotal h, opts
                 else
-                    expandShowRowSubtotal h
-            if opts.displayOnTop
-                h.th.rowSpan = rowSpan+1
-                p = h.parent
-                while p
-                    p.th.rowSpan += rowSpan
-                    p = p.parent
+                    expandShowRowSubtotal h, opts
+            rowSpan += 1 if not opts.displayOnTop and not opts.hideOnExpand
+            diffRowSpan = rowSpan - h.th.rowSpan + 1
+            h.th.rowSpan = rowSpan+1
+            p = h.parent
+            while p
+                p.th.rowSpan += diffRowSpan
+                p = p.parent
             h.clickStatus = clickStatusExpanded
             h.onClick = collapseRow
             axisHeaders.ah[h.col].expandedCount++
