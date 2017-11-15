@@ -192,7 +192,6 @@ callWithJQuery ($) ->
                     row++
                     return tree
                 tree)
-            console.warn tree
             return tree
 
         buildAxisHeader = (axisHeaders, col, attrs, opts) ->
@@ -621,9 +620,9 @@ callWithJQuery ($) ->
             h.tr.style.display = ""
             h.th.style.display = ""
             tr = h.tr
-            if ((h.clickStatus is clickStatusExpanded and not opts.hideOnExpand) or h.clickStatus is clickStatusCollapsed)
-                h.sTr.style.display = ""
-                h.sTh.style.display = ""
+            if h.leaves > 1 and h.col < opts.disableFrom and ((h.clickStatus is clickStatusExpanded and not opts.hideOnExpand) or h.clickStatus is clickStatusCollapsed) 
+                h.sTr.style.display = "" if h.sTr
+                h.sTh.style.display = "" if h.sTh
                 tr = h.sTr
             cells = tr.getElementsByTagName "td" 
             for cell in cells
@@ -660,9 +659,8 @@ callWithJQuery ($) ->
                 addClass cell, "#{classExpanded} #{classRowHide}"
 
         expandChildRow = (ch, opts) ->
-            console.warn "#{ch.text}: #{ch.clickStatus}"
-            showChildRow ch, opts
             expandChildRow ch[chKey], opts for chKey in ch.children if ch.clickStatus is clickStatusExpanded
+            showChildRow ch, opts
 
         expandRow = (axisHeaders, h, opts) ->
             if h.clickStatus is clickStatusExpanded

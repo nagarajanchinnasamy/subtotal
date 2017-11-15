@@ -319,7 +319,6 @@
             return tree;
           };
         })(this), tree);
-        console.warn(tree);
         return tree;
       };
       buildAxisHeader = function(axisHeaders, col, attrs, opts) {
@@ -895,9 +894,13 @@
         h.tr.style.display = "";
         h.th.style.display = "";
         tr = h.tr;
-        if ((h.clickStatus === clickStatusExpanded && !opts.hideOnExpand) || h.clickStatus === clickStatusCollapsed) {
-          h.sTr.style.display = "";
-          h.sTh.style.display = "";
+        if (h.leaves > 1 && h.col < opts.disableFrom && ((h.clickStatus === clickStatusExpanded && !opts.hideOnExpand) || h.clickStatus === clickStatusCollapsed)) {
+          if (h.sTr) {
+            h.sTr.style.display = "";
+          }
+          if (h.sTh) {
+            h.sTh.style.display = "";
+          }
           tr = h.sTr;
         }
         cells = tr.getElementsByTagName("td");
@@ -965,18 +968,15 @@
         return results;
       };
       expandChildRow = function(ch, opts) {
-        var chKey, k, len, ref, results;
-        console.warn(ch.text + ": " + ch.clickStatus);
-        showChildRow(ch, opts);
+        var chKey, k, len, ref;
         if (ch.clickStatus === clickStatusExpanded) {
           ref = ch.children;
-          results = [];
           for (k = 0, len = ref.length; k < len; k++) {
             chKey = ref[k];
-            results.push(expandChildRow(ch[chKey], opts));
+            expandChildRow(ch[chKey], opts);
           }
-          return results;
         }
+        return showChildRow(ch, opts);
       };
       expandRow = function(axisHeaders, h, opts) {
         var ch, chKey, diffRowSpan, k, len, p, ref, rowSpan;
