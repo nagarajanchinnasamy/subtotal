@@ -53,8 +53,19 @@ $(function(){
             cols: ["Party", "Age"],
             renderer: $.pivotUtilities.subtotal_renderers["Table With Subtotal"],
             rendererOptions: {
-                collapseRowsAt: 1,
-                collapseColsAt: 0
+                // rowSubtotalDisplay: {
+                    // displayOnTop: true,
+                    // disableExpandCollapse: true,
+                    // hideOnExpand: true,
+                    // collapseAt: 0,
+                    // disableFrom: 1 
+                // },
+                // colSubtotalDisplay: {
+                    // hideOnExpand: true,
+                    // collapseAt: 0,
+                    // disableFrom: 1,
+                    // disableExpandCollapse: true
+                // }
             }
         });
     });
@@ -78,7 +89,19 @@ $(function(){
             renderers: $.pivotUtilities.subtotal_renderers,
             rendererName: "Table With Subtotal",
             rendererOptions: {
-                collapseColsAt: 0
+                // rowSubtotalDisplay: {
+                    // displayOnTop: true,
+                    // disableExpandCollapse: true,
+                    // hideOnExpand: true,
+                    // collapseAt: 0,
+                    // disableFrom: 1 
+                // },
+                // colSubtotalDisplay: {
+                    // hideOnExpand: true,
+                    // collapseAt: 0,
+                    // disableFrom: 1,
+                    // disableExpandCollapse: true
+                // }
             }
         });
     });
