@@ -552,12 +552,12 @@
           if (!(rh.col === rowAttrs.length - 1 || (rh.leaves !== 1 && rh.col < opts.rowSubtotalDisplay.disableFrom))) {
             continue;
           }
-          rCls = "pvtVal row" + rh.row + " rowcol" + rh.col + " " + classExpanded;
+          rCls = "pvtVal row" + rh.row + " rowcol" + rh.col + " " + classExpanded + " " + classRowShow;
           if (rh.leaves > 0) {
             rCls += " pvtRowSubtotal";
-            if (opts.rowSubtotalDisplay.hideOnExpand) {
-              rCls += " " + classRowHide;
-            }
+            rCls += opts.rowSubtotalDisplay.hideOnExpand ? " " + classRowHide : "  " + classRowShow;
+          } else {
+            rCls += " " + classColShow;
           }
           tr = rh.sTr ? rh.sTr : rh.tr;
           for (l = 0, len1 = colAttrHeaders.length; l < len1; l++) {
@@ -577,9 +577,9 @@
             cls = " " + rCls + " col" + ch.row + " colcol" + ch.col;
             if (ch.leaves > 0) {
               cls += " pvtColSubtotal " + classExpanded;
-              if (opts.colSubtotalDisplay.hideOnExpand) {
-                cls += " " + classColHide;
-              }
+              cls += opts.colSubtotalDisplay.hideOnExpand ? " " + classColHide : " " + classColShow;
+            } else {
+              cls += " " + classColShow;
             }
             td = createElement("td", cls, aggregator.format(val), {
               "data-value": val,
@@ -724,8 +724,10 @@
             collapseChildCol(h[chKey], h);
           }
         }
+        console.warn("col: " + h.col + " disableFrom: " + opts.disableFrom);
         if (h.col < opts.disableFrom) {
           if (hasClass(h.th, classColHide)) {
+            console.warn("am here");
             collapseHiddenColSubtotal(h, opts);
           } else {
             collapseShowColSubtotal(h, opts);
@@ -890,7 +892,7 @@
         var cell, cells, k, len, ref, results, tr;
         h.tr.style.display = "";
         h.th.style.display = "";
-        if ((h.clickStatus === clickStatusExpanded && opts.hideOnExpand) || (h.leaves > 1 && h.col >= opts.disableFrom)) {
+        if (h.leaves > 1 && ((h.clickStatus === clickStatusExpanded && opts.hideOnExpand) || h.col >= opts.disableFrom)) {
           return;
         }
         tr = h.tr;

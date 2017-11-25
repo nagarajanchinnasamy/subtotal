@@ -367,10 +367,12 @@ callWithJQuery ($) ->
 
         buildValues = (tbody, colAttrHeaders, rowAttrHeaders, rowAttrs, colAttrs, opts) ->
             for rh in rowAttrHeaders when rh.col is rowAttrs.length-1 or (rh.leaves isnt 1 and rh.col < opts.rowSubtotalDisplay.disableFrom)
-                rCls = "pvtVal row#{rh.row} rowcol#{rh.col} #{classExpanded}"
+                rCls = "pvtVal row#{rh.row} rowcol#{rh.col} #{classExpanded} #{classRowShow}"
                 if rh.leaves > 0
                     rCls += " pvtRowSubtotal"
-                    rCls += " #{classRowHide}" if opts.rowSubtotalDisplay.hideOnExpand
+                    rCls += if opts.rowSubtotalDisplay.hideOnExpand then " #{classRowHide}" else "  #{classRowShow}"
+                else
+                    rCls += " #{classColShow}"
                 tr = if rh.sTr then rh.sTr else rh.tr
                 for ch in colAttrHeaders when ch.leaves isnt 1 and ch.col < opts.colSubtotalDisplay.disableFrom
                     aggregator = tree[rh.flatKey][ch.flatKey] ? {value: (-> null), format: -> ""}
@@ -378,7 +380,9 @@ callWithJQuery ($) ->
                     cls = " #{rCls} col#{ch.row} colcol#{ch.col}"
                     if ch.leaves > 0
                         cls += " pvtColSubtotal #{classExpanded}"
-                        cls += " #{classColHide}" if opts.colSubtotalDisplay.hideOnExpand
+                        cls += if opts.colSubtotalDisplay.hideOnExpand then " #{classColHide}" else " #{classColShow}"
+                    else
+                        cls += " #{classColShow}"
                     td = createElement "td", cls, aggregator.format(val),
                         "data-value": val
                         "data-rownode": rh.node
@@ -486,8 +490,10 @@ callWithJQuery ($) ->
         collapseCol = (axisHeaders, h, opts) ->
             colSpan = h.th.colSpan - 1
             collapseChildCol h[chKey], h for chKey in h.children when hasClass h[chKey].th, classColShow
+            console.warn "col: #{h.col} disableFrom: #{opts.disableFrom}"
             if h.col < opts.disableFrom
                 if hasClass h.th, classColHide
+                    console.warn "am here"
                     collapseHiddenColSubtotal h, opts
                 else 
                     collapseShowColSubtotal h, opts
@@ -610,7 +616,7 @@ callWithJQuery ($) ->
         showChildRow = (h, opts) ->
             h.tr.style.display = ""
             h.th.style.display = ""
-            return if (h.clickStatus is clickStatusExpanded and opts.hideOnExpand) or (h.leaves > 1 and h.col >= opts.disableFrom)
+            return if h.leaves > 1 and ((h.clickStatus is clickStatusExpanded and opts.hideOnExpand) or h.col >= opts.disableFrom)
             tr = h.tr
             if h.sTr
                 h.sTr.style.display = ""
