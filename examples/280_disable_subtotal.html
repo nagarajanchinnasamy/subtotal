@@ -31,16 +31,16 @@
         $.getJSON("data/mps.json", function(mps) {
             $("#output").pivotUI(mps, {
                 dataClass: dataClass,
-                rows: ["Gender", "Province"],
-                cols: ["Party", "Age"],
+                rows: ["Age", "Name"],
+                cols: ["Gender", "Party", "Province"],
                 renderers: renderers,
                 rendererName: "Table With Subtotal",
                 rendererOptions: {
                     rowSubtotalDisplay: {
-                        disableSubtotal: true
+                        disableFrom: 0
                     },
                     colSubtotalDisplay: {
-                        disableSubtotal: true
+                        disableFrom: 1
                     }
                 }
             });

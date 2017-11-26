@@ -35,7 +35,7 @@
             $("#output").pivotUI(mps, {
                 dataClass: dataClass,
                 rows: ["Gender", "Province", "Age Bin", "Party"],
-                cols: ["Age", "Gender Imbalance"],
+                cols: ["Gender Imbalance", "Age"],
                 renderers: renderers,
                 derivedAttributes: {
                     "Age Bin": derivers.bin("Age", 10),
@@ -45,12 +45,11 @@
                 },
                 rendererName: "Table With Subtotal",
                 rendererOptions: {
-                    // collapseRowsAt: 1,
-                    // collapseColsAt: 0,
-                    rowSubtotalDisplay: {
-                        // hideOnExpand: true,
-                        // disableAfter: 1, 
-                        displayOnTop: false
+                   rowSubtotalDisplay: {
+                        collapseAt: 0
+                    },
+                    colSubtotalDisplay: {
+                        collapseAt: 0
                     }
                 }
             });

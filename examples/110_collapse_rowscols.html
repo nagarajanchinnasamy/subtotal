@@ -35,8 +35,12 @@
                 cols: ["Party", "Age"],
                 renderer: renderer,
                 rendererOptions: {
-                    // collapseColsAt: 0, 
-                    collapseRowsAt: 0 
+                    rowSubtotalDisplay: {
+                        collapseAt: 0
+                    },
+                    colSubtotalDisplay: {
+                        collapseAt: 0
+                    }
                 }
             });
         });

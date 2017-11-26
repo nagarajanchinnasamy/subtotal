@@ -12,7 +12,7 @@
 
         <!-- subtotal.js libs from ../dist -->
         <script type="text/javascript" src="../dist/subtotal.js"></script>
-        <!-- <link rel="stylesheet" type="text/css" href="../dist/subtotal.css"> -->
+        <link rel="stylesheet" type="text/css" href="../dist/subtotal.css">
 
         <!-- optional: mobile support with jqueryui-touch-punch -->
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
@@ -20,27 +20,9 @@
         <!-- for examples only! script to show code to user -->
         <script type="text/javascript" src="js/show_code.js"></script>
     </head>
-    <style>
-        body {
-            font-family: Verdana;
-        }
-        table.pvtTable tbody tr th.pvtRowLabel {
-            white-space: nowrap;
-        }
-        table.pvtTable thead tr th.pvtColLabel {
-            white-space: nowrap;
-        }
-        table.pvtTable tr .rowhide {
-            display: none;
-        }
-
-        table.pvtTable tr .colhide {
-            display: none;
-        }
-    </style>
     <body>
     <script type="text/javascript">
-    // This example loads the "Canadian Parliament 2012" dataset
+    // This example demonstrates displaying row subtotal at the bottom (instead of on top) 
 
     $(function() {
         var dataClass = $.pivotUtilities.SubtotalPivotData;
@@ -49,10 +31,15 @@
         $.getJSON("data/mps.json", function(mps) {
             $("#output").pivotUI(mps, {
                 dataClass: dataClass,
-                rows: ["Gender", "Province"],
-                cols: ["Party", "Age"],
+                rows: ["Gender", "Party", "Province"],
+                cols: ["Age", "Name"],
                 renderers: renderers,
-                rendererName: "Table With Subtotal"
+                rendererName: "Table With Subtotal",
+                rendererOptions: {
+                    rowSubtotalDisplay: {
+                        displayOnTop: false
+                    }
+                }
             });
         });
     });

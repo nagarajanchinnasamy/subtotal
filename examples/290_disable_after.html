@@ -22,7 +22,7 @@
     </head>
     <body>
     <script type="text/javascript">
-    // This example demonstrates disabling expand collapse operations 
+    // This example demonstrates disabling subtotal feature from a specific level 
 
     $(function() {
         var dataClass = $.pivotUtilities.SubtotalPivotData;
@@ -31,16 +31,16 @@
         $.getJSON("data/mps.json", function(mps) {
             $("#output").pivotUI(mps, {
                 dataClass: dataClass,
-                rows: ["Gender", "Province"],
-                cols: ["Party", "Age"],
+                rows: ["Gender", "Party", "Province"],
+                cols: ["Age", "Name"],
                 renderers: renderers,
                 rendererName: "Table With Subtotal",
                 rendererOptions: {
                     rowSubtotalDisplay: {
-                        disableAfter: 0
+                        disableFrom: 1
                     },
                     colSubtotalDisplay: {
-                        disableAfter: 0
+                        disableFrom: 0
                     }
                 }
             });

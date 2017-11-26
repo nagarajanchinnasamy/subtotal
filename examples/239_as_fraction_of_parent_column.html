@@ -22,7 +22,7 @@
     </head>
     <body>
     <script type="text/javascript">
-    // This example demonstrates Count / Sum As Fraction Of Parent Column aggregators.
+    // This example demonstrates Count (or Sum) As Fraction Of Parent Column aggregators.
 
     $(function() {
         var dataClass = $.pivotUtilities.SubtotalPivotData;
@@ -41,7 +41,12 @@
                 renderers: renderers,
                 rendererName: "Table With Subtotal",
                 rendererOptions: {
-                    collapseColsAt: 0
+                    rowSubtotalDisplay: {
+                        collapseAt: 0
+                    },
+                    colSubtotalDisplay: {
+                        collapseAt: 0
+                    }
                 }
             });
         });

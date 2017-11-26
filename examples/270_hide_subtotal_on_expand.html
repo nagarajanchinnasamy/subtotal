@@ -32,13 +32,12 @@
             $("#output").pivotUI(mps, {
                 dataClass: dataClass,
                 rows: ["Gender", "Party"],
-                cols: ["Age", "Province"],
+                cols: ["Province", "Age"],
                 renderers: renderers,
                 rendererName: "Table With Subtotal",
                 rendererOptions: {
                     rowSubtotalDisplay: {
-                        hideOnExpand: true,
-                        displayOnTop: false
+                        hideOnExpand: true
                     },
                     colSubtotalDisplay: {
                         hideOnExpand: true

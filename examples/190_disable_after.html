@@ -31,15 +31,15 @@
         $.getJSON("data/mps.json", function(mps) {
             $("#output").pivot(mps, {
                 dataClass: dataClass,
-                rows: ["Gender", "Province"],
-                cols: ["Party", "Age"],
+                rows: ["Gender", "Party", "Province"],
+                cols: ["Age", "Name"],
                 renderer: renderer,
                 rendererOptions: {
                     rowSubtotalDisplay: {
-                        disableAfter: 0
+                        disableFrom: 1
                     },
                     colSubtotalDisplay: {
-                        disableAfter: 0
+                        disableFrom: 0
                     }
                 }
             });

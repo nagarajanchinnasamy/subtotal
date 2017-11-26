@@ -19,6 +19,18 @@
         <!-- for examples only! script to show code to user -->
         <script type="text/javascript" src="js/show_code.js"></script>
     </head>
+    <style>
+        body {
+            font-family: Verdana;
+        }
+        table.pvtTable tr .rowhide {
+            display: none;
+        }
+
+        table.pvtTable tr .colhide {
+            display: none;
+        }
+    </style>
     <body>
     <script type="text/javascript">
     // This example demonstrates table event handlers to perform onclick drill-down
@@ -36,8 +48,6 @@
                 aggregator: aggregator,
                 renderer: renderer,
                 rendererOptions: {
-                    collapseRowsAt: 0,
-                    collapseColsAt: 1,
                     table: {
                         eventHandlers: {
                             "click": function(e, value, filters, pivotData) {

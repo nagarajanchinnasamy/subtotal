@@ -1,52 +1,83 @@
-
     body {
-	font-family: Verdana;
+        font-family: Verdana;
     }
 
-    table.pvtTable .pvtRowLabel {
-	    vertical-align: top;
+    /* AxisLabel */
+    table.pvtTable .pvtAxisLabel {
 	    white-space: nowrap;
-        /* border: 0; */
+    }
+    table.pvtTable .pvtAxisLabel.expanded {
+	    white-space: nowrap;
+	    cursor: zoom-out !important;
+    }
+    table.pvtTable .pvtAxisLabel.collapsed {
+	    white-space: nowrap;
+	    cursor: zoom-in !important;
+    }
+
+    /* RowLabel */
+    table.pvtTable tbody tr th.pvtRowLabel {
+	    vertical-align: top !important;
+	    white-space: nowrap !important;
+        background-color: white !important;
+        border-width: 0px 0px thin 0px !important;
+    }
+    table.pvtTable tbody tr th.pvtRowLabel.rowexpanded {
+	    cursor: zoom-out !important;
+    }
+    table.pvtTable tbody tr th.pvtRowLabel.rowcollapsed {
+	    cursor: zoom-in !important;
+    }
+
+    /* RowLabelFiller */
+    table.pvtTable .pvtRowLabelFiller {
         background-color: white;
         border-width: 0px 0px thin 0px !important;
     }
 
-    table.pvtTable .pvtRowLabelFiller {
-        background-color: white;
-        /* border: 0; */
+    /* RowSubtotal */
+    table.pvtTable .pvtRowSubtotal {
+        font-weight:bold;
     }
-
-    table.pvtTable .pvtRowSubtotal.rowcollapsed {
+    table.pvtTable tr td.pvtRowSubtotal.rowcollapsed {
 	    background-color: #EFEFEF !important;
     }
 
-    table.pvtTable .pvtColLabel {
+    /* ColLabel */
+    table.pvtTable thead tr th.pvtColLabel {
 	    white-space: nowrap;
     }
+    table.pvtTable thead tr th.pvtColLabel.colexpanded {
+	    cursor: zoom-out !important;
+    }
+    table.pvtTable thead tr th.pvtColLabel.colcollapsed {
+	    cursor: zoom-in !important;
+    }
 
+    /* ColLabelFiller */
     table.pvtTable .pvtColLabelFiller {
-        background-color: white;
-        /* border: 0; */
+        background-color: #EFEFEF !important;
     }
 
-    table.pvtTable .pvtColSubtotal.colcollapsed {
+    /* ColSubtotal */
+    table.pvtTable .pvtColSubtotal {
+        font-weight:bold;
+    }
+    table.pvtTable tr td.pvtColSubtotal {
 	    background-color: #EFEFEF !important;
     }
 
-    table.pvtTable .pvtAxisLabel {
-	    white-space: nowrap;
+
+    /*
+    *
+    * IMPORTANT: Please do not remove the lines below this point
+    *
+    */
+    table.pvtTable tr .rowhide {
+        display: none;
     }
 
-    .pvtRowSubtotal {
-	    /* background-color: #EFEFEF !important; */
-	    font-weight:bold;
+    table.pvtTable tr .colhide {
+        display: none;
     }
 
-    .pvtColSubtotal {
-	    /* background-color: #EFEFEF !important; */
-	font-weight:bold;
-    }
-
-    .expanded {
-	    cursor: pointer
-    }
