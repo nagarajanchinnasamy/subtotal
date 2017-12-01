@@ -374,7 +374,7 @@
       getHeaderText = function(h, attrs, opts) {
         var arrow;
         arrow = " " + arrowExpanded + " ";
-        if (h.col === attrs.length - 1 || h.col >= opts.disableFrom || opts.disableExpandCollapse || h.leaves === 1) {
+        if (h.col === attrs.length - 1 || h.col >= opts.disableFrom || opts.disableExpandCollapse || h.children.length === 0) {
           arrow = "";
         }
         return "" + arrow + h.text;
@@ -399,7 +399,7 @@
           h.th.rowSpan = 2;
         }
         h.th.textContent = getHeaderText(h, colAttrs, opts.colSubtotalDisplay);
-        if (h.leaves > 1 && h.col < opts.colSubtotalDisplay.disableFrom) {
+        if (h.children.length !== 0 && h.col < opts.colSubtotalDisplay.disableFrom) {
           ah.expandables++;
           ah.expandedCount += 1;
           if (!opts.colSubtotalDisplay.hideOnExpand) {
@@ -458,20 +458,14 @@
           h.th.rowSpan = h.childrenSpan;
         }
         h.th.textContent = getHeaderText(h, rowAttrs, opts.rowSubtotalDisplay);
-        if (h.leaves === 1) {
-          h.tr = firstChild.tr;
-          h.tr.insertBefore(h.th, firstChild.th);
-          h.sTh = firstChild.sTh;
+        h.tr = createElement("tr", "row" + h.row);
+        h.tr.appendChild(h.th);
+        if (h.children.length === 0) {
+          tbody.appendChild(h.tr);
         } else {
-          h.tr = createElement("tr", "row" + h.row);
-          h.tr.appendChild(h.th);
-          if (h.leaves === 0) {
-            tbody.appendChild(h.tr);
-          } else {
-            tbody.insertBefore(h.tr, firstChild.tr);
-          }
+          tbody.insertBefore(h.tr, firstChild.tr);
         }
-        if (h.leaves > 1 && h.col < opts.rowSubtotalDisplay.disableFrom) {
+        if (h.children.length !== 0 && h.col < opts.rowSubtotalDisplay.disableFrom) {
           ++ah.expandedCount;
           ++ah.expandables;
           if (!opts.rowSubtotalDisplay.disableExpandCollapse) {
@@ -495,7 +489,7 @@
             tbody.appendChild(h.sTr);
           }
         }
-        if (h.leaves > 1) {
+        if (h.children.length !== 0) {
           h.th.rowSpan++;
         }
         if ((ref1 = h.parent) != null) {
@@ -541,11 +535,11 @@
         results = [];
         for (k = 0, len = rowAttrHeaders.length; k < len; k++) {
           rh = rowAttrHeaders[k];
-          if (!(rh.col === rowAttrs.length - 1 || (rh.leaves !== 1 && rh.col < opts.rowSubtotalDisplay.disableFrom))) {
+          if (!(rh.col === rowAttrs.length - 1 || (rh.children.length !== 0 && rh.col < opts.rowSubtotalDisplay.disableFrom))) {
             continue;
           }
           rCls = "pvtVal row" + rh.row + " rowcol" + rh.col + " " + classRowExpanded;
-          if (rh.leaves > 0) {
+          if (rh.children.length > 0) {
             rCls += " pvtRowSubtotal";
             rCls += opts.rowSubtotalDisplay.hideOnExpand ? " " + classRowHide : "  " + classRowShow;
           } else {
@@ -554,7 +548,7 @@
           tr = rh.sTr ? rh.sTr : rh.tr;
           for (l = 0, len1 = colAttrHeaders.length; l < len1; l++) {
             ch = colAttrHeaders[l];
-            if (!(ch.col === colAttrs.length - 1 || (ch.leaves !== 1 && ch.col < opts.colSubtotalDisplay.disableFrom))) {
+            if (!(ch.col === colAttrs.length - 1 || (ch.children.length !== 0 && ch.col < opts.colSubtotalDisplay.disableFrom))) {
               continue;
             }
             aggregator = (ref = tree[rh.flatKey][ch.flatKey]) != null ? ref : {
@@ -567,7 +561,7 @@
             };
             val = aggregator.value();
             cls = " " + rCls + " col" + ch.row + " colcol" + ch.col + " " + classColExpanded;
-            if (ch.leaves > 0) {
+            if (ch.children.length > 0) {
               cls += " pvtColSubtotal";
               cls += opts.colSubtotalDisplay.hideOnExpand ? " " + classColHide : " " + classColShow;
             } else {
@@ -608,12 +602,15 @@
         results = [];
         for (k = 0, len = attrHeaders.length; k < len; k++) {
           h = attrHeaders[k];
-          if (!(h.col === colAttrs.length - 1 || (h.leaves !== 1 && h.col < opts.colSubtotalDisplay.disableFrom))) {
+          if (!(h.col === colAttrs.length - 1 || (h.children.length !== 0 && h.col < opts.colSubtotalDisplay.disableFrom))) {
             continue;
           }
           clsNames = "pvtVal pvtTotal colTotal " + classColExpanded + " col" + h.row + " colcol" + h.col;
-          if (h.leaves !== 0) {
+          if (h.children.length !== 0) {
             clsNames += " pvtColSubtotal";
+            clsNames += opts.colSubtotalDisplay.hideOnExpand ? " " + classColHide : " " + classColShow;
+          } else {
+            clsNames += " " + classColShow;
           }
           totalAggregator = colTotals[h.flatKey];
           val = totalAggregator.value();
@@ -669,14 +666,14 @@
       };
       collapseHiddenColSubtotal = function(h, opts) {
         $(h.th).closest('table.pvtTable').find("tbody tr td[data-colnode=\"" + h.node + "\"], th[data-colnode=\"" + h.node + "\"]").removeClass(classColExpanded).addClass(classColCollapsed);
-        if (h.leaves > 1) {
+        if (h.children.length !== 0) {
           h.th.textContent = " " + arrowCollapsed + " " + h.text;
         }
         return h.th.colSpan = 1;
       };
       collapseShowColSubtotal = function(h, opts) {
         $(h.th).closest('table.pvtTable').find("tbody tr td[data-colnode=\"" + h.node + "\"], th[data-colnode=\"" + h.node + "\"]").removeClass(classColExpanded).addClass(classColCollapsed).removeClass(classColHide).addClass(classColShow);
-        if (h.leaves > 1) {
+        if (h.children.length !== 0) {
           h.th.textContent = " " + arrowCollapsed + " " + h.text;
         }
         return h.th.colSpan = 1;
@@ -734,7 +731,11 @@
       };
       expandChildCol = function(ch, opts) {
         var chKey, k, len, ref, results;
-        showChildCol(ch);
+        if (ch.children.length !== 0 && opts.hideOnExpand && ch.clickStatus === clickStatusExpanded) {
+          replaceClass(ch.th, classColHide, classColShow);
+        } else {
+          showChildCol(ch);
+        }
         if (ch.sTh && ch.clickStatus === clickStatusExpanded && opts.hideOnExpand) {
           replaceClass(ch.sTh, classColShow, classColHide);
         }
@@ -766,6 +767,7 @@
         if (h.col < opts.disableFrom) {
           if (opts.hideOnExpand) {
             expandHideColSubtotal(h);
+            --colSpan;
           } else {
             expandShowColSubtotal(h);
           }
@@ -899,15 +901,24 @@
         }
       };
       expandChildRow = function(ch, opts) {
-        var chKey, k, len, ref;
-        if (ch.clickStatus === clickStatusExpanded) {
+        var chKey, k, len, ref, results;
+        if (ch.children.length !== 0 && opts.hideOnExpand && ch.clickStatus === clickStatusExpanded) {
+          replaceClass(ch.th, classRowHide, classRowShow);
+        } else {
+          showChildRow(ch, opts);
+        }
+        if (ch.sTh && ch.clickStatus === clickStatusExpanded && opts.hideOnExpand) {
+          replaceClass(ch.sTh, classRowShow, classRowHide);
+        }
+        if (ch.clickStatus === clickStatusExpanded || ch.col >= opts.disableFrom) {
           ref = ch.children;
+          results = [];
           for (k = 0, len = ref.length; k < len; k++) {
             chKey = ref[k];
-            expandChildRow(ch[chKey], opts);
+            results.push(expandChildRow(ch[chKey], opts));
           }
+          return results;
         }
-        return showChildRow(ch, opts);
       };
       expandRow = function(axisHeaders, h, opts) {
         var ch, chKey, k, len, ref;
@@ -921,7 +932,7 @@
           ch = h[chKey];
           expandChildRow(ch, opts);
         }
-        if (h.leaves > 1) {
+        if (h.children.length !== 0) {
           if (opts.hideOnExpand) {
             expandHideRowSubtotal(h, opts);
           } else {
@@ -947,7 +958,7 @@
             results1 = [];
             for (l = 0, len = ref2.length; l < len; l++) {
               h = ref2[l];
-              if (h.clickStatus === clickStatusExpanded && h.leaves > 1) {
+              if (h.clickStatus === clickStatusExpanded && h.children.length !== 0) {
                 results1.push(axisHeaders.collapseAttrHeader(axisHeaders, h, opts));
               }
             }

@@ -143,11 +143,11 @@ describe "$.pivotUI()", ->
                 expect table.find("th.pvtAxisLabel").length
                 .toBe  4 
                 expect table.find("th.pvtAxisLabel.collapsed").length
-                .toBe  2 
-                expect table.find("th.pvtRowLabel.rowcollapsed").length
                 .toBe  4 
+                expect table.find("th.pvtRowLabel.rowcollapsed").length
+                .toBe  2
                 expect table.find("th.pvtColLabel.colcollapsed").length
-                .toBe  20 
+                .toBe  10 
                 expect table.find("th.pvtTotalLabel.rowTotal").length
                 .toBe  1 
                 expect table.find("th.pvtTotalLabel.colTotal").length
@@ -233,20 +233,20 @@ describe "$.pivotUI()", ->
         describe "its renderer output", ->
             it "has the correct type and number of cells", (done) ->
                 expect table.find("th.pvtAxisLabel").length
-                .toBe  6 
+                .toBe  6
                 expect table.find("th.pvtAxisLabel.collapsed").length
-                .toBe  0 
+                .toBe  0
                 expect table.find("th.pvtRowLabel.rowshow.rowcollapsed").length
-                .toBe  0 
+                .toBe  0
                 expect table.find("th.pvtColLabel.colshow.colcollapsed").length
-                .toBe  0 
+                .toBe  0
                 expect table.find("th.pvtRowLabel.rowshow.rowexpanded").length
-                .toBe  14 
+                .toBe  28
                 expect table.find("th.pvtColLabel.colshow.colexpanded").length
-                .toBe  9 
-                expect table.find("th.pvtRowSubtotal.rowhide.rowexpanded").length
-                .toBe  14 
-                expect table.find("th.pvtColSubtotal.colhide.colexpanded").length
+                .toBe  17
+                expect table.find("th.pvtRowLabelFiller.rowhide.rowexpanded").length
+                .toBe  14
+                expect table.find("th.pvtColLabelFiller.colhide.colexpanded").length
                 .toBe  9 
                 expect table.find("td.pvtColSubtotal.pvtRowSubtotal.colhide.colexpanded.rowhide.rowexpanded").length
                 .toBe  9*14 
@@ -257,7 +257,7 @@ describe "$.pivotUI()", ->
                 expect table.find("td.pvtTotal.rowTotal.pvtRowSubtotal").length
                 .toBe  14 
                 expect table.find("td.pvtTotal.colTotal.pvtColSubtotal").length
-                .toBe  9 
+                .toBe  9
                 expect table.find("td.pvtGrandTotal").length
                 .toBe  1 
                 done()
@@ -272,7 +272,7 @@ describe "$.pivotUI()", ->
             it "has a correct spot-checked cell with data value", (done) ->
                 expect table.find("td.pvtVal.rowshow.colshow.row10.col5.rowcol2.colcol2").text()
                 .toBe  "100.0%"
-                expect table.find("td.pvtVal[data-rownode=\"3\"][data-colnode=\"6\"]").text()
+                expect table.find("td.pvtVal[data-rownode=\"1\"][data-colnode=\"6\"]").text()
                 .toBe  "50.0%"
                 done()
 
@@ -329,13 +329,13 @@ describe "$.pivot()", ->
                 expect table.find("th.collapsed").length
                 .toBe  0 
                 expect table.find("th.expanded, th.rowexpanded, th.colexpanded").length
-                .toBe  2+4+20 
+                .toBe  4+(2*5)+(10*2)+12 
                 expect table.find("th.pvtAxisLabel.expanded").length
-                .toBe  2 
+                .toBe  4
                 expect table.find("th.pvtRowLabel.rowexpanded").length
-                .toBe  4 
+                .toBe  8
                 expect table.find("th.pvtColLabel.colexpanded").length
-                .toBe  20 
+                .toBe  22 
                 expect table.find("th.pvtTotalLabel.rowTotal").length
                 .toBe  1 
                 expect table.find("th.pvtTotalLabel.colTotal").length
