@@ -17,11 +17,11 @@ You can see the live demo at [examples page](http://nagarajanchinnasamy.com/subt
 
 ## How can I get started?
 
-To know how to load and use this library, please refer to [Getting Started Wiki Page](https://github.com/nagarajanchinnasamy/subtotal/blob/v1-11.0/docs/Getting-Started.md)
+To know how to load and use this library, please refer to [Getting Started Wiki Page](https://github.com/nagarajanchinnasamy/subtotal/wiki/Getting-Started)
 
 ## API Documentation?
 
-Please refer to [Wiki Pages](https://github.com/nagarajanchinnasamy/subtotal/blob/v1-11.0/docs/Home.md)
+Please refer to [Wiki Pages](https://github.com/nagarajanchinnasamy/subtotal/wiki)
 
 ## How can I build the code and run the tests?
 
