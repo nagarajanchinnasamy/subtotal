@@ -7,8 +7,8 @@
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
 
         <!-- PivotTable.js libs from ../dist -->
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.7.0/pivot.min.js"></script>
-        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.7.0/pivot.min.css">
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.14.0/pivot.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.14.0/pivot.min.css">
 
         <!-- subtotal.js libs from ../dist -->
         <script type="text/javascript" src="../dist/subtotal.js"></script>
@@ -22,7 +22,7 @@
     </head>
     <body>
     <script type="text/javascript">
-    // This example demonstrates Count / Sum As Fraction Of Parent Column aggregators.
+    // This example demonstrates Count (or Sum) As Fraction Of Parent Column aggregators.
 
     $(function() {
         var dataClass = $.pivotUtilities.SubtotalPivotData;
@@ -41,7 +41,12 @@
                 renderers: renderers,
                 rendererName: "Table With Subtotal",
                 rendererOptions: {
-                    collapseColsAt: 0
+                    rowSubtotalDisplay: {
+                        collapseAt: 0
+                    },
+                    colSubtotalDisplay: {
+                        collapseAt: 0
+                    }
                 }
             });
         });

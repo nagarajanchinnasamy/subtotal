@@ -1,20 +1,13 @@
-[![npm](http://nagarajanchinnasamy.com/subtotal/images/subtotal_npm.svg)](https://www.npmjs.com/package/subtotal) [![tests](http://nagarajanchinnasamy.com/subtotal/images/subtotal_tests.svg)](http://nagarajanchinnasamy.com/subtotal/tests/) [![license](http://nagarajanchinnasamy.com/subtotal/images/subtotal_license.svg)](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/blob/master/LICENSE)
+[![npm](http://nagarajanchinnasamy.com/subtotal/images/subtotal_npm.svg)](https://www.npmjs.com/package/subtotal) [![tests](http://nagarajanchinnasamy.com/subtotal/images/subtotal_tests.svg)](http://nagarajanchinnasamy.com/subtotal/tests/) [![license](http://nagarajanchinnasamy.com/subtotal/images/subtotal_license.svg)](https://github.com/nagarajanchinnasamy/subtotal/blob/master/LICENSE)
 
 
 # Subtotal.js
 
-[Subtotal.js](http://nagarajanchinnasamy.com/subtotal) is an open-source JavaScript plugin for **PivotTable.js** . Subtotal.js renders rows and columns of a pivot table with subtotals and lets the user to expand or collapse rows and columns. Its originally written by [Nagarajan Chinnasamy](https://github.com/nagarajanchinnasamy/) at [Mindtree](http://mindtree.com/).
+[Subtotal.js](http://nagarajanchinnasamy.com/subtotal) is a JavaScript plugin for [PivotTable.js](https://pivottable.js.org/examples/). It renders rows and columns of a pivot table with subtotals and lets the user expand or collapse rows and columns.
 
 
-It is available under an MIT license from [NPM](https://www.npmjs.com/package/subtotal) and [Bower](http://bower.io/) under the name `subtotal`. On [packagist.org](https://packagist.org/), it is `nagarajanchinnasamy/subtotal`.
+Subtotal.js is available under an MIT license from [NPM](https://www.npmjs.com/package/subtotal) and [Bower](http://bower.io/) under the name `subtotal`. On [packagist.org](https://packagist.org/packages/nagarajanchinnasamy/subtotal), it is `nagarajanchinnasamy/subtotal`.
 
-
-[PivotTable.js](http://nicolas.kruchten.com/pivottable) is a Javascript Pivot Table library with drag'n'drop functionality built on top of jQuery/jQueryUI and originally written in CoffeeScript by [Nicolas Kruchten](http://nicolas.kruchten.com) at [Datacratic](http://datacratic.com). 
-
-
-## What does it do?
-
-Subtotal.js renders rows and columns of a pivot table with subtotals and lets the user to expand or collapse rows and columns.
 
 ![image](http://nagarajanchinnasamy.com/subtotal/images/subtotal-renderer-pivotui.png)
 
@@ -24,11 +17,11 @@ You can see the live demo at [examples page](http://nagarajanchinnasamy.com/subt
 
 ## How can I get started?
 
-To know how to load and use this library, please refer to [Getting Started Wiki Page](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/wiki/Getting-Started)
+To know how to load and use this library, please refer to [Getting Started Wiki Page](https://github.com/nagarajanchinnasamy/subtotal/wiki/Getting-Started)
 
 ## API Documentation?
 
-Please refer to [Wiki Pages](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/wiki)
+Please refer to [Wiki Pages](https://github.com/nagarajanchinnasamy/subtotal/wiki)
 
 ## How can I build the code and run the tests?
 
@@ -42,11 +35,11 @@ The easiest way to modify the code and work with the examples is to leave a `nod
 
 ## How can I contribute?
 
-Pull requests are welcome! Here are some [Contribution Guidelines](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/blob/master/CONTRIBUTING.md).
+Pull requests are welcome! Here are some [Contribution Guidelines](https://github.com/nagarajanchinnasamy/subtotal/blob/master/CONTRIBUTING.md).
 
 ## I have a question, how can I get in touch?
 
-Please first check the [issues](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/issues) that are already raised and if you can't find what you're looking for there, then please [create a GitHub Issue](https://github.com/nagarajanchinnasamy/pivottable-subtotal-renderer/issues/new). When creating an issue, please try to provide a replicable test case so that others can more easily help you.
+Please first check the [issues](https://github.com/nagarajanchinnasamy/subtotal/issues) that are already raised and if you can't find what you're looking for there, then please [create a GitHub Issue](https://github.com/nagarajanchinnasamy/subtotal/issues/new). When creating an issue, please try to provide a replicable test case so that others can more easily help you.
 
 ## Copyright & Licence (MIT License)
 

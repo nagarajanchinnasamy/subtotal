@@ -7,8 +7,8 @@
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
 
         <!-- PivotTable.js libs from cdnjs -->
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.7.0/pivot.min.js"></script>
-        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.7.0/pivot.min.css">
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.14.0/pivot.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.14.0/pivot.min.css">
 
         <!-- subtotal.js libs from ../dist -->
         <script type="text/javascript" src="../dist/subtotal.js"></script>
@@ -19,9 +19,21 @@
         <!-- for examples only! script to show code to user -->
         <script type="text/javascript" src="js/show_code.js"></script>
     </head>
+    <style>
+        body {
+            font-family: Verdana;
+        }
+        table.pvtTable tr .rowhide {
+            display: none;
+        }
+
+        table.pvtTable tr .colhide {
+            display: none;
+        }
+    </style>
     <body>
     <script type="text/javascript">
-    // This example demonstrates table event handlers 
+    // This example demonstrates table event handlers to perform onclick drill-down 
 
     $(function() {
         var dataClass = $.pivotUtilities.SubtotalPivotData;
@@ -37,8 +49,6 @@
                 renderers: renderers,
                 rendererName: "Table With Subtotal Heatmap",
                 rendererOptions: {
-                    collapseRowsAt: 0,
-                    collapseColsAt: 1,
                     table: {
                         eventHandlers: {
                             "click": function(e, value, filters, pivotData){
@@ -56,7 +66,7 @@
     </script>
     <p><a href="index.html">&laquo; back to examples</a></p>
     <p></p>
-    <p>To expand and collapse rows and columns, click on &#x25B6 and &#x25E2 arrows in the table. Scroll down to view the code.</p>
+    <p>To expand and collapse rows and columns, click on &#x25B6 and &#x25E2 arrows in the table. Click on a value cell to view the list of contributors. Scroll down to view the code.</p>
     <p></p>
     <div id="output" style="margin: 30px;"></div>
     <p></p>
