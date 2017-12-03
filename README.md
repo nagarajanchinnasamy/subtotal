@@ -3,9 +3,11 @@
 
 # Subtotal.js
 
-[Subtotal.js](http://nagarajanchinnasamy.com/subtotal) is a JavaScript plugin for [PivotTable.js](https://pivottable.js.org/examples/) - a Javascript Pivot Table library with drag'n'drop functionality written by [Nicolas Kruchten](http://nicolas.kruchten.com).
+[Subtotal.js](http://nagarajanchinnasamy.com/subtotal) is a JavaScript plugin for [PivotTable.js](https://pivottable.js.org/examples/). It renders rows and columns of a pivot table with subtotals and lets the user expand or collapse rows and columns.
 
-Subtotal.js renders rows and columns of a pivot table with subtotals and lets the user expand or collapse rows and columns. It is available under an MIT license from [NPM](https://www.npmjs.com/package/subtotal) and [Bower](http://bower.io/) under the name `subtotal`. On [packagist.org](https://packagist.org/packages/nagarajanchinnasamy/subtotal), it is `nagarajanchinnasamy/subtotal`.
+
+Subtotal.js is available under an MIT license from [NPM](https://www.npmjs.com/package/subtotal) and [Bower](http://bower.io/) under the name `subtotal`. On [packagist.org](https://packagist.org/packages/nagarajanchinnasamy/subtotal), it is `nagarajanchinnasamy/subtotal`.
+
 
 ![image](http://nagarajanchinnasamy.com/subtotal/images/subtotal-renderer-pivotui.png)
 
