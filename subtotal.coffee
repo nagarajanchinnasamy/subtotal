@@ -53,44 +53,30 @@ callWithJQuery ($) ->
     SubtotalRenderer = (pivotData, opts) ->
         defaults =
             table: clickCallback: null
-            localeStrings: totals: "Totals"
-
+            localeStrings: totals: "Totals", subtotalOf: "Subtotal of"
+            arrowCollapsed: "\u25B6"
+            arrowExpanded: "\u25E2"
+            rowSubtotalDisplay:
+                displayOnTop: true
+                disableFrom: 99999
+                collapseAt: 99999
+                hideOnExpand: false
+                disableExpandCollapse: false
+            colSubtotalDisplay:
+                displayOnTop: true
+                disableFrom: 99999
+                collapseAt: 99999
+                hideOnExpand: false
+                disableExpandCollapse: false
         opts = $.extend true, {}, defaults, opts
 
-        opts.rowSubtotalDisplay = {} if not opts.rowSubtotalDisplay
-        if typeof opts.rowSubtotalDisplay.displayOnTop is 'undefined'
-            opts.rowSubtotalDisplay.displayOnTop = true
-        if typeof opts.rowSubtotalDisplay.disableFrom is 'undefined'
-            if not opts.rowSubtotalDisplay.disableSubtotal
-                if typeof opts.rowSubtotalDisplay.disableAfter is 'undefined'
-                    opts.rowSubtotalDisplay.disableFrom = 9999
-                else
-                    opts.rowSubtotalDisplay.disableFrom = opts.rowSubtotalDisplay.disableAfter+1
-            else
-                opts.rowSubtotalDisplay.disableFrom = 0
-        if typeof opts.rowSubtotalDisplay.collapseAt is 'undefined'
-            if typeof opts.collapseRowsAt is 'undefined'
-                opts.rowSubtotalDisplay.collapseAt = 9999
-            else
-                opts.rowSubtotalDisplay.collapseAt = opts.collapseRowsAt
+        opts.rowSubtotalDisplay.disableFrom = 0 if opts.rowSubtotalDisplay.disableSubtotal
+        opts.rowSubtotalDisplay.disableFrom = opts.rowSubtotalDisplay.disableAfter+1 if typeof  opts.rowSubtotalDisplay.disableAfter isnt 'undefined' and opts.rowSubtotalDisplay.disableAfter isnt null
+        opts.rowSubtotalDisplay.collapseAt = opts.collapseRowsAt if typeof opts.rowSubtotalDisplay.collapseAt isnt 'undefined' and opts.collapseRowsAt isnt null
 
-        opts.colSubtotalDisplay = {} if not opts.colSubtotalDisplay
-        if typeof opts.colSubtotalDisplay.disableFrom is 'undefined'
-            if not opts.colSubtotalDisplay.disableSubtotal
-                if typeof opts.colSubtotalDisplay.disableAfter is 'undefined'
-                    opts.colSubtotalDisplay.disableFrom = 9999
-                else
-                    opts.colSubtotalDisplay.disableFrom = opts.colSubtotalDisplay.disableAfter+1
-            else
-                opts.colSubtotalDisplay.disableFrom = 0
-        if typeof opts.colSubtotalDisplay.collapseAt is 'undefined'
-            if typeof opts.collapseColsAt is 'undefined'
-                opts.colSubtotalDisplay.collapseAt = 9999
-            else
-                opts.colSubtotalDisplay.collapseAt = opts.collapseColsAt
-
-        arrowCollapsed = opts.arrowCollapsed ?= "\u25B6"
-        arrowExpanded = opts.arrowExpanded ?= "\u25E2"
+        opts.colSubtotalDisplay.disableFrom = 0 if opts.colSubtotalDisplay.disableSubtotal
+        opts.colSubtotalDisplay.disableFrom = opts.colSubtotalDisplay.disableAfter+1 if typeof  opts.colSubtotalDisplay.disableAfter isnt 'undefined' and opts.colSubtotalDisplay.disableAfter isnt null
+        opts.colSubtotalDisplay.collapseAt = opts.collapseColsAt if typeof opts.colSubtotalDisplay.collapseAt isnt 'undefined' and opts.collapseColsAt isnt null
 
         colAttrs = pivotData.colAttrs
         rowAttrs = pivotData.rowAttrs
@@ -101,8 +87,6 @@ callWithJQuery ($) ->
         colTotals = pivotData.colTotals
         allTotal = pivotData.allTotal
 
-        classRowHideOnExpand = "rowhideonexpand"
-        classColHideOnExpand = "colhideonexpand"        
         classRowHide = "rowhide"
         classRowShow = "rowshow"
         classColHide = "colhide"
@@ -115,9 +99,8 @@ callWithJQuery ($) ->
         classRowCollapsed = "rowcollapsed"
         classColExpanded = "colexpanded"
         classColCollapsed = "colcollapsed"
-
-
-        # opts.rowSubtotalDisplay.displayOnTop = true;
+        arrowExpanded = opts.arrowExpanded
+        arrowCollapsed = opts.arrowCollapsed
 
         # Based on http://stackoverflow.com/questions/195951/change-an-elements-class-with-javascript -- Begin
         hasClass = (element, className) ->

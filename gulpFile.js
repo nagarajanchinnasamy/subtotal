@@ -11,7 +11,7 @@ var gulp = require('gulp'),
     rename = require('gulp-rename'),
     sourcemaps = require('gulp-sourcemaps'),
     concat = require('gulp-concat'),
-    minifyCSS = require('gulp-minify-css'),
+    cleanCSS = require('gulp-minify-css'),
     serve = require('gulp-serve');
     debug = require('gulp-debug');
 
@@ -20,7 +20,7 @@ gulp.task('makeCss', function() {
         .pipe(gulp.dest('./dist/'))
 
     gulp.src('./subtotal.css')
-        .pipe(minifyCSS())
+        .pipe(cleanCSS())
         .pipe(concat('subtotal.min.css'))//trick to output to new file
         .pipe(gulp.dest('./dist/'))
 });

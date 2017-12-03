@@ -119,7 +119,7 @@
         });
       });
     });
-    return describe("with row and col subtotal hidden on expand", function() {
+    describe("with row and col subtotal hidden on expand", function() {
       var table;
       table = null;
       beforeEach(function(done) {
@@ -188,6 +188,69 @@
         return it("has a correct spot-checked cell with data value", function(done) {
           expect(table.find("td.pvtVal.rowshow.colshow.row10.col5.rowcol2.colcol2").text()).toBe("100.0%");
           expect(table.find("td.pvtVal[data-rownode=\"1\"][data-colnode=\"6\"]").text()).toBe("50.0%");
+          return done();
+        });
+      });
+    });
+    return describe("with row subtotal displayed at bottom", function() {
+      var table;
+      table = null;
+      beforeEach(function(done) {
+        return table = $("<div>").pivotUI(fixtureData, {
+          dataClass: $.pivotUtilities.SubtotalPivotData,
+          rows: ["colour", "birthday"],
+          cols: ["gender", "successes"],
+          vals: ["successes"],
+          renderers: $.pivotUtilities.subtotal_renderers,
+          rendererOptions: {
+            rowSubtotalDisplay: {
+              displayOnTop: false
+            }
+          },
+          onRefresh: done
+        });
+      });
+      it("has all the basic UI elements", function(done) {
+        expect(table.find("td.pvtAxisContainer").length).toBe(3);
+        expect(table.find("td.pvtRendererArea").length).toBe(1);
+        expect(table.find("td.pvtVals").length).toBe(1);
+        expect(table.find("select.pvtRenderer").length).toBe(1);
+        expect(table.find("select.pvtAggregator").length).toBe(1);
+        expect(table.find("span.pvtAttr").length).toBe(6);
+        return done();
+      });
+      it("reflects its inputs", function(done) {
+        expect(table.find("td.pvtUnused span.pvtAttr").length).toBe(2);
+        expect(table.find("td.pvtRows span.pvtAttr").length).toBe(2);
+        expect(table.find("td.pvtCols span.pvtAttr").length).toBe(2);
+        expect(table.find("select.pvtRenderer").val()).toBe("Table With Subtotal");
+        return done();
+      });
+      it("renders a table", function(done) {
+        expect(table.find("table.pvtTable").length).toBe(1);
+        return done();
+      });
+      return describe("its renderer output", function() {
+        it("has the correct type and number of cells", function(done) {
+          expect(table.find(".pvtTable tbody tr:first-child th").length).toBe(1);
+          expect(table.find(".pvtTable tbody tr:first-child th").attr("rowspan")).toBe("7");
+          expect(table.find("tr:nth-child(7) th.pvtRowLabelFiller").length).toBe(1);
+          expect(table.find("th.pvtTotalLabel.rowTotal").length).toBe(1);
+          expect(table.find("th.pvtTotalLabel.colTotal").length).toBe(1);
+          expect(table.find("td.pvtTotal.rowTotal.pvtRowSubtotal").length).toBe(3);
+          expect(table.find("td.pvtTotal.colTotal.pvtColSubtotal").length).toBe(2);
+          expect(table.find("td.pvtGrandTotal").length).toBe(1);
+          return done();
+        });
+        it("has the correct textual representation", function(done) {
+          expect(table.find("th.pvtColLabel").text()).toBe(" \u25E2 female \u25E2 male142512142530");
+          expect(table.find("th.pvtRowLabel").text()).toBe(" \u25E2 blue1982-11-071982-12-031982-12-071982-12-081982-12-09 \u25E2 red1982-11-051982-11-08 \u25E2 yellow1982-11-071982-12-011982-12-061983-11-11");
+          return done();
+        });
+        return it("has a correct spot-checked cell with data value", function(done) {
+          expect(table.find("tr:nth-child(7) td.pvtTotal").text()).toBe("6");
+          expect(table.find("td.pvtVal.row5.rowcol0.pvtRowSubtotal.col0.colcol0.pvtColSubtotal").text()).toBe("2");
+          expect(table.find("td.pvtVal[data-rownode=\"13\"][data-colnode=\"7\"]").text()).toBe("3");
           return done();
         });
       });

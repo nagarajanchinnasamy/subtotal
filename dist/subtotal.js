@@ -94,63 +94,51 @@
     })($.pivotUtilities.PivotData);
     $.pivotUtilities.SubtotalPivotData = SubtotalPivotData;
     SubtotalRenderer = function(pivotData, opts) {
-      var addClass, adjustAxisHeader, allTotal, arrowCollapsed, arrowExpanded, buildAxisHeader, buildColAxisHeaders, buildColHeader, buildColTotals, buildColTotalsHeader, buildGrandTotal, buildRowAxisHeaders, buildRowHeader, buildRowTotalsHeader, buildValues, classColCollapsed, classColExpanded, classColHide, classColHideOnExpand, classColShow, classCollapsed, classExpanded, classRowCollapsed, classRowExpanded, classRowHide, classRowHideOnExpand, classRowShow, clickStatusCollapsed, clickStatusExpanded, colAttrs, colKeys, colTotals, collapseAxis, collapseAxisHeaders, collapseChildCol, collapseChildRow, collapseCol, collapseHiddenColSubtotal, collapseRow, collapseShowColSubtotal, collapseShowRowSubtotal, createElement, defaults, expandAxis, expandChildCol, expandChildRow, expandCol, expandHideColSubtotal, expandHideRowSubtotal, expandRow, expandShowColSubtotal, expandShowRowSubtotal, getHeaderText, getTableEventHandlers, hasClass, hideChildCol, hideChildRow, main, processKeys, removeClass, replaceClass, rowAttrs, rowKeys, rowTotals, setAttributes, showChildCol, showChildRow, tree;
+      var addClass, adjustAxisHeader, allTotal, arrowCollapsed, arrowExpanded, buildAxisHeader, buildColAxisHeaders, buildColHeader, buildColTotals, buildColTotalsHeader, buildGrandTotal, buildRowAxisHeaders, buildRowHeader, buildRowTotalsHeader, buildValues, classColCollapsed, classColExpanded, classColHide, classColShow, classCollapsed, classExpanded, classRowCollapsed, classRowExpanded, classRowHide, classRowShow, clickStatusCollapsed, clickStatusExpanded, colAttrs, colKeys, colTotals, collapseAxis, collapseAxisHeaders, collapseChildCol, collapseChildRow, collapseCol, collapseHiddenColSubtotal, collapseRow, collapseShowColSubtotal, collapseShowRowSubtotal, createElement, defaults, expandAxis, expandChildCol, expandChildRow, expandCol, expandHideColSubtotal, expandHideRowSubtotal, expandRow, expandShowColSubtotal, expandShowRowSubtotal, getHeaderText, getTableEventHandlers, hasClass, hideChildCol, hideChildRow, main, processKeys, removeClass, replaceClass, rowAttrs, rowKeys, rowTotals, setAttributes, showChildCol, showChildRow, tree;
       defaults = {
         table: {
           clickCallback: null
         },
         localeStrings: {
-          totals: "Totals"
+          totals: "Totals",
+          subtotalOf: "Subtotal of"
+        },
+        arrowCollapsed: "\u25B6",
+        arrowExpanded: "\u25E2",
+        rowSubtotalDisplay: {
+          displayOnTop: true,
+          disableFrom: 99999,
+          collapseAt: 99999,
+          hideOnExpand: false,
+          disableExpandCollapse: false
+        },
+        colSubtotalDisplay: {
+          displayOnTop: true,
+          disableFrom: 99999,
+          collapseAt: 99999,
+          hideOnExpand: false,
+          disableExpandCollapse: false
         }
       };
       opts = $.extend(true, {}, defaults, opts);
-      if (!opts.rowSubtotalDisplay) {
-        opts.rowSubtotalDisplay = {};
+      if (opts.rowSubtotalDisplay.disableSubtotal) {
+        opts.rowSubtotalDisplay.disableFrom = 0;
       }
-      if (typeof opts.rowSubtotalDisplay.displayOnTop === 'undefined') {
-        opts.rowSubtotalDisplay.displayOnTop = true;
+      if (typeof opts.rowSubtotalDisplay.disableAfter !== 'undefined' && opts.rowSubtotalDisplay.disableAfter !== null) {
+        opts.rowSubtotalDisplay.disableFrom = opts.rowSubtotalDisplay.disableAfter + 1;
       }
-      if (typeof opts.rowSubtotalDisplay.disableFrom === 'undefined') {
-        if (!opts.rowSubtotalDisplay.disableSubtotal) {
-          if (typeof opts.rowSubtotalDisplay.disableAfter === 'undefined') {
-            opts.rowSubtotalDisplay.disableFrom = 9999;
-          } else {
-            opts.rowSubtotalDisplay.disableFrom = opts.rowSubtotalDisplay.disableAfter + 1;
-          }
-        } else {
-          opts.rowSubtotalDisplay.disableFrom = 0;
-        }
+      if (typeof opts.rowSubtotalDisplay.collapseAt !== 'undefined' && opts.collapseRowsAt !== null) {
+        opts.rowSubtotalDisplay.collapseAt = opts.collapseRowsAt;
       }
-      if (typeof opts.rowSubtotalDisplay.collapseAt === 'undefined') {
-        if (typeof opts.collapseRowsAt === 'undefined') {
-          opts.rowSubtotalDisplay.collapseAt = 9999;
-        } else {
-          opts.rowSubtotalDisplay.collapseAt = opts.collapseRowsAt;
-        }
+      if (opts.colSubtotalDisplay.disableSubtotal) {
+        opts.colSubtotalDisplay.disableFrom = 0;
       }
-      if (!opts.colSubtotalDisplay) {
-        opts.colSubtotalDisplay = {};
+      if (typeof opts.colSubtotalDisplay.disableAfter !== 'undefined' && opts.colSubtotalDisplay.disableAfter !== null) {
+        opts.colSubtotalDisplay.disableFrom = opts.colSubtotalDisplay.disableAfter + 1;
       }
-      if (typeof opts.colSubtotalDisplay.disableFrom === 'undefined') {
-        if (!opts.colSubtotalDisplay.disableSubtotal) {
-          if (typeof opts.colSubtotalDisplay.disableAfter === 'undefined') {
-            opts.colSubtotalDisplay.disableFrom = 9999;
-          } else {
-            opts.colSubtotalDisplay.disableFrom = opts.colSubtotalDisplay.disableAfter + 1;
-          }
-        } else {
-          opts.colSubtotalDisplay.disableFrom = 0;
-        }
+      if (typeof opts.colSubtotalDisplay.collapseAt !== 'undefined' && opts.collapseColsAt !== null) {
+        opts.colSubtotalDisplay.collapseAt = opts.collapseColsAt;
       }
-      if (typeof opts.colSubtotalDisplay.collapseAt === 'undefined') {
-        if (typeof opts.collapseColsAt === 'undefined') {
-          opts.colSubtotalDisplay.collapseAt = 9999;
-        } else {
-          opts.colSubtotalDisplay.collapseAt = opts.collapseColsAt;
-        }
-      }
-      arrowCollapsed = opts.arrowCollapsed != null ? opts.arrowCollapsed : opts.arrowCollapsed = "\u25B6";
-      arrowExpanded = opts.arrowExpanded != null ? opts.arrowExpanded : opts.arrowExpanded = "\u25E2";
       colAttrs = pivotData.colAttrs;
       rowAttrs = pivotData.rowAttrs;
       rowKeys = pivotData.getRowKeys();
@@ -159,8 +147,6 @@
       rowTotals = pivotData.rowTotals;
       colTotals = pivotData.colTotals;
       allTotal = pivotData.allTotal;
-      classRowHideOnExpand = "rowhideonexpand";
-      classColHideOnExpand = "colhideonexpand";
       classRowHide = "rowhide";
       classRowShow = "rowshow";
       classColHide = "colhide";
@@ -173,6 +159,8 @@
       classRowCollapsed = "rowcollapsed";
       classColExpanded = "colexpanded";
       classColCollapsed = "colcollapsed";
+      arrowExpanded = opts.arrowExpanded;
+      arrowCollapsed = opts.arrowCollapsed;
       hasClass = function(element, className) {
         var regExp;
         regExp = new RegExp("(?:^|\\s)" + className + "(?!\\S)", "g");
