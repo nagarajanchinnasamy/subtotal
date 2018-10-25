@@ -31,15 +31,19 @@
   "dependencies": {
     "pivottable": ">=2.7.0"
   },
+  "scripts": {
+    "build": "gulp"
+  },
   "devDependencies": {
-    "gulp": "^3.8.10",
+    "gulp": "^3.9.1",
     "gulp-bump": "^2.5.1",
+    "gulp-clean-css": "^3.9.0",
     "gulp-coffee": "^2.2.0",
     "gulp-concat": "^2.4.2",
     "gulp-debug": "^3.1.0",
     "gulp-filter": "^4.0.0",
     "gulp-git": "^1.12.0",
-    "gulp-clean-css": "^3.9.0",
+    "gulp-minify-css": "^1.2.4",
     "gulp-rename": "^1.2.0",
     "gulp-serve": "^1.2.0",
     "gulp-sourcemaps": "^1.2.8",
