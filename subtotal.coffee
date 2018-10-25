@@ -373,7 +373,7 @@ callWithJQuery ($) ->
                     "data-row": "row#{rh.row}"
                     "data-rowcol": "col#{rh.col}"
                     "data-rownode": rh.node,
-                getTableEventHandlers val, rh.key, [], rowAttrs, colAttrs, opts
+                    getTableEventHandlers val, rh.key, [], rowAttrs, colAttrs, opts
                 tr.appendChild td
 
         buildColTotalsHeader = (rowAttrs, colAttrs) ->
