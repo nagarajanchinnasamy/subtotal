@@ -27,7 +27,7 @@ Please refer to [Wiki Pages](https://github.com/nagarajanchinnasamy/subtotal/wik
 
 To install the development dependencies, just run `npm install`, which will create a `node_modules` directory with the files required to run the [Gulp](http://gulpjs.com/) build system.
 
-After modifying any of the `.coffee` files at the top of the repo, you can compile/minify the files into the `dist` directory by running `node_modules/gulp/bin/gulp.js`
+After modifying any of the `.coffee` files at the top of the repo, you can compile/minify the files into the `dist` directory by running `npm run build`
 
 Once that's done, you can point your browser to `tests/index.html` to run the [Jasmine](http://jasmine.github.io/) test suite. You can view the [current test results here](http://nagarajanchinnasamy.com/subtotal/tests).
 
