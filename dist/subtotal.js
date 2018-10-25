@@ -569,8 +569,7 @@
             "data-row": "row" + rh.row,
             "data-rowcol": "col" + rh.col,
             "data-rownode": rh.node
-          });
-          getTableEventHandlers(val, rh.key, [], rowAttrs, colAttrs, opts);
+          }, getTableEventHandlers(val, rh.key, [], rowAttrs, colAttrs, opts));
           results.push(tr.appendChild(td));
         }
         return results;
